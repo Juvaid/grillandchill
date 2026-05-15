@@ -130,7 +130,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .ci-name{font-size:.88rem;font-weight:700;flex:1}
 .ci-size{font-size:.72rem;color:var(--muted)}
 .ci-price{font-size:.95rem;font-weight:800;color:var(--accent)}
-.ci-rm{width:28px;height:28px;background:var(--s2);border:1px solid var(--b);border-radius:8px;color:var(--muted);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ci-rm{width:28px;height:28px;background:var(--s2);border:1px solid var(--b);border-radius:8px;color:var(--muted);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
+.ci-rm:hover{background:rgba(239,68,68,0.1);color:#ef4444;border-color:rgba(239,68,68,0.2)}
 .cart-total-row{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;font-weight:700}
 
 /* CART FAB */
