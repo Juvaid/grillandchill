@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Grill &amp; Chill | Order Online</title>
+<meta name="description" content="Order fresh wood-fired pizza, burgers, wraps & more from Grill & Chill. Fast delivery to your door.">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+.install-btn {
+  margin-top: 12px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+.install-btn:active { transform: scale(0.95); background: #fff; color: #111; }
+.hero-logo-img {
+  height: 180px;
+  width: auto;
+  margin-bottom: 2px;
+  filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+}
+.hero {
+  padding-top: 10px !important;
+  align-items: flex-start !important;
+  min-height: 230px !important;
+  background: 
+    radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.9) 100%),
+    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    url('assets/woody_bg.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  box-shadow: inset 0 -50px 50px -20px var(--bg);
+}
+
+/* Fiery Open Badge */
+.open-badge {
+  background: linear-gradient(135deg, #222, #111) !important;
+  border: 1px solid rgba(255, 77, 0, 0.3) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  padding: 8px 18px 8px 14px !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 0 30px rgba(255, 77, 0, 0.15), inset 0 0 10px rgba(255, 77, 0, 0.1);
+}
+
+.fire-svg {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 0 5px #ff4d00);
+}
+
+.flame-p1 { animation: flame-sway 1s infinite alternate ease-in-out; transform-origin: bottom center; }
+.flame-p2 { animation: flame-sway 0.8s infinite alternate-reverse ease-in-out; transform-origin: bottom center; }
+.flame-p3 { animation: flame-sway 0.6s infinite alternate ease-in-out; transform-origin: bottom center; }
+
+@keyframes flame-sway {
+  0% { transform: scale(1) rotate(-2deg); opacity: 0.8; }
+  100% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+}
+
+/* Delivery Badge */
+.delivery-badge {
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.speed-lines {
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.speed-lines span {
+  width: 12px;
+  height: 1px;
+  background: #fff;
+  opacity: 0;
+  animation: line-move 0.6s infinite;
+}
+.speed-lines span:nth-child(2) { animation-delay: 0.2s; width: 15px; }
+.speed-lines span:nth-child(3) { animation-delay: 0.4s; width: 10px; }
+
+@keyframes line-move {
+  0% { transform: translateX(0); opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { transform: translateX(-20px); opacity: 0; }
+}
+
+.delivery-icon {
+  display: inline-block;
+  animation: scooter-tilt 0.5s infinite alternate ease-in-out;
+}
+@keyframes scooter-tilt {
+  from { transform: scaleX(-1) rotate(-5deg) translateX(0); }
+  to { transform: scaleX(-1) rotate(5deg) translateX(2px); }
+}
+
+/* Announcement Bar */
+.announcement-bar {
+  background: #f05023;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 8px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  position: relative;
+  z-index: 1001;
+}
+.marquee-content {
+  display: inline-block;
+  animation: marquee 30s linear infinite;
+  padding-left: 50px;
+}
+.marquee-item {
+  display: inline-block;
+  padding-right: 60px;
+  cursor: pointer;
+}
+.marquee-item:hover {
+  text-decoration: underline;
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+.main-footer {
+  background: var(--s1);
+  border-top: 1px solid var(--b);
+  padding: 40px 20px 120px;
+  text-align: center;
+}
+
+/* WhatsApp Bubble */
+.wa-bubble {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: #25d366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  z-index: 1000;
+  color: #fff;
+  text-decoration: none;
+  animation: wa-pulse 2s infinite;
+}
+.wa-bubble svg { width: 30px; height: 30px; fill: #fff; }
+
+/* Tooltips */
+.wa-bubble::before {
+  content: "Order Directly & Get Updates!";
+  position: absolute;
+  right: 70px;
+  background: #25d366;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+.wa-bubble:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.install-btn {
+  position: relative;
+}
+.install-btn::after {
+  content: "Add to Home Screen";
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: var(--s3);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 100;
+}
+.install-btn:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@keyframes wa-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
+  70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+
+.footer-logo { font-size: 1.4rem; font-weight: 900; color: var(--accent); letter-spacing: 2px; margin-bottom: 8px; }
+.main-footer p { font-size: 0.8rem; color: var(--muted); margin-bottom: 24px; }
+.footer-links { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+.footer-link { color: #fff; font-size: 0.85rem; font-weight: 600; text-decoration: none; border-bottom: 1.5px solid var(--accent); padding-bottom: 2px; }
+.footer-copyright { font-size: 0.65rem; color: #444; letter-spacing: 0.5px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announcement-bar">
+  <div class="marquee-content">
+    <span class="marquee-item" onclick="gotoCategory('🍕 Pizza Kingdom')">🔥 TUESDAY SPECIAL: BUY ONE GET ONE PIZZA FREE! 🔥</span>
+    <span class="marquee-item" onclick="gotoCategory('🍔 Burgers, Fries & Pasta')">🍔 MONDAY DEAL: BUY 2 CRISPY CROWN BURGERS & GET A MEAL FREE! 🍟</span>
+    <span class="marquee-item" onclick="gotoCategory('🍕 Pizza Kingdom')">🍕 NEW LAUNCH: HEALTHY WHOLE WHEAT PIZZA BASE NOW AVAILABLE! 🍕</span>
+    <span class="marquee-item">🛵 FREE HOME DELIVERY ON ALL ORDERS! CALL: 79019 94174 📞</span>
+    <span class="marquee-item" onclick="gotoCategory('🥤 Beverages & Shakes')">🥤 TRY OUR FAMOUS GHOST SHAKES STARTING AT JUST 90/-! 👻</span>
+  </div>
+</div>
+
+<!-- WHATSAPP BUBBLE -->
+<a href="https://wa.me/917901994174" target="_blank" class="wa-bubble" aria-label="Contact on WhatsApp">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.353-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+</a>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-content">
+    <img src="assets/logo.svg" alt="Grill &amp; Chill" class="hero-logo-img">
+    <button id="installBtn" class="install-btn" style="display:none"><span>📲</span> INSTALL APP</button>
+    <div class="hero-pills">
+      <div class="pill open-badge">
+        <svg class="fire-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="flame-p1" d="M12 2C12 2 15 6 15 10C15 14 12 17 9 17C6 17 3 14 3 10C3 6 6 2 6 2C6 2 6 6 9 6C12 6 12 2 12 2Z" fill="#FF4D00"/>
+          <path class="flame-p2" d="M12 7C12 7 14 10 14 13C14 16 12 18 10 18C8 18 6 16 6 13C6 10 8 7 8 7C8 7 8 10 10 10C12 10 12 7 12 7Z" fill="#FF8700"/>
+          <path class="flame-p3" d="M12 12C12 12 13 14 13 16C13 18 12 19 11 19C10 19 9 18 9 16C9 14 10 12 10 12C10 12 10 14 11 14C12 14 12 12 12 12Z" fill="#FFD700"/>
+        </svg>
+        OPEN NOW
+      </div>
+      <div class="pill delivery-badge">
+        <div class="speed-lines">
+          <span></span><span></span><span></span>
+        </div>
+        <span class="delivery-icon">🛵</span> FREE DELIVERY
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SEARCH & FILTERS -->
+<div class="top-controls">
+  <div class="search-box">
+    <span class="search-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    </span>
+    <input id="searchInput" type="text" placeholder="Search pizza, burgers, drinks..." oninput="handleSearch()">
+  </div>
+  
+  <div class="filter-bar">
+    <div class="sort-wrap">
+      <div class="sort-label" id="activeSortLabel">Sort: Relevance</div>
+      <select id="sortSelect" onchange="handleSortChange()">
+        <option value="relevance">Relevance</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="pop">Most Popular</option>
+        <option value="alpha">Alphabetical (A-Z)</option>
+        <option value="rating">Top Rated (4.5+)</option>
+      </select>
+      <div class="sort-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+      </div>
+    </div>
+    
+    <button class="filter-btn" onclick="toggleVegOnly()" id="vegToggle">
+      <div class="veg-dot-sm"></div>
+      <span>Pure Veg</span>
+    </button>
+  </div>
+</div>
+
+<!-- CATEGORY NAV -->
+<nav class="cat-nav">
+  <div class="cat-scroll" id="catScroll"></div>
+</nav>
+
+<!-- MENU AREA -->
+<main id="menuArea"></main>
+
+<div class="spacer"></div>
+
+<!-- FOOTER -->
+<footer class="main-footer">
+  <div class="footer-content">
+    <img src="assets/logo.svg" alt="Grill &amp; Chill" style="height:60px;margin-bottom:15px">
+    <p>Authentic Wood-Fired Pizzeria & Restaurant</p>
+    <div class="footer-links">
+      <a href="#" target="_blank" class="footer-link">Instagram</a>
+      <a href="#" target="_blank" class="footer-link">Facebook</a>
+      <a href="#" target="_blank" class="footer-link">Google Reviews</a>
+    </div>
+    <div class="footer-copyright">© 2026 Grill & Chill. Crafted for the best experience.</div>
+  </div>
+</footer>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- SIZE SHEET -->
+<div class="sheet" id="sizeSheet">
+  <div class="handle"></div>
+  <button onclick="closeAll()" style="position:absolute;top:16px;right:20px;background:none;border:none;color:#666;font-size:1.4rem;cursor:pointer;z-index:10;">×</button>
+  <div class="sheet-preview" id="sheetPreview"></div>
+  <div id="sizeOpts"></div>
+  <button class="sheet-cta" onclick="confirmAdd()">ADD TO ORDER</button>
+</div>
+
+<!-- CART SHEET -->
+<div class="sheet" id="cartSheet">
+  <div class="handle"></div>
+  <div style="padding:16px 20px 4px;display:flex;justify-content:space-between;align-items:center">
+    <h2 style="font-size:1.1rem;font-weight:800">Your Order</h2>
+    <button onclick="closeAll()" style="background:none;border:none;color:#666;font-size:1.4rem;cursor:pointer">×</button>
+  </div>
+  <div id="cartItems"></div>
+  <div id="cartEmpty" style="text-align:center;padding:40px;color:#666;display:none"><div style="font-size:2.5rem">🛒</div><p style="margin-top:8px;font-size:.85rem">Your cart is empty</p></div>
+  <div id="cartFooter" style="display:none;border-top:1px solid #2e2e2e">
+    <div class="cart-total-row"><span style="color:#777;font-size:.85rem">Subtotal</span><span id="cartSubtotal" style="font-size:1rem"></span></div>
+    
+    <!-- LOCATION SECTION -->
+    <div id="locSection" style="padding:0 20px 16px">
+      <div style="background:var(--s2);padding:12px;border-radius:12px;border:1px dashed var(--b)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:.75rem;font-weight:700;color:var(--muted)">DELIVERY ADDRESS</div>
+          <button onclick="getLocation()" id="locBtn" style="background:none;border:none;color:var(--accent);font-size:.72rem;font-weight:700;cursor:pointer">📍 SHARE LIVE LOCATION</button>
+        </div>
+        <div id="locStatus" style="font-size:.82rem;color:var(--text);line-height:1.4">Please share your location for accurate delivery.</div>
+        
+        <!-- MAP PICKER -->
+        <div id="mapContainer" style="display:none;margin-top:10px">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="addrSearch" placeholder="Search your area/colony..." style="flex:1;background:var(--s3);border:1px solid var(--b);border-radius:8px;color:var(--text);padding:8px 12px;font-size:.78rem;font-family:var(--font);outline:none">
+            <button onclick="searchAddress()" style="background:var(--accent);border:none;border-radius:8px;color:#fff;padding:0 12px;font-size:.75rem;font-weight:700;cursor:pointer">GO</button>
+          </div>
+          <div id="map" style="height:180px;border-radius:10px;border:1.5px solid var(--b)"></div>
+          <p style="font-size:.65rem;color:var(--muted);margin-top:5px;text-align:center">📍 Drag the pin to your exact delivery house</p>
+        </div>
+
+        <textarea id="manualAddr" placeholder="House No, Building, Landmark, etc..." style="width:100%;background:var(--s3);border:1px solid var(--b);border-radius:8px;color:var(--text);padding:10px;font-size:.82rem;font-family:var(--font);margin-top:10px;outline:none;resize:none;min-height:60px"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;padding:0 20px 16px"><span style="color:#777;font-size:.82rem">Delivery Fee</span><span style="color:#22c55e;font-weight:700;font-size:.82rem">FREE 🎉</span></div>
+    <button class="sheet-cta" id="waBtn" onclick="sendOrder()" style="display:flex;align-items:center;justify-content:center;gap:8px"><span>🛵</span><span>ORDER ON WHATSAPP</span></button>
+  </div>
+</div>
+
+<!-- CART BAR -->
+<div class="cart-bar" id="cartBar" onclick="openCart()">
+  <div class="cart-bar-inner">
+    <div class="cb-badge" id="cbBadge">0 items</div>
+    <div class="cb-label">VIEW ORDER</div>
+    <div class="cb-total" id="cbTotal">₹0</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  FULL MENU — 40 items across 7 categories
+// ═══════════════════════════════════════════
+const MENU = {
+"🍕 Pizza Kingdom": [
+  {id:501, n:"Margherita", d:"Classic cheese pizza", e:"🍕", img:"assets/menu/pizzas/margherita.png", veg:true, tags:["pop"], sz:{"Regular":100,"Medium":210,"Large":310},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":50,"Medium":120,"Large":140}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:502, n:"Cheese & Corn Pizza", d:"Sweet corn and mozzarella", e:"🍕", img:"assets/menu/pizzas/cheese_corn.png", veg:true, tags:[], sz:{"Regular":120,"Medium":230,"Large":330},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":30,"Medium":100,"Large":120}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:503, n:"Veggie Lover", d:"Capsicum, onion, tomato, sweet corn", e:"🍕", img:"assets/menu/pizzas/veggie_lover.png", veg:true, tags:["pop"], sz:{"Regular":150,"Medium":250,"Large":350},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":0,"Medium":80,"Large":100}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:504, n:"Paneer Veg Pizza", d:"Paneer, onion, capsicum", e:"🍕", img:"assets/menu/pizzas/paneer_veg.png", veg:true, tags:[], sz:{"Regular":150,"Medium":310,"Large":440},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":0,"Medium":20,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:505, n:"Fresh Veggie Pizza", d:"Onion, crisp capsicum", e:"🍕", img:"assets/menu/pizzas/fresh_veggie.png", veg:true, tags:[], sz:{"Regular":160,"Medium":280,"Large":380},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":100,"Large":120}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:506, n:"3 Pepper Veg", d:"Jalapeno, red & yellow bell pepper", e:"🍕", img:"assets/menu/pizzas/3_pepper.png", veg:true, tags:[], sz:{"Regular":180,"Medium":330,"Large":490},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":20,"Medium":50,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:507, n:"Paneer Makhni Pizza", d:"Paneer in makhni sauce", e:"🍕", img:"assets/menu/pizzas/paneer_makhni.png", veg:true, tags:["pop"], sz:{"Regular":180,"Medium":330,"Large":490},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":20,"Medium":50,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:508, n:"Tandoori Pizza", d:"Tandoori flavored veggies/paneer", e:"🍕", img:"assets/menu/pizzas/tandoori.png", veg:true, tags:["hot"], sz:{"Regular":180,"Medium":330,"Large":490},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":20,"Medium":50,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:509, n:"Farm House Pizza", d:"Onion, capsicum, tomato, mushroom", e:"🍕", img:"assets/menu/pizzas/farmhouse.png", veg:true, tags:[], sz:{"Regular":180,"Medium":350,"Large":530},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":60,"Medium":30,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:510, n:"Deluxe Pizza", d:"Onion, capsicum, paneer, mushroom, corn", e:"🍕", img:"assets/menu/pizzas/deluxe.png", veg:true, tags:[], sz:{"Regular":200,"Medium":380,"Large":550},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:511, n:"Extra Vaganza Pizza", d:"Black olive, onion, capsicum, mushroom, tomato, corn, jalapeno", e:"🍕", img:"assets/menu/pizzas/extravaganza.png", veg:true, tags:["best"], sz:{"Regular":200,"Medium":380,"Large":550},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:512, n:"Veggie Feast", d:"Black olive, onion, capsicum, mushroom, tomato", e:"🍕", img:"assets/menu/pizzas/veggie_feast.png", veg:true, tags:[], sz:{"Regular":200,"Medium":380,"Large":550},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:513, n:"Achaari Pizza", d:"Tangy achaari flavor", e:"🍕", img:"assets/menu/pizzas/achaari.png", veg:true, tags:[], sz:{"Regular":200,"Medium":380,"Large":550},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:514, n:"Punjabi Tadka Pizza", d:"Desi tadka flavor", e:"🍕", img:"assets/menu/pizzas/punjabi_tadka.png", veg:true, tags:["hot"], sz:{"Regular":200,"Medium":380,"Large":550},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:515, n:"Grill & Chill Special Pizza", d:"Our signature loaded pizza", e:"🍕", img:"assets/menu/pizzas/special.png", veg:true, tags:["best","hot"], sz:{"Regular":250,"Medium":450,"Large":650},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
+    ]},
+  {id:516, n:"Double Topping: Paneer & Corn", d:"Loaded paneer & corn", e:"🍕", img:"assets/menu/pizzas/paneer_corn.png", veg:true, tags:[], sz:{"Regular":90,"Medium":150},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Cheese Burst",p:{"Regular":40,"Medium":60}},{n:"Thin Crust",p:{"Regular":40,"Medium":60}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60}},{n:"Extra Topping",p:{"Regular":40,"Medium":60}}]}
+    ]},
+  {id:517, n:"Double Topping: Paneer & Onion", d:"Loaded paneer & onion", e:"🍕", img:"assets/menu/pizzas/paneer_onion.png", veg:true, tags:[], sz:{"Regular":90,"Medium":150},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Cheese Burst",p:{"Regular":40,"Medium":60}},{n:"Thin Crust",p:{"Regular":40,"Medium":60}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60}},{n:"Extra Topping",p:{"Regular":40,"Medium":60}}]}
+    ]},
+  {id:518, n:"Double Topping: Onion & Capsicum", d:"Loaded onion & capsicum", e:"🍕", img:"assets/menu/pizzas/onion_capsicum.png", veg:true, tags:[], sz:{"Regular":90,"Medium":150},
+    addons:[
+      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Cheese Burst",p:{"Regular":40,"Medium":60}},{n:"Thin Crust",p:{"Regular":40,"Medium":60}}]},
+      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60}},{n:"Extra Topping",p:{"Regular":40,"Medium":60}}]}
+    ]},
+],
+"🔥 KFC Chicken & Buckets": [
+  {id:101, n:"Crispy Chicken", d:"Classic KFC style fried chicken", e:"🍗", img:"assets/menu/kfc/leg.png", veg:false, tags:["pop"], sz:{"Half":250,"Full":400}},
+  {id:102, n:"Chicken Strips", d:"Boneless chicken strips", e:"🍗", img:"assets/menu/kfc/strips.png", veg:false, tags:[], sz:{"Half":240,"Full":380}},
+  {id:103, n:"Chicken Wings", d:"Crispy chicken wings", e:"🍗", img:"assets/menu/kfc/wings.png", veg:false, tags:[], sz:{"Half":240,"Full":380}},
+  {id:104, n:"Hot Crispy Chicken", d:"Spicy fried chicken", e:"🍗", img:"assets/menu/kfc/leg.png", veg:false, tags:["hot"], sz:{"3 Pcs":210,"6 Pcs":380}},
+  {id:105, n:"Chicken Popcorn", d:"Bite sized fried chicken", e:"🍗", img:"assets/menu/kfc/popcorn.png", veg:false, tags:[], sz:{"Half":180,"Full":280}},
+  {id:106, n:"Steam Chicken", d:"Healthy steam chicken", e:"🍗", img:"assets/menu/kfc/popcorn.png", veg:false, tags:[], sz:{"Half":220,"Full":330}},
+  {id:107, n:"Saving Bucket", d:"KFC Chicken Bucket", e:"🪣", img:"assets/menu/kfc/bucket.png", veg:false, tags:["best"], sz:{"Bucket":450}},
+  {id:108, n:"Ultimate Bucket", d:"KFC Chicken Bucket", e:"🪣", img:"assets/menu/kfc/bucket.png", veg:false, tags:["pop"], sz:{"Bucket":650}},
+  {id:109, n:"Family Bucket", d:"KFC Chicken Bucket", e:"🪣", img:"assets/menu/kfc/bucket.png", veg:false, tags:[], sz:{"Bucket":800}}
+],
+"🥗 Salads, Tornados & Specials": [
+  {id:201, n:"Veg Salad", d:"Fresh garden veg salad", e:"🥗", img:"assets/menu/salads/veg_salad.png", veg:true, tags:[], sz:{"Regular":100}},
+  {id:202, n:"Paneer Salad", d:"Fresh paneer salad", e:"🥗", img:"assets/menu/salads/paneer_salad.png", veg:true, tags:[], sz:{"Regular":120}},
+  {id:203, n:"Healthy Salad", d:"Healthy mix salad", e:"🥗", img:"assets/menu/salads/healthy_salad.png", veg:true, tags:["best"], sz:{"Regular":150}},
+  {id:204, n:"Hara Bhara Kabab Salad", d:"Salad with kabab", e:"🥗", img:"assets/menu/salads/hara_bhara_salad.png", veg:true, tags:[], sz:{"Regular":140}},
+  {id:205, n:"Veg Tikki Salad", d:"Salad with tikki", e:"🥗", img:"assets/menu/salads/veg_tikki_salad.png", veg:true, tags:[], sz:{"Regular":140}},
+  {id:206, n:"Chicken Salad", d:"Grilled chicken salad", e:"🥗", img:"assets/menu/salads/chicken_salad.png", veg:false, tags:["pop"], sz:{"Regular":170}},
+  {id:207, n:"Egg Salad", d:"Healthy egg salad", e:"🥗", img:"assets/menu/salads/egg_salad.png", veg:false, tags:[], sz:{"Regular":110}},
+  {id:208, n:"Tornado With Mayo", d:"Potato spiral with mayo", e:"🌪️", img:"assets/menu/specials/tornado.png", veg:true, tags:[], sz:{"Regular":150}},
+  {id:209, n:"Sweet & Spicy Tornados", d:"Sweet and spicy potato spiral", e:"🌪️", img:"assets/menu/specials/tornado.png", veg:true, tags:[], sz:{"Regular":170}},
+  {id:210, n:"Tandoori Tornados", d:"Tandoori flavored potato spiral", e:"🌪️", img:"assets/menu/specials/tornado.png", veg:true, tags:["hot"], sz:{"Regular":190}},
+  {id:211, n:"Cheesy Tornado", d:"Loaded cheesy potato spiral", e:"🌪️", img:"assets/menu/specials/tornado.png", veg:true, tags:["pop"], sz:{"Regular":200}},
+  {id:212, n:"Lasagna", d:"Classic baked lasagna", e:"🥘", img:"assets/menu/specials/lasagna.png", veg:true, tags:[], sz:{"Regular":170}},
+  {id:213, n:"Makhni Lasagna", d:"Makhni sauce lasagna", e:"🥘", img:"assets/menu/specials/lasagna.png", veg:true, tags:["pop"], sz:{"Regular":200}},
+  {id:214, n:"Tandoori Lasagna", d:"Spicy tandoori lasagna", e:"🥘", img:"assets/menu/specials/lasagna.png", veg:true, tags:["hot"], sz:{"Regular":210}},
+  {id:215, n:"Taco", d:"Crispy veg taco", e:"🌮", img:"assets/menu/salads/crispy_veg_taco.png", veg:true, tags:[], sz:{"Regular":130}},
+  {id:216, n:"Garlic Bread", d:"Classic garlic bread", e:"🥖", img:"assets/menu/specials/garlic_bread.png", veg:true, tags:[], sz:{"Regular":100}},
+  {id:217, n:"Stuffed Garlic Bread", d:"Cheese & corn stuffed", e:"🥖", img:"assets/menu/specials/garlic_bread.png", veg:true, tags:["pop"], sz:{"Regular":140}},
+  {id:218, n:"Calzone", d:"Folded stuffed pizza", e:"🥟", img:"assets/menu/specials/calzone.png", veg:true, tags:[], sz:{"Regular":140,"Large":170}},
+  {id:219, n:"Pizza Prantha", d:"Fusion pizza prantha", e:"🫓", img:"assets/menu/specials/pizza_prantha.png", veg:true, tags:[], sz:{"Regular":210}},
+  {id:220, n:"Zingy Parcel", d:"Spiced veg parcel", e:"🥐", img:"assets/menu/specials/zingy_parcel.png", veg:true, tags:[], sz:{"2 Pcs":80,"4 Pcs":120}},
+  {id:221, n:"Paneer Parcel", d:"Spiced paneer parcel", e:"🥐", img:"assets/menu/specials/zingy_parcel.png", veg:true, tags:["pop"], sz:{"2 Pcs":90,"4 Pcs":130}},
+],
+"🥪 Maggi, Wraps & Sandwiches": [
+  {id:301, n:"Plain Maggie", d:"Classic plain maggi", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:[], sz:{"Half":40,"Full":60}},
+  {id:302, n:"Veg Maggie", d:"Maggi with veggies", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:[], sz:{"Half":50,"Full":70}},
+  {id:303, n:"Paneer Maggie", d:"Maggi with paneer cubes", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:[], sz:{"Half":60,"Full":80}},
+  {id:304, n:"Butter Maggie", d:"Buttery delicious maggi", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:["pop"], sz:{"Half":60,"Full":80}},
+  {id:305, n:"Tadka Maggie", d:"Spiced tadka maggi", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:["hot"], sz:{"Half":60,"Full":80}},
+  {id:306, n:"Chilli Cheese Maggie", d:"Spicy cheese maggi", e:"🍜", img:"assets/menu/maggi/chilli_cheese_maggi.png", veg:true, tags:["best"], sz:{"Half":70,"Full":110}},
+  {id:307, n:"Chicken Pop Maggie", d:"Maggi with popcorn chicken", e:"🍜", img:"assets/menu/maggi/chicken_pop_maggi.png", veg:false, tags:[], sz:{"Half":80,"Full":140}},
+  {id:308, n:"Chicken Pop Chilli Maggie", d:"Spicy maggi with popcorn chicken", e:"🍜", img:"assets/menu/maggi/chicken_pop_maggi.png", veg:false, tags:["hot"], sz:{"Half":90,"Full":150}},
+  {id:309, n:"Aloo Tikki Wrap", d:"Crispy tikki wrap", e:"🌯", img:"assets/menu/wraps/aloo_tikki_wrap.png", veg:true, tags:[], sz:{"Regular":80}},
+  {id:310, n:"Paneer Wrap", d:"Spiced paneer wrap", e:"🌯", img:"assets/menu/wraps/paneer_wrap.png", veg:true, tags:["pop"], sz:{"Regular":90}},
+  {id:311, n:"Mexican Wrap", d:"Spicy mexican wrap", e:"🌯", img:"assets/menu/wraps/mexican_wrap.png", veg:true, tags:[], sz:{"Regular":100}},
+  {id:312, n:"Achari Wrap", d:"Tangy achari wrap", e:"🌯", img:"assets/menu/wraps/achari_wrap.png", veg:true, tags:[], sz:{"Regular":120}},
+  {id:313, n:"Paneer Tikka Wrap", d:"Tandoori paneer wrap", e:"🌯", img:"assets/menu/wraps/paneer_tikka_wrap.png", veg:true, tags:["best"], sz:{"Regular":130}},
+  {id:314, n:"Chicken Wrap", d:"Grilled chicken wrap", e:"🌯", img:"assets/menu/wraps/chicken_wrap.png", veg:false, tags:[], sz:{"Regular":140}},
+  {id:315, n:"Chicken Zinger Wrap", d:"Crunchy chicken wrap", e:"🌯", img:"assets/menu/wraps/chicken_zinger_wrap.png", veg:false, tags:["pop"], sz:{"Regular":150}},
+  {id:316, n:"Cream Sandwich", d:"Sweet cream sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:[], sz:{"Regular":30}},
+  {id:317, n:"Chips Sandwich", d:"Crispy chips sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:[], sz:{"Regular":30}},
+  {id:318, n:"Club Sandwich", d:"Classic club sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:[], sz:{"Regular":60}},
+  {id:319, n:"Vegetable Sandwich", d:"Grilled veg sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:[], sz:{"Half":70,"Full":100}},
+  {id:320, n:"Cheese Sandwich", d:"Grilled cheese sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:["pop"], sz:{"Half":80,"Full":120}},
+  {id:321, n:"Paneer Sandwich", d:"Grilled paneer sandwich", e:"🥪", img:"assets/menu/sandwiches/paneer_sandwich.png", veg:true, tags:[], sz:{"Half":90,"Full":140}},
+  {id:322, n:"4 Table Spl. Sandwich", d:"Special loaded veg sandwich", e:"🥪", img:"assets/menu/sandwiches/special_sandwich.png", veg:true, tags:["best"], sz:{"Half":90,"Full":150}},
+  {id:323, n:"Egg Boiled Toast", d:"Healthy egg toast", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:false, tags:[], sz:{"Regular":60}},
+  {id:324, n:"Chicken Sandwich", d:"Grilled chicken sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:false, tags:[], sz:{"Half":100,"Full":170}},
+  {id:325, n:"4 Table Spl. Chicken Sandwich", d:"Special loaded chicken sandwich", e:"🥪", img:"assets/menu/sandwiches/special_sandwich.png", veg:false, tags:["pop"], sz:{"Half":120,"Full":200}},
+  {id:326, n:"Omelet Sandwich", d:"Classic omelet sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:false, tags:[], sz:{"Half":80,"Full":120}},
+  {id:327, n:"Chicken Omelet Sandwich", d:"Chicken and omelet sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:false, tags:[], sz:{"Half":130,"Full":220}},
+],
+"🥤 Beverages & Shakes": [
+  {id:401, n:"Strawberry Ghost Lady", d:"Ghost shake", e:"🍓", img:"assets/menu/shakes/strawberry_shake.png", veg:true, tags:[], sz:{"Regular":90,"Large":120}},
+  {id:402, n:"Fire Ghost (Butter Scotch)", d:"Ghost shake", e:"🥤", img:"assets/menu/shakes/butterscotch_shake.png", veg:true, tags:[], sz:{"Regular":100,"Large":130}},
+  {id:403, n:"Chocolate Devil", d:"Ghost shake", e:"🍫", img:"assets/menu/shakes/chocolate.png", veg:true, tags:["pop"], sz:{"Regular":100,"Large":130}},
+  {id:404, n:"Bubble Gum Ghost", d:"Ghost shake", e:"🍬", img:"assets/menu/shakes/strawberry_shake.png", veg:true, tags:[], sz:{"Regular":130,"Large":150}},
+  {id:405, n:"The Kitkat Lady", d:"Ghost shake", e:"🍫", img:"assets/menu/shakes/chocolate.png", veg:true, tags:["best"], sz:{"Regular":130,"Large":150}},
+  {id:406, n:"The Ghost Oreo", d:"Ghost shake", e:"🍪", img:"assets/menu/shakes/chocolate.png", veg:true, tags:["pop"], sz:{"Regular":130,"Large":150}},
+  {id:407, n:"The Black Devil", d:"Ghost shake", e:"👿", img:"assets/menu/shakes/chocolate.png", veg:true, tags:[], sz:{"Regular":120,"Large":150}},
+  {id:408, n:"Mint Mojito", d:"Refreshing mocktail", e:"🌿", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":90,"Large":120}},
+  {id:409, n:"Kaccha Aam", d:"Raw mango mocktail", e:"🥭", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":90,"Large":110}},
+  {id:410, n:"Fake Beer", d:"Non-alcoholic mocktail", e:"🍺", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":90,"Large":110}},
+  {id:411, n:"Green Punch", d:"Refreshing mocktail", e:"🍏", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":100,"Large":120}},
+  {id:412, n:"Blue Lagoon", d:"Classic blue mocktail", e:"🌊", img:"assets/menu/shakes/blue_lagoon.png", veg:true, tags:["pop"], sz:{"Regular":100,"Large":120}},
+  {id:413, n:"Bubble Gum Mocktail", d:"Sweet mocktail", e:"🍬", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":100,"Large":120}},
+  {id:414, n:"Classic Pink Lady", d:"Strawberry mocktail", e:"🍓", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":100,"Large":120}},
+  {id:415, n:"Pina Colada", d:"Coconut pineapple mocktail", e:"🍍", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":110,"Large":130}},
+  {id:416, n:"Hazelnut Coffee", d:"Hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":120}},
+  {id:417, n:"Cappuccino Coffee", d:"Hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":80}},
+  {id:418, n:"Chocolate Hot Coffee", d:"Hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":70}},
+  {id:419, n:"Hot Coffee", d:"Classic hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":60}},
+  {id:420, n:"Caramel Hot Coffee", d:"Hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":100}},
+  {id:421, n:"Gurh Chaa", d:"Jaggery tea", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":60}},
+  {id:422, n:"Masala Chaa", d:"Spiced tea", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":60}},
+  {id:423, n:"Cold Coffee", d:"Classic cold coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:["pop"], sz:{"Regular":90},
+    addons:[{title:"Extras",type:"single",opts:[{n:"Without Ice Cream",p:0},{n:"With Ice Cream",p:30}]}]},
+  {id:424, n:"Chocolate Cold Coffee", d:"Chocolate flavor", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":110},
+    addons:[{title:"Extras",type:"single",opts:[{n:"Without Ice Cream",p:0},{n:"With Ice Cream",p:20}]}]},
+  {id:425, n:"Hazelnut Cold Coffee", d:"Hazelnut flavor", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":140},
+    addons:[{title:"Extras",type:"single",opts:[{n:"Without Ice Cream",p:0},{n:"With Ice Cream",p:30}]}]},
+  {id:426, n:"Caramel Cold Coffee", d:"Caramel flavor", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":140},
+    addons:[{title:"Extras",type:"single",opts:[{n:"Without Ice Cream",p:0},{n:"With Ice Cream",p:30}]}]},
+  {id:427, n:"Big Glass", d:"Soft drink", e:"🥤", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":40}},
+  {id:428, n:"Small Glass", d:"Soft drink", e:"🥤", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":30}},
+  {id:429, n:"Water Bottle", d:"Mineral water", e:"💧", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":20}},
+  {id:430, n:"Peanut Butter Milkshake", d:"Special shake", e:"🥜", img:"assets/menu/shakes/strawberry_shake.png", veg:true, tags:["best"], sz:{"Regular":130}},
+],
+"🍔 Burgers, Fries & Pasta": [
+  {id:601, n:"Chips Burger", d:"Burger with potato chips", e:"🍔", img:"assets/menu/burgers/chips.png", veg:true, tags:[], sz:{"Regular":70},
+    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
+  {id:602, n:"Crispy Veg Burger", d:"Golden crispy patty", e:"🍔", img:"assets/menu/burgers/crispy_veg.png", veg:true, tags:[], sz:{"Regular":60},
+    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
+  {id:603, n:"Zinger Burger", d:"Crunchy fried chicken", e:"🍔", img:"assets/menu/burgers/zinger.png", veg:false, tags:["pop"], sz:{"Regular":80},
+    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
+  {id:604, n:"Paneer Burger", d:"Spiced paneer patty", e:"🍔", img:"assets/menu/burgers/paneer.png", veg:true, tags:[], sz:{"Regular":80},
+    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
+  {id:605, n:"Veg Maharaja Burger", d:"Double decker veg burger", e:"🍔", img:"assets/menu/burgers/veg_maharaja.png", veg:true, tags:["best"], sz:{"Regular":120},
+    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
+  {id:606, n:"Non-Veg Maharaja Burger", d:"Massive double meat burger", e:"🍔", img:"assets/menu/burgers/nonveg_maharaja.png", veg:false, tags:["pop"], sz:{"Regular":150},
+    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:70}]}]},
+  {id:607, n:"Veg Tikki Burger", d:"Classic potato tikki", e:"🍔", img:"assets/menu/burgers/veg_tikki.png", veg:true, tags:[], sz:{"Regular":40}},
+  {id:608, n:"Cheese Burger", d:"Loaded with cheese", e:"🍔", img:"assets/menu/burgers/cheese_burger.png", veg:true, tags:["pop"], sz:{"Regular":90}},
+  {id:609, n:"Double Tikki Burger", d:"Two crispy veg tikkis", e:"🍔", img:"assets/menu/burgers/double_tikki.png", veg:true, tags:[], sz:{"Regular":90}},
+  {id:610, n:"Crispy Crown Burger", d:"Premium crown burger", e:"🍔", img:"assets/menu/burgers/crispy_crown.png", veg:true, tags:["best"], sz:{"Regular":100}},
+  {id:611, n:"Chicken Zinger Burger", d:"Crunchy zinger patty", e:"🍔", img:"assets/menu/burgers/zinger.png", veg:false, tags:["pop"], sz:{"Regular":110}},
+  {id:612, n:"Chicken Cheese Burger", d:"Chicken with cheese", e:"🍔", img:"assets/menu/burgers/zinger.png", veg:false, tags:[], sz:{"Regular":130}},
+  {id:613, n:"Chicken Double Decker", d:"Double chicken patty", e:"🍔", img:"assets/menu/burgers/zinger.png", veg:false, tags:["hot"], sz:{"Regular":140}},
+  {id:614, n:"Salted Fries", d:"Classic salted fries", e:"🍟", img:"assets/menu/burgers/peri_peri_fries.png", veg:true, tags:[], sz:{"Half":40,"Full":70}},
+  {id:615, n:"Masala Fries", d:"Spicy masala fries", e:"🍟", img:"assets/menu/burgers/peri_peri_fries.png", veg:true, tags:[], sz:{"Half":50,"Full":80}},
+  {id:616, n:"Cheese Masala Fries", d:"Spicy cheese fries", e:"🍟", img:"assets/menu/burgers/peri_peri_fries.png", veg:true, tags:["pop"], sz:{"Half":60,"Full":90}},
+  {id:617, n:"Alfredo (White) Pasta", d:"Creamy white sauce", e:"🍝", img:"assets/menu/pasta/white_sauce.png", veg:true, tags:[], sz:{"Regular":100},
+    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:60}]}]},
+  {id:618, n:"Arrabbiata (Red) Pasta", d:"Tangy red sauce", e:"🍝", img:"assets/menu/pasta/red_sauce.png", veg:true, tags:[], sz:{"Regular":100},
+    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:60}]}]},
+  {id:619, n:"Makhni Pasta", d:"Creamy makhni sauce", e:"🍝", img:"assets/menu/pasta/makhni.png", veg:true, tags:["pop"], sz:{"Regular":110},
+    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:60}]}]},
+  {id:620, n:"Tandoori Pasta", d:"Spicy tandoori sauce", e:"🍝", img:"assets/menu/pasta/tandoori.png", veg:true, tags:["hot"], sz:{"Regular":110},
+    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:60}]}]},
+  {id:621, n:"Mix Sauce Pasta", d:"Red and white mixed", e:"🍝", img:"assets/menu/pasta/mix_sauce.png", veg:true, tags:[], sz:{"Regular":150},
+    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:50}]}]},
+  {id:622, n:"Special Pasta", d:"Chef's special pasta", e:"🍝", img:"assets/menu/pasta/special.png", veg:true, tags:["best"], sz:{"Regular":150}},
+]
+};
+
+// ═══════ STATE ═══════
+let cart=[], pendingItem=null, pendingSize=null, searchMode=false, pendingAddons={}, currentSort='relevance', vegOnly=false, userLoc=null;
+
+// ═══════ INIT ═══════
+function init(){
+  buildCats();
+  renderAll();
+}
+
+function buildCats(){
+  const bar=document.getElementById('catScroll');
+  
+  // All button
+  const all = document.createElement('button');
+  all.className = 'cat-btn active';
+  all.textContent = 'All';
+  all.onclick = () => {
+    if(searchMode) clearSearch();
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+    all.classList.add('active');
+    renderAll();
+    all.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  };
+  bar.appendChild(all);
+
+  Object.keys(MENU).forEach((cat,i)=>{
+    const b=document.createElement('button');
+    b.className='cat-btn';
+    b.textContent=cat;
+    b.onclick=()=>switchCat(cat,b);
+    bar.appendChild(b);
+  });
+}
+
+function switchCat(cat,btn){
+  if(searchMode) clearSearch();
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCat(cat);
+  btn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+
+function gotoCategory(catName){
+  const btns = document.querySelectorAll('.cat-btn');
+  let targetBtn = null;
+  btns.forEach(b => {
+    if(b.textContent.trim() === catName) targetBtn = b;
+  });
+  if(targetBtn) {
+    switchCat(catName, targetBtn);
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+}
+
+function renderAll(){
+  const area=document.getElementById('menuArea');
+  area.innerHTML='';
+  
+  if(currentSort !== 'relevance') {
+    let allItems = [];
+    Object.entries(MENU).forEach(([cat, items]) => {
+      items.forEach(it => allItems.push({...it, cat}));
+    });
+    let processed = processItems(allItems);
+    if(processed.length > 0) {
+      area.innerHTML=`<div class="section-head"><h2>Sorted Results</h2><span>${processed.length} items</span></div><div class="item-grid">${processed.map(it=>gridCard(it,it.cat)).join('')}</div>`;
+    }
+  } else {
+    Object.entries(MENU).forEach(([cat,items])=>{
+      let processed = processItems(items);
+      if(processed.length > 0) {
+        area.innerHTML+=`<div class="section-head"><h2>${cat}</h2><span>${processed.length} items</span></div>`;
+        area.innerHTML+=`<div class="item-grid">${processed.map(it=>gridCard(it,cat)).join('')}</div><div class="divider" style="margin:16px 0"></div>`;
+      }
+    });
+  }
+  
+  if(area.innerHTML === '') {
+    area.innerHTML = '<div class="empty"><div class="ei">🥗</div><p>No items match your filters</p></div>';
+  }
+}
+
+function renderCat(cat){
+  const items=MENU[cat];
+  const processed = processItems(items);
+  const area=document.getElementById('menuArea');
+  if(processed.length === 0) {
+    area.innerHTML = `<div class="section-head"><h2>${cat}</h2><span>0 items</span></div>` + '<div class="empty"><div class="ei">🥗</div><p>No items match your filters in this category</p></div>';
+  } else {
+    area.innerHTML=`<div class="section-head"><h2>${cat}</h2><span>${processed.length} items</span></div><div class="item-grid">${processed.map(it=>gridCard(it,cat)).join('')}</div>`;
+  }
+}
+
+function processItems(items) {
+  let list = [...items];
+  
+  // Veg Filter
+  if(vegOnly) {
+    list = list.filter(it => it.veg);
+  }
+  
+  // Sort
+  if(currentSort === 'price-low') {
+    list.sort((a,b) => Math.min(...Object.values(a.sz)) - Math.min(...Object.values(b.sz)));
+  } else if(currentSort === 'price-high') {
+    list.sort((a,b) => Math.min(...Object.values(b.sz)) - Math.min(...Object.values(a.sz)));
+  } else if(currentSort === 'pop') {
+    const score = (it) => {
+      if(it.tags.includes('best')) return 3;
+      if(it.tags.includes('pop')) return 2;
+      if(it.tags.includes('new')) return 1;
+      return 0;
+    };
+    list.sort((a,b) => score(b) - score(a));
+  } else if(currentSort === 'alpha') {
+    list.sort((a,b) => a.n.localeCompare(b.n));
+  } else if(currentSort === 'rating') {
+    // Sort by best tags first, then filtered for specific tags
+    list = list.filter(it => it.tags.includes('best') || it.tags.includes('pop'));
+    const score = (it) => it.tags.includes('best') ? 1 : 0;
+    list.sort((a,b) => score(b) - score(a));
+  }
+  
+  return list;
+}
+
+function handleSortChange() {
+  const sel = document.getElementById('sortSelect');
+  currentSort = sel.value;
+  document.getElementById('activeSortLabel').textContent = 'Sort: ' + sel.options[sel.selectedIndex].text;
+  
+  if(searchMode) handleSearch();
+  else {
+    const activeBtn = document.querySelector('.cat-btn.active');
+    if(activeBtn && activeBtn.textContent !== 'All') { // Assuming categories are dynamic
+       // If "All" was implemented it would be here, but let's check current active cat
+       const activeCat = activeBtn.textContent;
+       renderCat(activeCat);
+    } else {
+       renderAll();
+    }
+  }
+}
+
+function toggleVegOnly() {
+  vegOnly = !vegOnly;
+  document.getElementById('vegToggle').classList.toggle('active', vegOnly);
+  if(searchMode) handleSearch();
+  else {
+    const activeBtn = document.querySelector('.cat-btn.active');
+    if(activeBtn && activeBtn.textContent === 'All') {
+      renderAll();
+    } else if(activeBtn) {
+      renderCat(activeBtn.textContent);
+    } else {
+      renderAll();
+    }
+  }
+}
+
+function gridCard(it,cat){
+  const tags=it.tags.map(t=>{
+    const map={pop:'t-pop ⭐ Popular',hot:'t-hot 🌶 Spicy',new:'t-new ✨ New',best:'t-best 🔥 Best'};
+    const[cls,...rest]=map[t]?.split(' ')||[];
+    return cls?`<span class="tag ${cls}">${rest.join(' ')}</span>`:'';
+  }).join('');
+  const dot=it.veg?'<div class="veg-dot"></div>':'<div class="nveg-dot"></div>';
+  const minP=Math.min(...Object.values(it.sz));
+  
+  // Use custom image if it's not a generic placeholder
+  const isCustomImg = it.img && it.img.includes('assets/menu/');
+  const media = isCustomImg 
+    ? `<img class="item-card-img" src="${it.img}" loading="lazy" alt="${it.n}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">` + `<div class="item-card-emoji" style="display:none">${it.e}</div>`
+    : `<div class="item-card-emoji">${it.e}</div>`;
+
+  return `
+  <div class="item-card">
+    ${dot}
+    ${media}
+    <div class="item-card-body">
+      <div class="item-card-name">${it.n}</div>
+      <div class="item-card-desc">${it.d}</div>
+      ${tags?`<div class="tag-row" style="margin-top:4px">${tags}</div>`:''}
+      <div class="item-card-footer">
+        <div class="item-price">₹${minP}<br><span class="item-price-sub">onwards</span></div>
+        <button class="add-btn" onclick="openSize(${it.id},'${encodeURIComponent(cat)}')">+</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════ SEARCH ═══════
+function handleSearch(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  if(!q){clearSearch();return;}
+  searchMode=true;
+  const area=document.getElementById('menuArea');
+  const results=[];
+  Object.entries(MENU).forEach(([cat,items])=>{
+    items.forEach(it=>{if(it.n.toLowerCase().includes(q)||it.d.toLowerCase().includes(q))results.push({...it,cat});});
+  });
+  
+  const processed = processItems(results);
+  
+  if(!processed.length){area.innerHTML='<div class="empty"><div class="ei">🔍</div><p>No items found for "'+q+'"'+(vegOnly?' (Veg Only)':'')+'</p></div>';return;}
+  area.innerHTML=`<div class="section-head"><h2>Search Results</h2><span>${processed.length} found</span></div><div class="item-grid">${processed.map(it=>gridCard(it,it.cat)).join('')}</div>`;
+}
+
+function clearSearch(){
+  searchMode=false;
+  document.getElementById('searchInput').value='';
+  renderAll();
+}
+
+// ═══════ SIZE SHEET & ADDONS ═══════
+function openSize(id,catEnc){
+  const cat=decodeURIComponent(catEnc);
+  const item=Object.values(MENU).flat().find(i=>i.id===id);
+  pendingItem=item;
+  const sizes=Object.keys(item.sz);
+  pendingSize=sizes[0];
+  pendingAddons={};
+  
+  if(item.addons){
+    item.addons.forEach(group=>{
+      pendingAddons[group.title]=group.type==='single'?[group.opts[0].n]:[];
+    });
+  }
+
+  const isCustomImg = item.img && item.img.includes('assets/menu/');
+  const media = isCustomImg 
+    ? `<img src="${item.img}" alt="${item.n}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">` + `<span style="display:none">${item.e}</span>`
+    : item.e;
+
+  document.getElementById('sheetPreview').innerHTML=`
+    <div class="sheet-preview-img">${media}</div>
+    <div><div style="font-size:1rem;font-weight:700">${item.n}</div>
+    <div style="font-size:.75rem;color:#777;margin-top:3px">${item.d}</div></div>`;
+
+  renderSheetContent();
+  openSheet('sizeSheet');
+}
+
+function renderSheetContent(){
+  const item=pendingItem;
+  
+  // Sizes
+  const sizeHtml=Object.keys(item.sz).map((s,i)=>{
+    const isSel=s===pendingSize;
+    return `
+    <div class="sz-opt${isSel?' sel':''}" onclick="selSize('${s}')">
+      <div style="display:flex;align-items:center">
+        <div class="sz-radio"><div class="sz-dot"></div></div>
+        <div class="sz-name">${s}</div>
+      </div>
+      <div class="sz-price">₹${item.sz[s]}</div>
+    </div>`;
+  }).join('');
+
+  // Addons
+  let addonHtml='';
+  let addonTotal=0;
+  if(item.addons){
+    addonHtml=item.addons.map((group,gIdx)=>{
+      const isMulti=group.type==='multi';
+      const optsHtml=group.opts.map((opt,oIdx)=>{
+        const p=typeof opt.p==='object'?(opt.p[pendingSize]||0):opt.p;
+        const isSel=pendingAddons[group.title].includes(opt.n);
+        if(isSel) addonTotal+=p;
+        const icon=isMulti?'sz-checkbox':'sz-radio';
+        return `
+        <div class="sz-opt${isSel?' sel':''}" onclick="toggleAddon('${group.title}','${opt.n}','${group.type}')">
+          <div style="display:flex;align-items:center">
+            <div class="${icon}"><div class="sz-dot"></div></div>
+            <div class="sz-name">${opt.n}</div>
+          </div>
+          <div class="sz-price">${p>0?'+₹'+p:(p<0?'-₹'+Math.abs(p):'Inc.')}</div>
+        </div>`;
+      }).join('');
+      return `<div class="sheet-lbl" style="margin-top:16px">${group.title} ${isMulti?'(Optional)':'(Choose 1)'}</div>${optsHtml}`;
+    }).join('');
+  }
+
+  const finalPrice=item.sz[pendingSize]+addonTotal;
+  
+  // Assign content
+  document.getElementById('sizeOpts').innerHTML=`<div class="sheet-lbl">Choose Size / Portion</div>`+sizeHtml+addonHtml;
+  
+  // Update button dynamically
+  const btn=document.querySelector('#sizeSheet .sheet-cta');
+  btn.innerHTML=`ADD TO ORDER — ₹${finalPrice}`;
+  btn.onclick=()=>confirmAdd(finalPrice);
+}
+
+function selSize(s){
+  pendingSize=s;
+  renderSheetContent();
+}
+
+function toggleAddon(groupTitle,optName,type){
+  const arr=pendingAddons[groupTitle];
+  if(type==='single'){
+    pendingAddons[groupTitle]=[optName];
+  }else{
+    if(arr.includes(optName)){
+      pendingAddons[groupTitle]=arr.filter(x=>x!==optName);
+    }else{
+      pendingAddons[groupTitle].push(optName);
+    }
+  }
+  renderSheetContent();
+}
+
+function confirmAdd(finalPrice){
+  cart.push({...pendingItem,chosenSize:pendingSize,price:finalPrice,chosenAddons:JSON.parse(JSON.stringify(pendingAddons))});
+  updateCartBar();
+  closeAll();
+  if(navigator.vibrate)navigator.vibrate(25);
+}
+
+// ═══════ CART ═══════
+function openCart(){renderCartSheet();openSheet('cartSheet');}
+
+function renderCartSheet(){
+  const items=document.getElementById('cartItems');
+  const empty=document.getElementById('cartEmpty');
+  const footer=document.getElementById('cartFooter');
+  if(!cart.length){items.innerHTML='';empty.style.display='block';footer.style.display='none';return;}
+  empty.style.display='none';footer.style.display='block';
+  
+  items.innerHTML=cart.map((it,i)=>{
+    // Render addons string for cart
+    let adStr='';
+    if(it.chosenAddons){
+      const adArr=[];
+      const skip = ['Classic Base', 'Burger Only', 'Without Ice Cream', 'Veg'];
+      Object.values(it.chosenAddons).forEach(arr=>arr.forEach(a=>{if(!skip.includes(a)) adArr.push(a);}));
+      if(adArr.length) adStr=`<div style="font-size:.65rem;color:#a855f7;margin-top:2px">+ ${adArr.join(', ')}</div>`;
+    }
+    return `
+    <div class="cart-item-row">
+      <div class="ci-emoji">${it.e}</div>
+      <div style="flex:1">
+        <div class="ci-name">${it.n}</div>
+        <div class="ci-size">${it.chosenSize}</div>
+        ${adStr}
+      </div>
+      <div class="ci-price">₹${it.price}</div>
+      <button class="ci-rm" onclick="removeItem(${i})">×</button>
+    </div>`;
+  }).join('');
+  document.getElementById('cartSubtotal').textContent='₹'+cart.reduce((s,i)=>s+i.price,0);
+}
+
+function removeItem(i){cart.splice(i,1);updateCartBar();renderCartSheet();}
+
+function updateCartBar(){
+  const n=cart.length,t=cart.reduce((s,i)=>s+i.price,0);
+  document.getElementById('cbBadge').textContent=n+' item'+(n!==1?'s':'');
+  document.getElementById('cbTotal').textContent='₹'+t;
+  document.getElementById('cartBar').classList.toggle('on',n>0);
+}
+
+// ═══════ LOCATION ═══════
+let map, marker;
+async function getLocation(){
+  const btn=document.getElementById('locBtn');
+  const status=document.getElementById('locStatus');
+  const mc=document.getElementById('mapContainer');
+  btn.textContent='⌛ FETCHING...';
+  
+  try{
+    const p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:10000}));
+    const lat = p.coords.latitude, lng = p.coords.longitude;
+    userLoc=`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    status.innerHTML='✅ <span style="color:#22c55e">GPS Fixed! Drag pin if needed:</span>';
+    btn.textContent='🔄 RESET';
+    mc.style.display='block';
+    
+    if(!map){
+      map = L.map('map').setView([lat, lng], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+      marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+      marker.on('dragend', function() {
+        const pos = marker.getLatLng();
+        userLoc = `https://www.google.com/maps/search/?api=1&query=${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`;
+      });
+    } else {
+      map.setView([lat, lng], 16);
+      marker.setLatLng([lat, lng]);
+    }
+    // Fix leaflet grey tiles on first load
+    setTimeout(() => map.invalidateSize(), 400);
+  }catch(e){
+    status.innerHTML='❌ <span style="color:#ef4444">GPS failed. Please drag the pin manually below:</span>';
+    mc.style.display='block';
+    btn.textContent='📍 TRY GPS AGAIN';
+    
+    // Default to Sandhaur center if GPS fails
+    const defLat = 30.5716, defLng = 75.7401;
+    if(!map){
+      map = L.map('map').setView([defLat, defLng], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+      marker = L.marker([defLat, defLng], {draggable: true}).addTo(map);
+      marker.on('dragend', function() {
+        const pos = marker.getLatLng();
+        userLoc = `https://www.google.com/maps/search/?api=1&query=${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`;
+      });
+    }
+    setTimeout(() => map.invalidateSize(), 400);
+  }
+}
+
+async function searchAddress(){
+  let q = document.getElementById('addrSearch').value.trim();
+  if(!q) return;
+  
+  // Append local context for better rural accuracy
+  if(!q.toLowerCase().includes('punjab')) q += ', Malerkotla, Punjab';
+  
+  const status=document.getElementById('locStatus');
+  const btn = event.target;
+  const oldText = btn.textContent;
+  btn.textContent = '...';
+  
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
+    const data = await res.json();
+    if(data.length > 0) {
+      const {lat, lon, display_name} = data[0];
+      const newLat = parseFloat(lat), newLng = parseFloat(lon);
+      
+      map.setView([newLat, newLng], 17);
+      marker.setLatLng([newLat, newLng]);
+      userLoc = `https://www.google.com/maps/search/?api=1&query=${newLat.toFixed(6)},${newLng.toFixed(6)}`;
+      status.innerHTML = `✅ <span style="color:#22c55e">Found: ${display_name.split(',')[0]}</span>`;
+    } else {
+      status.innerHTML = '❌ <span style="color:#ef4444">Location not found. Try another search.</span>';
+    }
+  } catch(e) {}
+  btn.textContent = oldText;
+}
+
+// ═══════ WHATSAPP ═══════
+async function sendOrder(){
+  const btn=document.getElementById('waBtn');
+  if(!userLoc) {
+    // Force one try if they haven't clicked
+    await getLocation();
+  }
+  
+  btn.textContent='🚀 SENDING...'; btn.disabled=true;
+  
+  const orderLines=cart.map(i=>{
+    let adStr='';
+    if(i.chosenAddons){
+      const adArr=[];
+      const skip = ['Classic Base', 'Burger Only', 'Without Ice Cream', 'Veg'];
+      Object.values(i.chosenAddons).forEach(arr=>arr.forEach(a=>{if(!skip.includes(a)) adArr.push(a);}));
+      if(adArr.length) adStr=`\n    ↳ _+ ${adArr.join(', ')}_`;
+    }
+    return `• ${i.n} _(${i.chosenSize})_ — *₹${i.price}*${adStr}`;
+  });
+
+  const manualAddr = document.getElementById('manualAddr').value.trim();
+  
+  const lines=[
+    `*🔥 NEW ORDER — GRILL & CHILL*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    ...orderLines,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `*TOTAL: ₹${cart.reduce((s,i)=>s+i.price,0)}*`,
+    ``,`📍 *Delivery location:*`,
+    userLoc || `_(GPS Not shared)_`,
+    manualAddr ? `\n🏠 *Address:* ${manualAddr}` : ``
+  ];
+  
+  window.open(`https://wa.me/917901994174?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
+  btn.innerHTML='<span>🛵</span><span>ORDER ON WHATSAPP</span>'; btn.disabled=false;
+}
+
+// ═══════ HELPERS ═══════
+function openSheet(id){
+  document.getElementById(id).classList.add('on');
+  document.getElementById('overlay').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeAll(){
+  document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('on'));
+  document.getElementById('overlay').classList.remove('on');
+  document.body.style.overflow='';
+}
+
+init();
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'flex';
+});
+
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      document.getElementById('installBtn').style.display = 'none';
+    }
+    deferredPrompt = null;
+  }
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(err => {
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
