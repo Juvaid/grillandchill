@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "build": "echo \"window.ENV = { SUPABASE_URL: '$SUPABASE_URL', SUPABASE_ANON_KEY: '$SUPABASE_ANON_KEY' };\" > env.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4"
   }
