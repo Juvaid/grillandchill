@@ -3,5 +3,6 @@
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/login", "destination": "/admin.html" }
   ],
-  "cleanUrls": true
+  "cleanUrls": true,
+  "outputDirectory": "."
 }
