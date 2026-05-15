@@ -23,3 +23,15 @@ out/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Project Maintenance Tools
+migrate.html
+migrate_data.js
+
+# Sensitive Config
+env.js
+
+# Internal Documentation
+*.md
+!README.md
+!greatness.md

@@ -5,6 +5,6 @@
 // ─────────────────────────────────────────────
 
 window.ENV = {
-  SUPABASE_URL: "https://your-project-id.supabase.co",
-  SUPABASE_ANON_KEY: "your-anon-public-key-here",
+  SUPABASE_URL: "https://qmeaypnbrrkpddrvzmhv.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_8GXF0tNCJ-jIADkvznMj_Q_KJzCM3lN",
 };

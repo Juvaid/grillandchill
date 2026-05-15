@@ -374,6 +374,14 @@
   <div id="cartFooter" style="display:none;border-top:1px solid #2e2e2e">
     <div class="cart-total-row"><span style="color:#777;font-size:.85rem">Subtotal</span><span id="cartSubtotal" style="font-size:1rem"></span></div>
     
+    <!-- CUSTOMER DETAILS -->
+    <div style="padding:0 20px 12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <input id="custName" type="text" placeholder="Your Name" style="background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--text);padding:12px;font-size:.85rem;font-family:var(--font);outline:none">
+        <input id="custPhone" type="tel" placeholder="Phone Number" style="background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--text);padding:12px;font-size:.85rem;font-family:var(--font);outline:none">
+      </div>
+    </div>
+
     <!-- LOCATION SECTION -->
     <div id="locSection" style="padding:0 20px 16px">
       <div style="background:var(--s2);padding:12px;border-radius:12px;border:1px dashed var(--b)">
@@ -399,6 +407,7 @@
 
     <div style="display:flex;justify-content:space-between;padding:0 20px 16px"><span style="color:#777;font-size:.82rem">Delivery Fee</span><span style="color:#22c55e;font-weight:700;font-size:.82rem">FREE 🎉</span></div>
     <button class="sheet-cta" id="waBtn" onclick="sendOrder()" style="display:flex;align-items:center;justify-content:center;gap:8px"><span>🛵</span><span>ORDER ON WHATSAPP</span></button>
+
   </div>
 </div>
 
@@ -427,247 +436,62 @@
     </div>
   </div>
 </div>
-
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="env.js"></script>
 <script>
 // ═══════════════════════════════════════════
-//  FULL MENU — 40 items across 7 categories
+//  DYNAMIC MENU ENGINE (SUPABASE)
 // ═══════════════════════════════════════════
-const MENU = {
-"🍕 Pizza Kingdom": [
-  {id:501, n:"Margherita", d:"Classic cheese pizza", e:"🍕", img:"assets/menu/pizzas/margherita.png", veg:true, tags:["pop"], sz:{"Regular":100,"Medium":210,"Large":310},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":50,"Medium":120,"Large":140}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:502, n:"Cheese & Corn Pizza", d:"Sweet corn and mozzarella", e:"🍕", img:"assets/menu/pizzas/cheese_corn.png", veg:true, tags:[], sz:{"Regular":120,"Medium":230,"Large":330},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":30,"Medium":100,"Large":120}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:503, n:"Veggie Lover", d:"Capsicum, onion, tomato, sweet corn", e:"🍕", img:"assets/menu/pizzas/veggie_lover.png", veg:true, tags:["pop"], sz:{"Regular":150,"Medium":250,"Large":350},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":0,"Medium":80,"Large":100}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:504, n:"Paneer Veg Pizza", d:"Paneer, onion, capsicum", e:"🍕", img:"assets/menu/pizzas/paneer_veg.png", veg:true, tags:[], sz:{"Regular":150,"Medium":310,"Large":440},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":0,"Medium":20,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:505, n:"Fresh Veggie Pizza", d:"Onion, crisp capsicum", e:"🍕", img:"assets/menu/pizzas/fresh_veggie.png", veg:true, tags:[], sz:{"Regular":160,"Medium":280,"Large":380},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":100,"Large":120}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:506, n:"3 Pepper Veg", d:"Jalapeno, red & yellow bell pepper", e:"🍕", img:"assets/menu/pizzas/3_pepper.png", veg:true, tags:[], sz:{"Regular":180,"Medium":330,"Large":490},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":20,"Medium":50,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:507, n:"Paneer Makhni Pizza", d:"Paneer in makhni sauce", e:"🍕", img:"assets/menu/pizzas/paneer_makhni.png", veg:true, tags:["pop"], sz:{"Regular":180,"Medium":330,"Large":490},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":20,"Medium":50,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:508, n:"Tandoori Pizza", d:"Tandoori flavored veggies/paneer", e:"🍕", img:"assets/menu/pizzas/tandoori.png", veg:true, tags:["hot"], sz:{"Regular":180,"Medium":330,"Large":490},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":20,"Medium":50,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:509, n:"Farm House Pizza", d:"Onion, capsicum, tomato, mushroom", e:"🍕", img:"assets/menu/pizzas/farmhouse.png", veg:true, tags:[], sz:{"Regular":180,"Medium":350,"Large":530},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":60,"Medium":30,"Large":10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:510, n:"Deluxe Pizza", d:"Onion, capsicum, paneer, mushroom, corn", e:"🍕", img:"assets/menu/pizzas/deluxe.png", veg:true, tags:[], sz:{"Regular":200,"Medium":380,"Large":550},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:511, n:"Extra Vaganza Pizza", d:"Black olive, onion, capsicum, mushroom, tomato, corn, jalapeno", e:"🍕", img:"assets/menu/pizzas/extravaganza.png", veg:true, tags:["best"], sz:{"Regular":200,"Medium":380,"Large":550},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:512, n:"Veggie Feast", d:"Black olive, onion, capsicum, mushroom, tomato", e:"🍕", img:"assets/menu/pizzas/veggie_feast.png", veg:true, tags:[], sz:{"Regular":200,"Medium":380,"Large":550},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:513, n:"Achaari Pizza", d:"Tangy achaari flavor", e:"🍕", img:"assets/menu/pizzas/achaari.png", veg:true, tags:[], sz:{"Regular":200,"Medium":380,"Large":550},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:514, n:"Punjabi Tadka Pizza", d:"Desi tadka flavor", e:"🍕", img:"assets/menu/pizzas/punjabi_tadka.png", veg:true, tags:["hot"], sz:{"Regular":200,"Medium":380,"Large":550},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Whole Wheat Base",p:{"Regular":40,"Medium":0,"Large":-10}},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:515, n:"Grill & Chill Special Pizza", d:"Our signature loaded pizza", e:"🍕", img:"assets/menu/pizzas/special.png", veg:true, tags:["best","hot"], sz:{"Regular":250,"Medium":450,"Large":650},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Cheese Burst",p:{"Regular":40,"Medium":60,"Large":100}},{n:"Thin Crust",p:{"Regular":40,"Medium":60,"Large":80}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60,"Large":80}},{n:"Extra Topping",p:{"Regular":40,"Medium":60,"Large":80}}]}
-    ]},
-  {id:516, n:"Double Topping: Paneer & Corn", d:"Loaded paneer & corn", e:"🍕", img:"assets/menu/pizzas/paneer_corn.png", veg:true, tags:[], sz:{"Regular":90,"Medium":150},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Cheese Burst",p:{"Regular":40,"Medium":60}},{n:"Thin Crust",p:{"Regular":40,"Medium":60}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60}},{n:"Extra Topping",p:{"Regular":40,"Medium":60}}]}
-    ]},
-  {id:517, n:"Double Topping: Paneer & Onion", d:"Loaded paneer & onion", e:"🍕", img:"assets/menu/pizzas/paneer_onion.png", veg:true, tags:[], sz:{"Regular":90,"Medium":150},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Cheese Burst",p:{"Regular":40,"Medium":60}},{n:"Thin Crust",p:{"Regular":40,"Medium":60}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60}},{n:"Extra Topping",p:{"Regular":40,"Medium":60}}]}
-    ]},
-  {id:518, n:"Double Topping: Onion & Capsicum", d:"Loaded onion & capsicum", e:"🍕", img:"assets/menu/pizzas/onion_capsicum.png", veg:true, tags:[], sz:{"Regular":90,"Medium":150},
-    addons:[
-      {title:"Crust & Base",type:"single",opts:[{n:"Classic Base",p:0},{n:"Cheese Burst",p:{"Regular":40,"Medium":60}},{n:"Thin Crust",p:{"Regular":40,"Medium":60}}]},
-      {title:"Extras",type:"multi",opts:[{n:"Extra Cheese",p:{"Regular":40,"Medium":60}},{n:"Extra Topping",p:{"Regular":40,"Medium":60}}]}
-    ]},
-],
-"🔥 KFC Chicken & Buckets": [
-  {id:101, n:"Crispy Chicken", d:"Classic KFC style fried chicken", e:"🍗", img:"assets/menu/kfc/leg.png", veg:false, tags:["pop"], sz:{"Half":250,"Full":400}},
-  {id:102, n:"Chicken Strips", d:"Boneless chicken strips", e:"🍗", img:"assets/menu/kfc/strips.png", veg:false, tags:[], sz:{"Half":240,"Full":380}},
-  {id:103, n:"Chicken Wings", d:"Crispy chicken wings", e:"🍗", img:"assets/menu/kfc/wings.png", veg:false, tags:[], sz:{"Half":240,"Full":380}},
-  {id:104, n:"Hot Crispy Chicken", d:"Spicy fried chicken", e:"🍗", img:"assets/menu/kfc/leg.png", veg:false, tags:["hot"], sz:{"3 Pcs":210,"6 Pcs":380}},
-  {id:105, n:"Chicken Popcorn", d:"Bite sized fried chicken", e:"🍗", img:"assets/menu/kfc/popcorn.png", veg:false, tags:[], sz:{"Half":180,"Full":280}},
-  {id:106, n:"Steam Chicken", d:"Healthy steam chicken", e:"🍗", img:"assets/menu/kfc/popcorn.png", veg:false, tags:[], sz:{"Half":220,"Full":330}},
-  {id:107, n:"Saving Bucket", d:"KFC Chicken Bucket", e:"🪣", img:"assets/menu/kfc/bucket.png", veg:false, tags:["best"], sz:{"Bucket":450}},
-  {id:108, n:"Ultimate Bucket", d:"KFC Chicken Bucket", e:"🪣", img:"assets/menu/kfc/bucket.png", veg:false, tags:["pop"], sz:{"Bucket":650}},
-  {id:109, n:"Family Bucket", d:"KFC Chicken Bucket", e:"🪣", img:"assets/menu/kfc/bucket.png", veg:false, tags:[], sz:{"Bucket":800}}
-],
-"🥗 Salads, Tornados & Specials": [
-  {id:201, n:"Veg Salad", d:"Fresh garden veg salad", e:"🥗", img:"assets/menu/salads/veg_salad.png", veg:true, tags:[], sz:{"Regular":100}},
-  {id:202, n:"Paneer Salad", d:"Fresh paneer salad", e:"🥗", img:"assets/menu/salads/paneer_salad.png", veg:true, tags:[], sz:{"Regular":120}},
-  {id:203, n:"Healthy Salad", d:"Healthy mix salad", e:"🥗", img:"assets/menu/salads/healthy_salad.png", veg:true, tags:["best"], sz:{"Regular":150}},
-  {id:204, n:"Hara Bhara Kabab Salad", d:"Salad with kabab", e:"🥗", img:"assets/menu/salads/hara_bhara_salad.png", veg:true, tags:[], sz:{"Regular":140}},
-  {id:205, n:"Veg Tikki Salad", d:"Salad with tikki", e:"🥗", img:"assets/menu/salads/veg_tikki_salad.png", veg:true, tags:[], sz:{"Regular":140}},
-  {id:206, n:"Chicken Salad", d:"Grilled chicken salad", e:"🥗", img:"assets/menu/salads/chicken_salad.png", veg:false, tags:["pop"], sz:{"Regular":170}},
-  {id:207, n:"Egg Salad", d:"Healthy egg salad", e:"🥗", img:"assets/menu/salads/egg_salad.png", veg:false, tags:[], sz:{"Regular":110}},
-  {id:208, n:"Tornado With Mayo", d:"Potato spiral with mayo", e:"🌪️", img:"assets/menu/specials/tornado.png", veg:true, tags:[], sz:{"Regular":150}},
-  {id:209, n:"Sweet & Spicy Tornados", d:"Sweet and spicy potato spiral", e:"🌪️", img:"assets/menu/specials/tornado.png", veg:true, tags:[], sz:{"Regular":170}},
-  {id:210, n:"Tandoori Tornados", d:"Tandoori flavored potato spiral", e:"🌪️", img:"assets/menu/specials/tornado.png", veg:true, tags:["hot"], sz:{"Regular":190}},
-  {id:211, n:"Cheesy Tornado", d:"Loaded cheesy potato spiral", e:"🌪️", img:"assets/menu/specials/tornado.png", veg:true, tags:["pop"], sz:{"Regular":200}},
-  {id:212, n:"Lasagna", d:"Classic baked lasagna", e:"🥘", img:"assets/menu/specials/lasagna.png", veg:true, tags:[], sz:{"Regular":170}},
-  {id:213, n:"Makhni Lasagna", d:"Makhni sauce lasagna", e:"🥘", img:"assets/menu/specials/lasagna.png", veg:true, tags:["pop"], sz:{"Regular":200}},
-  {id:214, n:"Tandoori Lasagna", d:"Spicy tandoori lasagna", e:"🥘", img:"assets/menu/specials/lasagna.png", veg:true, tags:["hot"], sz:{"Regular":210}},
-  {id:215, n:"Taco", d:"Crispy veg taco", e:"🌮", img:"assets/menu/salads/crispy_veg_taco.png", veg:true, tags:[], sz:{"Regular":130}},
-  {id:216, n:"Garlic Bread", d:"Classic garlic bread", e:"🥖", img:"assets/menu/specials/garlic_bread.png", veg:true, tags:[], sz:{"Regular":100}},
-  {id:217, n:"Stuffed Garlic Bread", d:"Cheese & corn stuffed", e:"🥖", img:"assets/menu/specials/garlic_bread.png", veg:true, tags:["pop"], sz:{"Regular":140}},
-  {id:218, n:"Calzone", d:"Folded stuffed pizza", e:"🥟", img:"assets/menu/specials/calzone.png", veg:true, tags:[], sz:{"Regular":140,"Large":170}},
-  {id:219, n:"Pizza Prantha", d:"Fusion pizza prantha", e:"🫓", img:"assets/menu/specials/pizza_prantha.png", veg:true, tags:[], sz:{"Regular":210}},
-  {id:220, n:"Zingy Parcel", d:"Spiced veg parcel", e:"🥐", img:"assets/menu/specials/zingy_parcel.png", veg:true, tags:[], sz:{"2 Pcs":80,"4 Pcs":120}},
-  {id:221, n:"Paneer Parcel", d:"Spiced paneer parcel", e:"🥐", img:"assets/menu/specials/zingy_parcel.png", veg:true, tags:["pop"], sz:{"2 Pcs":90,"4 Pcs":130}},
-],
-"🥪 Maggi, Wraps & Sandwiches": [
-  {id:301, n:"Plain Maggie", d:"Classic plain maggi", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:[], sz:{"Half":40,"Full":60}},
-  {id:302, n:"Veg Maggie", d:"Maggi with veggies", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:[], sz:{"Half":50,"Full":70}},
-  {id:303, n:"Paneer Maggie", d:"Maggi with paneer cubes", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:[], sz:{"Half":60,"Full":80}},
-  {id:304, n:"Butter Maggie", d:"Buttery delicious maggi", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:["pop"], sz:{"Half":60,"Full":80}},
-  {id:305, n:"Tadka Maggie", d:"Spiced tadka maggi", e:"🍜", img:"assets/menu/maggi/veg_maggi.png", veg:true, tags:["hot"], sz:{"Half":60,"Full":80}},
-  {id:306, n:"Chilli Cheese Maggie", d:"Spicy cheese maggi", e:"🍜", img:"assets/menu/maggi/chilli_cheese_maggi.png", veg:true, tags:["best"], sz:{"Half":70,"Full":110}},
-  {id:307, n:"Chicken Pop Maggie", d:"Maggi with popcorn chicken", e:"🍜", img:"assets/menu/maggi/chicken_pop_maggi.png", veg:false, tags:[], sz:{"Half":80,"Full":140}},
-  {id:308, n:"Chicken Pop Chilli Maggie", d:"Spicy maggi with popcorn chicken", e:"🍜", img:"assets/menu/maggi/chicken_pop_maggi.png", veg:false, tags:["hot"], sz:{"Half":90,"Full":150}},
-  {id:309, n:"Aloo Tikki Wrap", d:"Crispy tikki wrap", e:"🌯", img:"assets/menu/wraps/aloo_tikki_wrap.png", veg:true, tags:[], sz:{"Regular":80}},
-  {id:310, n:"Paneer Wrap", d:"Spiced paneer wrap", e:"🌯", img:"assets/menu/wraps/paneer_wrap.png", veg:true, tags:["pop"], sz:{"Regular":90}},
-  {id:311, n:"Mexican Wrap", d:"Spicy mexican wrap", e:"🌯", img:"assets/menu/wraps/mexican_wrap.png", veg:true, tags:[], sz:{"Regular":100}},
-  {id:312, n:"Achari Wrap", d:"Tangy achari wrap", e:"🌯", img:"assets/menu/wraps/achari_wrap.png", veg:true, tags:[], sz:{"Regular":120}},
-  {id:313, n:"Paneer Tikka Wrap", d:"Tandoori paneer wrap", e:"🌯", img:"assets/menu/wraps/paneer_tikka_wrap.png", veg:true, tags:["best"], sz:{"Regular":130}},
-  {id:314, n:"Chicken Wrap", d:"Grilled chicken wrap", e:"🌯", img:"assets/menu/wraps/chicken_wrap.png", veg:false, tags:[], sz:{"Regular":140}},
-  {id:315, n:"Chicken Zinger Wrap", d:"Crunchy chicken wrap", e:"🌯", img:"assets/menu/wraps/chicken_zinger_wrap.png", veg:false, tags:["pop"], sz:{"Regular":150}},
-  {id:316, n:"Cream Sandwich", d:"Sweet cream sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:[], sz:{"Regular":30}},
-  {id:317, n:"Chips Sandwich", d:"Crispy chips sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:[], sz:{"Regular":30}},
-  {id:318, n:"Club Sandwich", d:"Classic club sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:[], sz:{"Regular":60}},
-  {id:319, n:"Vegetable Sandwich", d:"Grilled veg sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:[], sz:{"Half":70,"Full":100}},
-  {id:320, n:"Cheese Sandwich", d:"Grilled cheese sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:true, tags:["pop"], sz:{"Half":80,"Full":120}},
-  {id:321, n:"Paneer Sandwich", d:"Grilled paneer sandwich", e:"🥪", img:"assets/menu/sandwiches/paneer_sandwich.png", veg:true, tags:[], sz:{"Half":90,"Full":140}},
-  {id:322, n:"4 Table Spl. Sandwich", d:"Special loaded veg sandwich", e:"🥪", img:"assets/menu/sandwiches/special_sandwich.png", veg:true, tags:["best"], sz:{"Half":90,"Full":150}},
-  {id:323, n:"Egg Boiled Toast", d:"Healthy egg toast", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:false, tags:[], sz:{"Regular":60}},
-  {id:324, n:"Chicken Sandwich", d:"Grilled chicken sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:false, tags:[], sz:{"Half":100,"Full":170}},
-  {id:325, n:"4 Table Spl. Chicken Sandwich", d:"Special loaded chicken sandwich", e:"🥪", img:"assets/menu/sandwiches/special_sandwich.png", veg:false, tags:["pop"], sz:{"Half":120,"Full":200}},
-  {id:326, n:"Omelet Sandwich", d:"Classic omelet sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:false, tags:[], sz:{"Half":80,"Full":120}},
-  {id:327, n:"Chicken Omelet Sandwich", d:"Chicken and omelet sandwich", e:"🥪", img:"assets/menu/sandwiches/club_sandwich.png", veg:false, tags:[], sz:{"Half":130,"Full":220}},
-],
-"🥤 Beverages & Shakes": [
-  {id:401, n:"Strawberry Ghost Lady", d:"Ghost shake", e:"🍓", img:"assets/menu/shakes/strawberry_shake.png", veg:true, tags:[], sz:{"Regular":90,"Large":120}},
-  {id:402, n:"Fire Ghost (Butter Scotch)", d:"Ghost shake", e:"🥤", img:"assets/menu/shakes/butterscotch_shake.png", veg:true, tags:[], sz:{"Regular":100,"Large":130}},
-  {id:403, n:"Chocolate Devil", d:"Ghost shake", e:"🍫", img:"assets/menu/shakes/chocolate.png", veg:true, tags:["pop"], sz:{"Regular":100,"Large":130}},
-  {id:404, n:"Bubble Gum Ghost", d:"Ghost shake", e:"🍬", img:"assets/menu/shakes/strawberry_shake.png", veg:true, tags:[], sz:{"Regular":130,"Large":150}},
-  {id:405, n:"The Kitkat Lady", d:"Ghost shake", e:"🍫", img:"assets/menu/shakes/chocolate.png", veg:true, tags:["best"], sz:{"Regular":130,"Large":150}},
-  {id:406, n:"The Ghost Oreo", d:"Ghost shake", e:"🍪", img:"assets/menu/shakes/chocolate.png", veg:true, tags:["pop"], sz:{"Regular":130,"Large":150}},
-  {id:407, n:"The Black Devil", d:"Ghost shake", e:"👿", img:"assets/menu/shakes/chocolate.png", veg:true, tags:[], sz:{"Regular":120,"Large":150}},
-  {id:408, n:"Mint Mojito", d:"Refreshing mocktail", e:"🌿", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":90,"Large":120}},
-  {id:409, n:"Kaccha Aam", d:"Raw mango mocktail", e:"🥭", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":90,"Large":110}},
-  {id:410, n:"Fake Beer", d:"Non-alcoholic mocktail", e:"🍺", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":90,"Large":110}},
-  {id:411, n:"Green Punch", d:"Refreshing mocktail", e:"🍏", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":100,"Large":120}},
-  {id:412, n:"Blue Lagoon", d:"Classic blue mocktail", e:"🌊", img:"assets/menu/shakes/blue_lagoon.png", veg:true, tags:["pop"], sz:{"Regular":100,"Large":120}},
-  {id:413, n:"Bubble Gum Mocktail", d:"Sweet mocktail", e:"🍬", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":100,"Large":120}},
-  {id:414, n:"Classic Pink Lady", d:"Strawberry mocktail", e:"🍓", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":100,"Large":120}},
-  {id:415, n:"Pina Colada", d:"Coconut pineapple mocktail", e:"🍍", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":110,"Large":130}},
-  {id:416, n:"Hazelnut Coffee", d:"Hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":120}},
-  {id:417, n:"Cappuccino Coffee", d:"Hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":80}},
-  {id:418, n:"Chocolate Hot Coffee", d:"Hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":70}},
-  {id:419, n:"Hot Coffee", d:"Classic hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":60}},
-  {id:420, n:"Caramel Hot Coffee", d:"Hot coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":100}},
-  {id:421, n:"Gurh Chaa", d:"Jaggery tea", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":60}},
-  {id:422, n:"Masala Chaa", d:"Spiced tea", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":60}},
-  {id:423, n:"Cold Coffee", d:"Classic cold coffee", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:["pop"], sz:{"Regular":90},
-    addons:[{title:"Extras",type:"single",opts:[{n:"Without Ice Cream",p:0},{n:"With Ice Cream",p:30}]}]},
-  {id:424, n:"Chocolate Cold Coffee", d:"Chocolate flavor", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":110},
-    addons:[{title:"Extras",type:"single",opts:[{n:"Without Ice Cream",p:0},{n:"With Ice Cream",p:20}]}]},
-  {id:425, n:"Hazelnut Cold Coffee", d:"Hazelnut flavor", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":140},
-    addons:[{title:"Extras",type:"single",opts:[{n:"Without Ice Cream",p:0},{n:"With Ice Cream",p:30}]}]},
-  {id:426, n:"Caramel Cold Coffee", d:"Caramel flavor", e:"☕", img:"assets/menu/coffee/cappuccino.png", veg:true, tags:[], sz:{"Regular":140},
-    addons:[{title:"Extras",type:"single",opts:[{n:"Without Ice Cream",p:0},{n:"With Ice Cream",p:30}]}]},
-  {id:427, n:"Big Glass", d:"Soft drink", e:"🥤", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":40}},
-  {id:428, n:"Small Glass", d:"Soft drink", e:"🥤", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":30}},
-  {id:429, n:"Water Bottle", d:"Mineral water", e:"💧", img:"assets/menu/mocktails/mint_mojito.png", veg:true, tags:[], sz:{"Regular":20}},
-  {id:430, n:"Peanut Butter Milkshake", d:"Special shake", e:"🥜", img:"assets/menu/shakes/strawberry_shake.png", veg:true, tags:["best"], sz:{"Regular":130}},
-],
-"🍔 Burgers, Fries & Pasta": [
-  {id:601, n:"Chips Burger", d:"Burger with potato chips", e:"🍔", img:"assets/menu/burgers/chips.png", veg:true, tags:[], sz:{"Regular":70},
-    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
-  {id:602, n:"Crispy Veg Burger", d:"Golden crispy patty", e:"🍔", img:"assets/menu/burgers/crispy_veg.png", veg:true, tags:[], sz:{"Regular":60},
-    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
-  {id:603, n:"Zinger Burger", d:"Crunchy fried chicken", e:"🍔", img:"assets/menu/burgers/zinger.png", veg:false, tags:["pop"], sz:{"Regular":80},
-    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
-  {id:604, n:"Paneer Burger", d:"Spiced paneer patty", e:"🍔", img:"assets/menu/burgers/paneer.png", veg:true, tags:[], sz:{"Regular":80},
-    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
-  {id:605, n:"Veg Maharaja Burger", d:"Double decker veg burger", e:"🍔", img:"assets/menu/burgers/veg_maharaja.png", veg:true, tags:["best"], sz:{"Regular":120},
-    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:60}]}]},
-  {id:606, n:"Non-Veg Maharaja Burger", d:"Massive double meat burger", e:"🍔", img:"assets/menu/burgers/nonveg_maharaja.png", veg:false, tags:["pop"], sz:{"Regular":150},
-    addons:[{title:"Make it a Meal",type:"single",opts:[{n:"Burger Only",p:0},{n:"Add Fries & Drink",p:70}]}]},
-  {id:607, n:"Veg Tikki Burger", d:"Classic potato tikki", e:"🍔", img:"assets/menu/burgers/veg_tikki.png", veg:true, tags:[], sz:{"Regular":40}},
-  {id:608, n:"Cheese Burger", d:"Loaded with cheese", e:"🍔", img:"assets/menu/burgers/cheese_burger.png", veg:true, tags:["pop"], sz:{"Regular":90}},
-  {id:609, n:"Double Tikki Burger", d:"Two crispy veg tikkis", e:"🍔", img:"assets/menu/burgers/double_tikki.png", veg:true, tags:[], sz:{"Regular":90}},
-  {id:610, n:"Crispy Crown Burger", d:"Premium crown burger", e:"🍔", img:"assets/menu/burgers/crispy_crown.png", veg:true, tags:["best"], sz:{"Regular":100}},
-  {id:611, n:"Chicken Zinger Burger", d:"Crunchy zinger patty", e:"🍔", img:"assets/menu/burgers/zinger.png", veg:false, tags:["pop"], sz:{"Regular":110}},
-  {id:612, n:"Chicken Cheese Burger", d:"Chicken with cheese", e:"🍔", img:"assets/menu/burgers/zinger.png", veg:false, tags:[], sz:{"Regular":130}},
-  {id:613, n:"Chicken Double Decker", d:"Double chicken patty", e:"🍔", img:"assets/menu/burgers/zinger.png", veg:false, tags:["hot"], sz:{"Regular":140}},
-  {id:614, n:"Salted Fries", d:"Classic salted fries", e:"🍟", img:"assets/menu/burgers/peri_peri_fries.png", veg:true, tags:[], sz:{"Half":40,"Full":70}},
-  {id:615, n:"Masala Fries", d:"Spicy masala fries", e:"🍟", img:"assets/menu/burgers/peri_peri_fries.png", veg:true, tags:[], sz:{"Half":50,"Full":80}},
-  {id:616, n:"Cheese Masala Fries", d:"Spicy cheese fries", e:"🍟", img:"assets/menu/burgers/peri_peri_fries.png", veg:true, tags:["pop"], sz:{"Half":60,"Full":90}},
-  {id:617, n:"Alfredo (White) Pasta", d:"Creamy white sauce", e:"🍝", img:"assets/menu/pasta/white_sauce.png", veg:true, tags:[], sz:{"Regular":100},
-    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:60}]}]},
-  {id:618, n:"Arrabbiata (Red) Pasta", d:"Tangy red sauce", e:"🍝", img:"assets/menu/pasta/red_sauce.png", veg:true, tags:[], sz:{"Regular":100},
-    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:60}]}]},
-  {id:619, n:"Makhni Pasta", d:"Creamy makhni sauce", e:"🍝", img:"assets/menu/pasta/makhni.png", veg:true, tags:["pop"], sz:{"Regular":110},
-    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:60}]}]},
-  {id:620, n:"Tandoori Pasta", d:"Spicy tandoori sauce", e:"🍝", img:"assets/menu/pasta/tandoori.png", veg:true, tags:["hot"], sz:{"Regular":110},
-    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:60}]}]},
-  {id:621, n:"Mix Sauce Pasta", d:"Red and white mixed", e:"🍝", img:"assets/menu/pasta/mix_sauce.png", veg:true, tags:[], sz:{"Regular":150},
-    addons:[{title:"Protein",type:"single",opts:[{n:"Veg",p:0},{n:"Add Chicken",p:50}]}]},
-  {id:622, n:"Special Pasta", d:"Chef's special pasta", e:"🍝", img:"assets/menu/pasta/special.png", veg:true, tags:["best"], sz:{"Regular":150}},
-]
-};
+const supabaseClient = supabase.createClient(window.ENV.SUPABASE_URL, window.ENV.SUPABASE_ANON_KEY);
+let MENU = {}; // Will be populated from DB
+let ALL_ITEMS_FLAT = [];
 
 // ═══════ STATE ═══════
 let cart=[], pendingItem=null, pendingSize=null, searchMode=false, pendingAddons={}, currentSort='relevance', vegOnly=false, userLoc=null;
 
 // ═══════ INIT ═══════
-function init(){
+async function init(){
+  await fetchMenu();
   buildCats();
   renderAll();
+}
+
+async function fetchMenu() {
+  const area = document.getElementById('menuArea');
+  area.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);"><div class="loading-spinner"></div><p style="margin-top:15px">Loading fresh flavors...</p></div>';
+  
+  const { data, error } = await supabaseClient
+    .from('menu_items')
+    .select('*')
+    .eq('available', true)
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    area.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444">Failed to load menu. Please check your connection.</div>`;
+    return;
+  }
+
+  // Map database names to internal format
+  ALL_ITEMS_FLAT = data.map(item => ({
+    id: item.id,
+    n: item.name,
+    d: item.description,
+    e: item.emoji,
+    img: item.image_url,
+    veg: item.is_veg,
+    tags: item.tags,
+    sz: item.sizes,
+    addons: item.addons,
+    cat: item.category
+  }));
+
+  // Group by category
+  MENU = {};
+  ALL_ITEMS_FLAT.forEach(it => {
+    if (!MENU[it.cat]) MENU[it.cat] = [];
+    MENU[it.cat].push(it);
+  });
 }
 
 function buildCats(){
@@ -830,9 +654,8 @@ function gridCard(it,cat){
   const dot=it.veg?'<div class="veg-dot"></div>':'<div class="nveg-dot"></div>';
   const minP=Math.min(...Object.values(it.sz));
   
-  // Use custom image if it's not a generic placeholder
-  const isCustomImg = it.img && it.img.includes('assets/menu/');
-  const media = isCustomImg 
+  // High-performance image rendering with fallback
+  const media = it.img 
     ? `<img class="item-card-img" src="${it.img}" loading="lazy" alt="${it.n}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">` + `<div class="item-card-emoji" style="display:none">${it.e}</div>`
     : `<div class="item-card-emoji">${it.e}</div>`;
 
@@ -878,7 +701,7 @@ function clearSearch(){
 // ═══════ SIZE SHEET & ADDONS ═══════
 function openSize(id,catEnc){
   const cat=decodeURIComponent(catEnc);
-  const item=Object.values(MENU).flat().find(i=>i.id===id);
+  const item=ALL_ITEMS_FLAT.find(i=>i.id===id);
   pendingItem=item;
   const sizes=Object.keys(item.sz);
   pendingSize=sizes[0];
@@ -890,8 +713,8 @@ function openSize(id,catEnc){
     });
   }
 
-  const isCustomImg = item.img && item.img.includes('assets/menu/');
-  const media = isCustomImg 
+  // Consistent image rendering for the selection sheet
+  const media = item.img 
     ? `<img src="${item.img}" alt="${item.n}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">` + `<span style="display:none">${item.e}</span>`
     : item.e;
 
@@ -1114,43 +937,110 @@ async function searchAddress(){
   btn.textContent = oldText;
 }
 
-// ═══════ WHATSAPP ═══════
+// ═══════ ORDER SUBMISSION ═══════
 async function sendOrder(){
-  const btn=document.getElementById('waBtn');
+  const btn = document.getElementById('waBtn');
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const manualAddr = document.getElementById('manualAddr').value.trim();
+  
+  if(!name || !phone) {
+    alert("Please enter your name and phone number so we can reach you!");
+    return;
+  }
+
   if(!userLoc) {
     // Force one try if they haven't clicked
     await getLocation();
   }
   
-  btn.textContent='🚀 SENDING...'; btn.disabled=true;
+  btn.textContent='🚀 PROCESSING...'; btn.disabled=true;
   
-  const orderLines=cart.map(i=>{
-    let adStr='';
-    if(i.chosenAddons){
-      const adArr=[];
-      const skip = ['Classic Base', 'Burger Only', 'Without Ice Cream', 'Veg'];
-      Object.values(i.chosenAddons).forEach(arr=>arr.forEach(a=>{if(!skip.includes(a)) adArr.push(a);}));
-      if(adArr.length) adStr=`\n    ↳ _+ ${adArr.join(', ')}_`;
-    }
-    return `• ${i.n} _(${i.chosenSize})_ — *₹${i.price}*${adStr}`;
-  });
+  // Extract coordinates from marker if map exists
+  let lat = 30.5716, lng = 75.7401; // Default
+  if(marker) {
+    const pos = marker.getLatLng();
+    lat = pos.lat;
+    lng = pos.lng;
+  }
 
-  const manualAddr = document.getElementById('manualAddr').value.trim();
-  
-  const lines=[
-    `*🔥 NEW ORDER — GRILL & CHILL*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    ...orderLines,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `*TOTAL: ₹${cart.reduce((s,i)=>s+i.price,0)}*`,
-    ``,`📍 *Delivery location:*`,
-    userLoc || `_(GPS Not shared)_`,
-    manualAddr ? `\n🏠 *Address:* ${manualAddr}` : ``
-  ];
-  
-  window.open(`https://wa.me/917901994174?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
-  btn.innerHTML='<span>🛵</span><span>ORDER ON WHATSAPP</span>'; btn.disabled=false;
+  const total = cart.reduce((s,i)=>s+i.price,0);
+
+  try {
+    // 1. Create Order in Supabase
+    const { data: order, error: orderErr } = await supabaseClient
+      .from('orders')
+      .insert([{
+        customer_name: name,
+        customer_phone: phone,
+        total_amount: total,
+        delivery_lat: lat,
+        delivery_lng: lng,
+        status: 'pending'
+      }])
+      .select()
+      .single();
+
+    if (orderErr) throw orderErr;
+
+    // 2. Add Order Items
+    const orderItems = cart.map(i => ({
+      order_id: order.id,
+      menu_item_id: i.id,
+      item_name: i.n,
+      quantity: 1, // Currently only 1-by-1 add, but structure allows expansion
+      price: i.price,
+      size: i.chosenSize,
+      addons: i.chosenAddons
+    }));
+
+    const { error: itemsErr } = await supabaseClient.from('order_items').insert(orderItems);
+    if (itemsErr) throw itemsErr;
+
+    // 3. Trigger WhatsApp
+    const orderLines = cart.map(i => {
+      let adStr = '';
+      if(i.chosenAddons){
+        const adArr = [];
+        const skip = ['Classic Base', 'Burger Only', 'Without Ice Cream', 'Veg'];
+        Object.values(i.chosenAddons).forEach(arr => arr.forEach(a => { if(!skip.includes(a)) adArr.push(a); }));
+        if(adArr.length) adStr = `\n    ↳ _+ ${adArr.join(', ')}_`;
+      }
+      return `• ${i.n} _(${i.chosenSize})_ — *₹${i.price}*${adStr}`;
+    });
+
+    const lines = [
+      `*🔥 NEW ORDER — GRILL & CHILL*`,
+      `*ORDER ID: #${order.id}*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      ...orderLines,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `*TOTAL: ₹${total}*`,
+      ``,`📍 *Delivery location:*`,
+      userLoc || `_(GPS Not shared)_`,
+      manualAddr ? `\n🏠 *Address:* ${manualAddr}` : ``
+    ];
+    
+    window.open(`https://wa.me/917901994174?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
+    
+    // Clear cart after success
+    cart = [];
+    updateCartBar();
+    closeAll();
+    alert("Order placed successfully! We've redirected you to WhatsApp for confirmation.");
+    
+  } catch (err) {
+    console.error("Order failed:", err);
+    alert("Order creation failed on our server, but we'll try sending it via WhatsApp anyway!");
+    // Fallback to pure WhatsApp if DB fails (e.g. RLS issues)
+    const orderLines = cart.map(i => `• ${i.n} (${i.chosenSize}) - ₹${i.price}`);
+    const fallbackLines = [`*🔥 FALLBACK ORDER*`, ...orderLines, `TOTAL: ₹${total}`, `Loc: ${userLoc}`];
+    window.open(`https://wa.me/917901994174?text=${encodeURIComponent(fallbackLines.join('\n'))}`,'_blank');
+  }
+
+  btn.innerHTML = '<span>🛵</span><span>ORDER ON WHATSAPP</span>'; btn.disabled = false;
 }
+
 
 // ═══════ HELPERS ═══════
 function openSheet(id){
