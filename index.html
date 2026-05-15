@@ -274,7 +274,7 @@
 <header class="hero">
   <div class="hero-content">
     <img src="assets/logo.svg" alt="Grill &amp; Chill" class="hero-logo-img">
-    <button id="installBtn" class="install-btn" style="display:none"><span>📲</span> INSTALL APP</button>
+    <!-- Removed old installBtn -->
     <div class="hero-pills">
       <a href="https://maps.app.goo.gl/HBKW128rAQaijUuM7?g_st=aw" target="_blank" class="pill open-badge">
         <svg class="fire-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -408,6 +408,23 @@
     <div class="cb-badge" id="cbBadge">0 items</div>
     <div class="cb-label">VIEW ORDER</div>
     <div class="cb-total" id="cbTotal">₹0</div>
+  </div>
+</div>
+
+<!-- INSTALL SHEET -->
+<div class="sheet" id="installSheet">
+  <div class="handle"></div>
+  <div style="padding:24px 20px;text-align:center">
+    <div style="width:80px;height:80px;background:var(--s2);border-radius:20px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,0.3);border:1px solid var(--b)">
+      <img src="assets/logo.svg" alt="App Icon" style="width:50px;height:50px">
+    </div>
+    <h2 style="font-size:1.3rem;font-weight:900;margin-bottom:8px">Install Grill & Chill</h2>
+    <p style="font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:24px">Add our app to your home screen for faster ordering, offline access, and a better experience.</p>
+    
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button class="sheet-cta" id="actualInstallBtn" style="margin:0;width:100%">INSTALL NOW 📲</button>
+      <button onclick="closeAll()" style="background:transparent;border:none;color:var(--muted);font-size:.85rem;font-weight:700;padding:10px;cursor:pointer">MAYBE LATER</button>
+    </div>
   </div>
 </div>
 
@@ -1198,15 +1215,18 @@ let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById('installBtn').style.display = 'flex';
+  // Show the bottom sheet instead of a badge
+  setTimeout(() => {
+    openSheet('installSheet');
+  }, 2000); // Wait 2s after load to show the popup
 });
 
-document.getElementById('installBtn').addEventListener('click', async () => {
+document.getElementById('actualInstallBtn').addEventListener('click', async () => {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      document.getElementById('installBtn').style.display = 'none';
+      closeAll();
     }
     deferredPrompt = null;
   }
