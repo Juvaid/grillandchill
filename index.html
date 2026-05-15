@@ -247,6 +247,9 @@
 .footer-links { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
 .footer-link { color: #fff; font-size: 0.85rem; font-weight: 600; text-decoration: none; border-bottom: 1.5px solid var(--accent); padding-bottom: 2px; }
 .footer-copyright { font-size: 0.65rem; color: #444; letter-spacing: 0.5px; text-transform: uppercase; }
+#menuArea {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
 </style>
 </head>
 <body>
@@ -1142,6 +1145,51 @@ function closeAll(){
   document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('on'));
   document.getElementById('overlay').classList.remove('on');
   document.body.style.overflow='';
+}
+
+// ═══════ SWIPE GESTURES ═══════
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.getElementById('menuArea').addEventListener('touchstart', e => {
+  touchStartX = e.changedTouches[0].screenX;
+}, {passive: true});
+
+document.getElementById('menuArea').addEventListener('touchend', e => {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipe();
+}, {passive: true});
+
+function handleSwipe() {
+  const threshold = 80;
+  const area = document.getElementById('menuArea');
+  const btns = Array.from(document.querySelectorAll('.cat-btn'));
+  const activeIdx = btns.findIndex(b => b.classList.contains('active'));
+  
+  if (touchEndX < touchStartX - threshold) {
+    // Swipe Left -> Next
+    if (activeIdx < btns.length - 1) {
+      btns[activeIdx + 1].click();
+      // Add a small slide animation effect
+      area.style.transform = 'translateX(-20px)';
+      area.style.opacity = '0.5';
+      setTimeout(() => {
+        area.style.transform = 'translateX(0)';
+        area.style.opacity = '1';
+      }, 150);
+    }
+  } else if (touchEndX > touchStartX + threshold) {
+    // Swipe Right -> Prev
+    if (activeIdx > 0) {
+      btns[activeIdx - 1].click();
+      area.style.transform = 'translateX(20px)';
+      area.style.opacity = '0.5';
+      setTimeout(() => {
+        area.style.transform = 'translateX(0)';
+        area.style.opacity = '1';
+      }, 150);
+    }
+  }
 }
 
 init();
