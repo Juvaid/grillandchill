@@ -2,15 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Grill &amp; Chill | Order Online</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Grill & Chill | Order Online</title>
 <meta name="description" content="Order fresh wood-fired pizza, burgers, wraps & more from Grill & Chill. Fast delivery to your door.">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap">
+
+<!-- PWA & IOS OPTIMIZATIONS -->
 <meta name="theme-color" content="#0a0a0a">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Grill & Chill">
+<link rel="apple-touch-icon" href="assets/logo.svg"> <!-- Ensure this points to a high-res square PNG if possible -->
+<link rel="apple-touch-icon" sizes="152x152" href="assets/logo.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/logo.svg">
+<link rel="apple-touch-icon" sizes="167x167" href="assets/logo.svg">
 <style>
 .install-btn {
   margin-top: 12px;
@@ -48,25 +58,47 @@
   box-shadow: inset 0 -50px 50px -20px var(--bg);
 }
 
-/* Fiery Open Badge */
-.open-badge {
-  background: linear-gradient(135deg, #222, #111) !important;
-  border: 1px solid rgba(255, 77, 0, 0.3) !important;
-  color: #fff !important;
-  font-weight: 800 !important;
-  padding: 8px 18px 8px 14px !important;
+/* Unified Hero Pills Container */
+.hero-pills {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  width: 100%;
+}
+
+/* Base style for both Hero buttons to ensure symmetry */
+.pill.open-badge, .hero-cta {
+  height: 44px;
+  min-width: 180px; /* Increased slightly for breathing room */
+  padding: 0 16px;
+  border-radius: 50px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 0 30px rgba(255, 77, 0, 0.15), inset 0 0 10px rgba(255, 77, 0, 0.1);
-  cursor: pointer;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.7rem; /* Slightly smaller for better fit */
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.open-badge {
+  background: linear-gradient(135deg, #1a1a1a, #0a0a0a) !important;
+  border: 1px solid rgba(255, 77, 0, 0.4) !important;
+  color: #fff !important;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 .open-badge:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 35px rgba(255, 77, 0, 0.25);
-  border-color: rgba(255, 77, 0, 0.6) !important;
+  box-shadow: 0 8px 25px rgba(255, 77, 0, 0.3);
+  border-color: rgba(255, 77, 0, 0.7) !important;
 }
 
 .fire-svg {
@@ -168,28 +200,54 @@
   text-align: center;
 }
 
-/* WhatsApp Bubble */
-.wa-bubble {
-  position: fixed;
-  bottom: 100px;
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  background: #25d366;
-  border-radius: 50%;
+/* Premium Morphing CTA */
+.hero-cta {
+  background: var(--primary);
+  border: 1px solid rgba(255,255,255,0.2);
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(255,107,0,0.2);
+  color: #fff;
+  z-index: 10;
+}
+.hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,107,0,0.3); }
+
+.cta-slide {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  z-index: 1000;
+  gap: 6px; /* Tighter gap */
   color: #fff;
-  text-decoration: none;
-  animation: wa-pulse 2s infinite;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(15px);
+  white-space: nowrap;
 }
-.wa-bubble svg { width: 30px; height: 30px; fill: #fff; }
+.cta-slide.active { opacity: 1; transform: translateY(0); }
 
-/* Tooltips */
-.wa-bubble::before {
+/* Animation: Speedy Scooter */
+.cta-speed-lines { display: flex; flex-direction: column; gap: 2px; }
+.cta-speed-lines span { width: 8px; height: 1.2px; background: #fff; opacity: 0; animation: cta-line-move 0.6s infinite; border-radius: 10px; }
+.cta-speed-lines span:nth-child(2) { animation-delay: 0.2s; width: 12px; }
+.cta-speed-lines span:nth-child(3) { animation-delay: 0.4s; width: 6px; }
+
+@keyframes cta-line-move {
+  0% { transform: translateX(0); opacity: 0; }
+  50% { opacity: 0.6; }
+  100% { transform: translateX(-15px); opacity: 0; }
+}
+
+.scooter-icon { font-size: 1.1rem; animation: cta-scooter-tilt 0.4s infinite alternate ease-in-out; display: inline-block; }
+@keyframes cta-scooter-tilt {
+  from { transform: scaleX(-1) rotate(-5deg); }
+  to { transform: scaleX(-1) rotate(5deg) translateX(2px); }
+}
+
+.wa-icon-svg { width: 16px; height: 16px; fill: #fff; }
+
+/* Remove legacy bubble */
+.wa-bubble { display: none !important; }
   content: "Order Directly & Get Updates!";
   position: absolute;
   right: 70px;
@@ -224,12 +282,22 @@
   color: #fff;
   padding: 4px 10px;
   border-radius: 6px;
+  font-family: 'Outfit', sans-serif;
   font-size: 0.65rem;
   white-space: nowrap;
   opacity: 0;
   transition: all 0.2s ease;
   pointer-events: none;
   z-index: 100;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  padding-bottom: 70px;
 }
 .install-btn:hover::after {
   opacity: 1;
@@ -250,6 +318,205 @@
 #menuArea {
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
+
+body {
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.hero {
+  padding-top: calc(10px + env(safe-area-inset-top)) !important;
+}
+.sheet {
+  padding-bottom: env(safe-area-inset-bottom) !important;
+}
+.wa-bubble {
+  bottom: calc(85px + env(safe-area-inset-bottom));
+}
+.cart-bar {
+  padding-bottom: env(safe-area-inset-bottom) !important;
+  height: calc(75px + env(safe-area-inset-bottom)) !important;
+}
+.top-controls {
+  padding-top: 10px;
+}
+.top-controls.sticky {
+  top: env(safe-area-inset-top);
+}
+.cat-nav.sticky {
+  top: calc(70px + env(safe-area-inset-top));
+}
+
+/* BENTO CATEGORY GRID */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  grid-auto-flow: dense;
+  padding: 16px;
+  margin-top: 0; /* Reset for better reliability */
+  position: relative;
+  z-index: 50;
+}
+.category-card {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 160px;
+}
+.category-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
+  z-index: 2;
+}
+.category-card:hover {
+  transform: translateY(-8px) scale(1.015);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.7);
+  border-color: var(--primary);
+}
+.category-card.large { grid-column: span 2; grid-row: span 2; min-height: 360px; }
+.category-card.wide { grid-column: span 2; min-height: 170px; }
+.category-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: saturate(1.2) contrast(1.05) brightness(1.1);
+}
+.category-card:hover img {
+  transform: scale(1.1);
+  opacity: 1;
+}
+.category-card-content {
+  position: relative;
+  z-index: 3;
+  padding: 20px;
+}
+.category-card-name {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+.category-card.large .category-card-name {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.category-card-count {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 3;
+  background: rgba(255,107,0,0.9);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 5px 12px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  box-shadow: 0 4px 15px rgba(255,107,0,0.3);
+}
+
+/* MOBILE RESPONSIVENESS FOR BENTO GRID */
+@media (max-width: 600px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+  .category-card {
+    min-height: 110px;
+    border-radius: 16px;
+  }
+  .category-card.large {
+    min-height: 230px;
+  }
+  .category-card.wide {
+    min-height: 110px;
+  }
+  .category-card-content {
+    padding: 14px;
+  }
+  .category-card-name {
+    font-size: 0.85rem;
+    line-height: 1.2;
+  }
+  .category-card.large .category-card-name {
+    font-size: 1.2rem;
+  }
+}
+.category-card.large .category-card-name {
+  font-size: 1.8rem;
+  margin-bottom: 4px;
+}
+.category-card.large .category-card-count {
+  font-size: 0.8rem;
+}
+@keyframes card-entrance {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.category-card {
+  animation: card-entrance 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.category-card:nth-child(1) { animation-delay: 0.1s; }
+.category-card:nth-child(2) { animation-delay: 0.15s; }
+.category-card:nth-child(3) { animation-delay: 0.2s; }
+.category-card:nth-child(4) { animation-delay: 0.25s; }
+.category-card:nth-child(5) { animation-delay: 0.3s; }
+.category-card:nth-child(6) { animation-delay: 0.35s; }
+.category-card:nth-child(7) { animation-delay: 0.4s; }
+.store-login-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.store-login-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.store-login-btn i {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+}
+@media (max-width: 480px) {
+  .store-login-btn span { display: none; }
+  .store-login-btn { padding: 10px; }
+}
 </style>
 </head>
 <body>
@@ -265,13 +532,14 @@
   </div>
 </div>
 
-<!-- WHATSAPP BUBBLE -->
-<a href="https://wa.me/917901994174" target="_blank" class="wa-bubble" aria-label="Contact on WhatsApp">
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.353-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-</a>
+<!-- WhatsApp Contact Removed (Moved to Hero CTA) -->
 
 <!-- HERO -->
 <header class="hero">
+  <a href="admin.html" class="store-login-btn">
+    <i data-lucide="user-cog"></i>
+    <span>Store Login</span>
+  </a>
   <div class="hero-content">
     <img src="assets/logo.svg" alt="Grill &amp; Chill" class="hero-logo-img">
     <!-- Removed old installBtn -->
@@ -284,12 +552,18 @@
         </svg>
         OPEN NOW
       </a>
-      <div class="pill delivery-badge">
-        <div class="speed-lines">
-          <span></span><span></span><span></span>
-        </div>
-        <span class="delivery-icon">🛵</span> FREE DELIVERY
-      </div>
+        <a href="https://wa.me/917901994174" target="_blank" class="hero-cta" id="mainCta">
+          <div class="cta-slide active" id="slideA">
+            <div class="cta-speed-lines"><span></span><span></span><span></span></div>
+            <span class="scooter-icon" style="display:inline-block; transform: scaleX(-1);">🛵</span>
+            <span>Free Delivery</span>
+          </div>
+          <div class="cta-slide" id="slideB">
+          <svg class="wa-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.353-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            <span>Order Online</span>
+          </div>
+        </a>
     </div>
   </div>
 </header>
@@ -327,9 +601,12 @@
 </div>
 
 <!-- CATEGORY NAV -->
-<nav class="cat-nav">
+<nav class="cat-nav" style="display:none">
   <div class="cat-scroll" id="catScroll"></div>
 </nav>
+
+<!-- BENTO GRID -->
+<div id="categoryGrid" class="category-grid"></div>
 
 <!-- MENU AREA -->
 <main id="menuArea"></main>
@@ -428,16 +705,27 @@
       <img src="assets/logo.svg" alt="App Icon" style="width:50px;height:50px">
     </div>
     <h2 style="font-size:1.3rem;font-weight:900;margin-bottom:8px">Install Grill & Chill</h2>
-    <p style="font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:24px">Add our app to your home screen for faster ordering, offline access, and a better experience.</p>
     
-    <div style="display:flex;flex-direction:column;gap:12px">
+    <!-- Android State -->
+    <div id="androidInstallState">
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:24px">Add our app to your home screen for faster ordering, offline access, and a better experience.</p>
       <button class="sheet-cta" id="actualInstallBtn" style="margin:0;width:100%">INSTALL NOW 📲</button>
-      <button onclick="closeAll()" style="background:transparent;border:none;color:var(--muted);font-size:.85rem;font-weight:700;padding:10px;cursor:pointer">MAYBE LATER</button>
     </div>
+
+    <!-- iOS State -->
+    <div id="iosInstallState" style="display:none">
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:24px">Install this app on your iPhone: tap <span style="display:inline-block;padding:2px 6px;background:rgba(255,255,255,0.1);border-radius:4px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-top:-2px"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      </span> and then <strong style="color:#fff">"Add to Home Screen"</strong>.</p>
+      <button onclick="closeAll()" class="sheet-cta" style="margin:0;width:100%;background:var(--s1);border:1px solid var(--b)">GOT IT!</button>
+    </div>
+
+    <button onclick="closeAll()" style="background:transparent;border:none;color:var(--muted);font-size:.85rem;font-weight:700;padding:10px;cursor:pointer;margin-top:12px">MAYBE LATER</button>
   </div>
 </div>
 <!-- SCRIPTS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
 <script src="env.js"></script>
 <script>
 // ═══════════════════════════════════════════
@@ -446,15 +734,95 @@
 const supabaseClient = supabase.createClient(window.ENV.SUPABASE_URL, window.ENV.SUPABASE_ANON_KEY);
 let MENU = {}; // Will be populated from DB
 let ALL_ITEMS_FLAT = [];
+let CATEGORIES = [];
 
 // ═══════ STATE ═══════
 let cart=[], pendingItem=null, pendingSize=null, searchMode=false, pendingAddons={}, currentSort='relevance', vegOnly=false, userLoc=null;
+
+// ═══════ CTA ANIMATION ═══════
+function initCta() {
+  const cta = document.getElementById('mainCta');
+  const slideA = document.getElementById('slideA');
+  const slideB = document.getElementById('slideB');
+  let isA = true;
+
+  setInterval(() => {
+    isA = !isA;
+    if (isA) {
+      slideA.classList.add('active');
+      slideB.classList.remove('active');
+      cta.style.background = 'var(--primary)';
+    } else {
+      slideA.classList.remove('active');
+      slideB.classList.add('active');
+      cta.style.background = '#128C7E';
+    }
+  }, 3500);
+}
 
 // ═══════ INIT ═══════
 async function init(){
   await fetchMenu();
   buildCats();
-  renderAll();
+  lucide.createIcons();
+  initCta();
+  renderCategoryGrid();
+}
+
+// Removed static CAT_IMAGES mapping, now handled by CATEGORIES array from DB
+
+function renderCategoryGrid() {
+  const grid = document.getElementById('categoryGrid');
+  const area = document.getElementById('menuArea');
+  const controls = document.querySelector('.top-controls');
+  const catNav = document.querySelector('.cat-nav');
+  const hero = document.querySelector('.hero');
+  
+  grid.innerHTML = '';
+  grid.style.display = 'grid';
+  area.style.display = 'none';
+  controls.style.display = 'flex'; 
+  catNav.style.display = 'none';
+  hero.style.display = 'flex'; // Restore hero on main menu
+  window.scrollTo(0,0);
+
+  const cats = Object.keys(MENU);
+  
+  cats.forEach((cat, i) => {
+    const processed = processItems(MENU[cat]);
+    if(processed.length === 0 && vegOnly) return;
+    
+    const card = document.createElement('div');
+    card.className = 'category-card';
+    if (i === 0) card.classList.add('large');
+    else if (i === 4) card.classList.add('wide');
+    
+    const catData = CATEGORIES.find(c => c.name === cat);
+    const img = catData?.image_url || 'assets/woody_bg.png';
+    const cleanName = cat.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
+    const count = processed.length;
+    
+    card.innerHTML = `
+      <img src="${img}" alt="${cat}" loading="lazy" onerror="this.src='assets/woody_bg.png'">
+      <div class="category-card-count">${count} ITEMS</div>
+      <div class="category-card-content">
+        <div class="category-card-name">${cleanName}</div>
+      </div>
+    `;
+    
+    card.onclick = () => {
+      const btns = document.querySelectorAll('.cat-btn');
+      let targetBtn = null;
+      btns.forEach(b => { if(b.textContent.trim() === cat) targetBtn = b; });
+      if(targetBtn) switchCat(cat, targetBtn);
+    };
+    
+    grid.appendChild(card);
+  });
+  
+  if(grid.innerHTML === '') {
+    grid.innerHTML = '<div class="empty" style="grid-column: span 2"><div class="ei">🥗</div><p>No items match your filters</p></div>';
+  }
 }
 
 async function fetchMenu() {
@@ -492,6 +860,26 @@ async function fetchMenu() {
     if (!MENU[it.cat]) MENU[it.cat] = [];
     MENU[it.cat].push(it);
   });
+
+  // Fetch Category Details (Images, Sort Order)
+  const { data: catData } = await supabaseClient
+    .from('categories')
+    .select('*')
+    .order('sort_order', { ascending: true });
+  
+  if (catData) {
+    CATEGORIES = catData;
+    // Re-order MENU based on categories table
+    const sortedMenu = {};
+    CATEGORIES.forEach(c => {
+      if (MENU[c.name]) sortedMenu[c.name] = MENU[c.name];
+    });
+    // Add any remaining categories not in the categories table
+    Object.keys(MENU).forEach(k => {
+      if (!sortedMenu[k]) sortedMenu[k] = MENU[k];
+    });
+    MENU = sortedMenu;
+  }
 }
 
 function buildCats(){
@@ -505,7 +893,7 @@ function buildCats(){
     if(searchMode) clearSearch();
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
     all.classList.add('active');
-    renderAll();
+    renderCategoryGrid();
     all.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
   };
   bar.appendChild(all);
@@ -523,8 +911,17 @@ function switchCat(cat,btn){
   if(searchMode) clearSearch();
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  
+  // UI visibility transitions
+  document.getElementById('categoryGrid').style.display = 'none';
+  document.getElementById('menuArea').style.display = 'block';
+  document.querySelector('.top-controls').style.display = 'flex';
+  document.querySelector('.cat-nav').style.display = 'block';
+  document.querySelector('.hero').style.display = 'none'; // Hide hero for focus
+  
   renderCat(cat);
   btn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  window.scrollTo(0,0);
 }
 
 function gotoCategory(catName){
@@ -636,11 +1033,11 @@ function toggleVegOnly() {
   else {
     const activeBtn = document.querySelector('.cat-btn.active');
     if(activeBtn && activeBtn.textContent === 'All') {
-      renderAll();
+      renderCategoryGrid();
     } else if(activeBtn) {
       renderCat(activeBtn.textContent);
     } else {
-      renderAll();
+      renderCategoryGrid();
     }
   }
 }
@@ -695,7 +1092,7 @@ function handleSearch(){
 function clearSearch(){
   searchMode=false;
   document.getElementById('searchInput').value='';
-  renderAll();
+  renderCategoryGrid();
 }
 
 // ═══════ SIZE SHEET & ADDONS ═══════
@@ -1102,13 +1499,31 @@ function handleSwipe() {
 init();
 
 let deferredPrompt;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // Show the bottom sheet instead of a badge
-  setTimeout(() => {
-    openSheet('installSheet');
-  }, 2000); // Wait 2s after load to show the popup
+  // Show the bottom sheet for Android
+  if(!isStandalone) {
+    setTimeout(() => {
+      document.getElementById('androidInstallState').style.display = 'block';
+      document.getElementById('iosInstallState').style.display = 'none';
+      openSheet('installSheet');
+    }, 2000);
+  }
+});
+
+// For iOS users who don't get the beforeinstallprompt
+window.addEventListener('load', () => {
+  if (isIOS && !isStandalone) {
+    setTimeout(() => {
+      document.getElementById('androidInstallState').style.display = 'none';
+      document.getElementById('iosInstallState').style.display = 'block';
+      openSheet('installSheet');
+    }, 3000);
+  }
 });
 
 document.getElementById('actualInstallBtn').addEventListener('click', async () => {
