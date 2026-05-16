@@ -513,9 +513,27 @@ body {
   height: 16px;
   color: var(--accent);
 }
+.history-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--primary);
+  animation: card-entrance 0.4s ease-out;
+}
+.hc-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.hc-id { font-weight: 800; font-size: 0.85rem; color: #fff; }
+.hc-date { font-size: 0.7rem; color: var(--muted); }
+.hc-items { font-size: 0.75rem; color: #bbb; line-height: 1.4; margin-bottom: 12px; }
+.hc-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+.hc-total { font-weight: 900; font-size: 0.9rem; color: var(--primary); }
+.hc-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 4px 10px; border-radius: 100px; }
+
 @media (max-width: 480px) {
   .store-login-btn span { display: none; }
-  .store-login-btn { padding: 10px; }
+  .store-login-btn { padding: 12px; }
+  .top-actions { gap: 6px !important; }
 }
 </style>
 </head>
@@ -536,10 +554,16 @@ body {
 
 <!-- HERO -->
 <header class="hero">
-  <a href="admin.html" class="store-login-btn">
-    <i data-lucide="user-cog"></i>
-    <span>Store Login</span>
-  </a>
+  <div class="top-actions" style="position: absolute; top: 15px; right: 15px; z-index: 100; display: flex; gap: 8px;">
+    <button onclick="openHistory()" class="store-login-btn" style="background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.2);">
+      <i data-lucide="history"></i>
+      <span>History</span>
+    </button>
+    <a href="admin.html" class="store-login-btn">
+      <i data-lucide="user-cog"></i>
+      <span>Admin</span>
+    </a>
+  </div>
   <div class="hero-content">
     <img src="assets/logo.svg" alt="Grill &amp; Chill" class="hero-logo-img">
     <!-- Removed old installBtn -->
@@ -683,8 +707,22 @@ body {
     </div>
 
     <div style="display:flex;justify-content:space-between;padding:0 20px 16px"><span style="color:#777;font-size:.82rem">Delivery Fee</span><span style="color:#22c55e;font-weight:700;font-size:.82rem">FREE 🎉</span></div>
+    
     <button class="sheet-cta" id="waBtn" onclick="sendOrder()" style="display:flex;align-items:center;justify-content:center;gap:8px"><span>🛵</span><span>ORDER ON WHATSAPP</span></button>
+  </div>
+</div>
 
+<!-- HISTORY SHEET -->
+<div class="sheet" id="historySheet">
+  <div class="handle"></div>
+  <div style="padding:16px 20px 4px;display:flex;justify-content:space-between;align-items:center">
+    <h2 style="font-size:1.1rem;font-weight:800">Order History</h2>
+    <button onclick="closeAll()" style="background:none;border:none;color:#666;font-size:1.4rem;cursor:pointer">×</button>
+  </div>
+  <div id="historyItems" style="padding:10px 20px 100px;"></div>
+  <div id="historyEmpty" style="text-align:center;padding:40px;color:#666;display:none">
+    <div style="font-size:2.5rem">📜</div>
+    <p style="margin-top:8px;font-size:.85rem">No recent orders found</p>
   </div>
 </div>
 
@@ -762,11 +800,80 @@ function initCta() {
 
 // ═══════ INIT ═══════
 async function init(){
-  await fetchMenu();
-  buildCats();
+  loadFromLocal(); // Instant load from phone memory
+  renderCategoryGrid();
+  
+  // Background Sync from Cloud
+  fetchMenu().then(() => {
+    console.log("Cloud Sync Complete");
+    renderCategoryGrid();
+    syncPendingOrders(); // Try to push any offline orders
+  });
+  
   lucide.createIcons();
   initCta();
-  renderCategoryGrid();
+}
+
+// ═══════ SYNC ENGINE ═══════
+function loadFromLocal() {
+  try {
+    const cachedMenu = localStorage.getItem('gc_menu_data');
+    const cachedCats = localStorage.getItem('gc_categories');
+    const cachedFlat = localStorage.getItem('gc_flat_items');
+    
+    if (cachedMenu) MENU = JSON.parse(cachedMenu);
+    if (cachedCats) CATEGORIES = JSON.parse(cachedCats);
+    if (cachedFlat) ALL_ITEMS_FLAT = JSON.parse(cachedFlat);
+  } catch (e) { console.warn("Local load failed", e); }
+}
+
+function saveToLocal() {
+  try {
+    localStorage.setItem('gc_menu_data', JSON.stringify(MENU));
+    localStorage.setItem('gc_categories', JSON.stringify(CATEGORIES));
+    localStorage.setItem('gc_flat_items', JSON.stringify(ALL_ITEMS_FLAT));
+  } catch (e) { console.error("Local save failed", e); }
+}
+
+async function syncPendingOrders() {
+  const pending = JSON.parse(localStorage.getItem('pending_sync_orders') || '[]');
+  if (pending.length === 0) return;
+  
+  console.log(`Attempting to sync ${pending.length} offline orders...`);
+  const remaining = [];
+  
+  for (const ord of pending) {
+    try {
+      const { data: order, error: orderErr } = await supabaseClient
+        .from('orders')
+        .insert([{
+          customer_name: ord.name,
+          customer_phone: ord.phone,
+          total_amount: ord.total,
+          delivery_lat: ord.lat,
+          delivery_lng: ord.lng,
+          status: 'pending'
+        }])
+        .select().single();
+      
+      if (orderErr) throw orderErr;
+      
+      const orderItems = ord.cart.map(i => ({
+        order_id: order.id,
+        menu_item_id: i.id,
+        item_name: i.n,
+        quantity: 1,
+        price: i.price,
+        size: i.chosenSize,
+        addons: i.chosenAddons
+      }));
+      
+      await supabaseClient.from('order_items').insert(orderItems);
+    } catch (e) {
+      remaining.push(ord); // Keep in queue if still failing
+    }
+  }
+  localStorage.setItem('pending_sync_orders', JSON.stringify(remaining));
 }
 
 // Removed static CAT_IMAGES mapping, now handled by CATEGORIES array from DB
@@ -827,58 +934,44 @@ function renderCategoryGrid() {
 
 async function fetchMenu() {
   const area = document.getElementById('menuArea');
-  area.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);"><div class="loading-spinner"></div><p style="margin-top:15px">Loading fresh flavors...</p></div>';
-  
-  const { data, error } = await supabaseClient
-    .from('menu_items')
-    .select('*')
-    .eq('available', true)
-    .order('sort_order', { ascending: true });
-
-  if (error) {
-    area.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444">Failed to load menu. Please check your connection.</div>`;
-    return;
+  if (Object.keys(MENU).length === 0) {
+    area.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);"><div class="loading-spinner"></div><p style="margin-top:15px">Loading fresh flavors...</p></div>';
   }
-
-  // Map database names to internal format
-  ALL_ITEMS_FLAT = data.map(item => ({
-    id: item.id,
-    n: item.name,
-    d: item.description,
-    e: item.emoji,
-    img: item.image_url,
-    veg: item.is_veg,
-    tags: item.tags,
-    sz: item.sizes,
-    addons: item.addons,
-    cat: item.category
-  }));
-
-  // Group by category
-  MENU = {};
-  ALL_ITEMS_FLAT.forEach(it => {
-    if (!MENU[it.cat]) MENU[it.cat] = [];
-    MENU[it.cat].push(it);
-  });
-
-  // Fetch Category Details (Images, Sort Order)
-  const { data: catData } = await supabaseClient
-    .from('categories')
-    .select('*')
-    .order('sort_order', { ascending: true });
   
-  if (catData) {
-    CATEGORIES = catData;
-    // Re-order MENU based on categories table
-    const sortedMenu = {};
-    CATEGORIES.forEach(c => {
-      if (MENU[c.name]) sortedMenu[c.name] = MENU[c.name];
+  try {
+    const { data, error } = await supabaseClient
+      .from('menu_items')
+      .select('*')
+      .eq('available', true)
+      .order('sort_order', { ascending: true });
+
+    if (error) throw error;
+
+    ALL_ITEMS_FLAT = data.map(item => ({
+      id: item.id, n: item.name, d: item.description, e: item.emoji,
+      img: item.image_url, veg: item.is_veg, tags: item.tags,
+      sz: item.sizes, addons: item.addons, cat: item.category
+    }));
+
+    MENU = {};
+    ALL_ITEMS_FLAT.forEach(it => {
+      if (!MENU[it.cat]) MENU[it.cat] = [];
+      MENU[it.cat].push(it);
     });
-    // Add any remaining categories not in the categories table
-    Object.keys(MENU).forEach(k => {
-      if (!sortedMenu[k]) sortedMenu[k] = MENU[k];
-    });
-    MENU = sortedMenu;
+
+    const { data: catData } = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true });
+    if (catData) {
+      CATEGORIES = catData;
+      const sortedMenu = {};
+      CATEGORIES.forEach(c => { if (MENU[c.name]) sortedMenu[c.name] = MENU[c.name]; });
+      Object.keys(MENU).forEach(k => { if (!sortedMenu[k]) sortedMenu[k] = MENU[k]; });
+      MENU = sortedMenu;
+    }
+
+    saveToLocal(); // Save fresh cloud data to local phone storage
+    buildCats();
+  } catch (err) {
+    console.warn("Fetch failed, using local data if available", err);
   }
 }
 
@@ -1418,6 +1511,11 @@ async function sendOrder(){
       manualAddr ? `\n🏠 *Address:* ${manualAddr}` : ``
     ];
     
+    // Save locally for offline access
+    const recentOrders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
+    recentOrders.unshift({ id: order.id, date: new Date(), total, items: cart });
+    localStorage.setItem('recent_orders', JSON.stringify(recentOrders.slice(0, 10)));
+
     window.open(`https://wa.me/917901994174?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
     
     // Clear cart after success
@@ -1427,12 +1525,30 @@ async function sendOrder(){
     alert("Order placed successfully! We've redirected you to WhatsApp for confirmation.");
     
   } catch (err) {
-    console.error("Order failed:", err);
-    alert("Order creation failed on our server, but we'll try sending it via WhatsApp anyway!");
-    // Fallback to pure WhatsApp if DB fails (e.g. RLS issues)
+    console.error("Order failed to reach DB, queuing for sync:", err);
+    
+    // Save to sync queue
+    const pending = JSON.parse(localStorage.getItem('pending_sync_orders') || '[]');
+    pending.push({ name, phone, total, lat, lng, cart: JSON.parse(JSON.stringify(cart)), date: new Date() });
+    localStorage.setItem('pending_sync_orders', JSON.stringify(pending));
+
+    alert("No internet? No problem! We've saved your order and will sync it with our kitchen soon. We're opening WhatsApp now to confirm your order!");
+
+    // Fallback to pure WhatsApp
     const orderLines = cart.map(i => `• ${i.n} (${i.chosenSize}) - ₹${i.price}`);
-    const fallbackLines = [`*🔥 FALLBACK ORDER*`, ...orderLines, `TOTAL: ₹${total}`, `Loc: ${userLoc}`];
+    const fallbackLines = [
+      `*🔥 OFFLINE ORDER — GRILL & CHILL*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      ...orderLines,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `TOTAL: ₹${total}`,
+      `Loc: ${userLoc}`
+    ];
     window.open(`https://wa.me/917901994174?text=${encodeURIComponent(fallbackLines.join('\n'))}`,'_blank');
+    
+    cart = [];
+    updateCartBar();
+    closeAll();
   }
 
   btn.innerHTML = '<span>🛵</span><span>ORDER ON WHATSAPP</span>'; btn.disabled = false;
@@ -1494,6 +1610,38 @@ function handleSwipe() {
       }, 150);
     }
   }
+}
+
+// ═══════ HISTORY ═══════
+function openHistory() {
+  const items = document.getElementById('historyItems');
+  const empty = document.getElementById('historyEmpty');
+  const orders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
+  
+  if (!orders.length) {
+    items.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    items.innerHTML = orders.map(ord => {
+      const date = new Date(ord.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+      const itemNames = ord.items.map(it => `${it.n} x${it.q || 1}`).join(', ');
+      
+      return `
+      <div class="history-card">
+        <div class="hc-header">
+          <div class="hc-id">Order #${ord.id}</div>
+          <div class="hc-date">${date}</div>
+        </div>
+        <div class="hc-items">${itemNames}</div>
+        <div class="hc-footer">
+          <div class="hc-total">Total: ₹${ord.total}</div>
+          <div class="hc-status">Completed</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  openSheet('historySheet');
 }
 
 init();
