@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Terms of Service | Grill & Chill</title>
+<meta name="description" content="Terms of Service for Grill & Chill. Read our terms and conditions for using our online food ordering platform.">
+<link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap">
+<meta name="theme-color" content="#0a0a0a">
+<style>
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    line-height: 1.7;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 100dvh;
+  }
+
+  /* ─── HERO BANNER ─── */
+  .policy-hero {
+    background: radial-gradient(circle at 30% 50%, rgba(168,85,247,0.12), transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(240,80,35,0.08), transparent 60%),
+                var(--bg);
+    padding: 60px 20px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--b);
+  }
+  .policy-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('data:image/svg+xml,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="160" height="160" rx="20" fill="none" stroke="rgba(168,85,247,0.05)" stroke-width="0.5"/><rect x="40" y="40" width="120" height="120" rx="15" fill="none" stroke="rgba(168,85,247,0.03)" stroke-width="0.5"/></svg>') center/400px repeat;
+    pointer-events: none;
+    animation: subtle-drift 25s linear infinite;
+  }
+  @keyframes subtle-drift {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-200px); }
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+  }
+  .back-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .back-btn svg { width: 16px; height: 16px; }
+
+  .policy-hero h1 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .policy-hero .subtitle {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .policy-hero .effective-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    padding: 6px 16px;
+    background: rgba(168,85,247,0.1);
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #a855f7;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ─── CONTENT ─── */
+  .policy-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 20px 100px;
+  }
+
+  .policy-section {
+    margin-bottom: 36px;
+    padding: 28px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .policy-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #a855f7, transparent);
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .policy-section:hover {
+    border-color: rgba(168,85,247,0.15);
+    background: rgba(255,255,255,0.03);
+  }
+  .policy-section:hover::before {
+    opacity: 1;
+  }
+
+  .section-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #a855f7;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(168,85,247,0.3);
+  }
+
+  .policy-section h2 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #fff;
+    letter-spacing: -0.2px;
+  }
+
+  .policy-section p,
+  .policy-section li {
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.8;
+  }
+
+  .policy-section ul, .policy-section ol {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+  }
+
+  .policy-section li {
+    padding: 8px 0 8px 24px;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .policy-section li:last-child { border-bottom: none; }
+  .policy-section li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    width: 8px;
+    height: 8px;
+    background: #a855f7;
+    border-radius: 50%;
+    opacity: 0.6;
+  }
+
+  /* ─── CONTACT CARD ─── */
+  .contact-card {
+    background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(240,80,35,0.05));
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 20px;
+    padding: 28px;
+    text-align: center;
+    margin-top: 40px;
+  }
+  .contact-card h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .contact-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .contact-card a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #a855f7;
+    border-radius: 100px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(168,85,247,0.3);
+  }
+  .contact-card a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(168,85,247,0.4);
+  }
+
+  /* ─── NAV PILLS ─── */
+  .policy-nav {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .policy-nav a {
+    padding: 8px 18px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+  }
+  .policy-nav a:hover, .policy-nav a.active {
+    background: rgba(168,85,247,0.1);
+    border-color: rgba(168,85,247,0.3);
+    color: #a855f7;
+  }
+
+  /* ─── FOOTER ─── */
+  .policy-footer {
+    text-align: center;
+    padding: 30px 20px 40px;
+    border-top: 1px solid var(--b);
+  }
+  .policy-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .policy-footer p {
+    font-size: 0.65rem;
+    color: #444;
+    margin-top: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (min-width: 768px) {
+    .policy-hero { padding: 80px 40px 50px; }
+    .policy-hero h1 { font-size: 2.8rem; }
+    .policy-container { padding: 60px 40px 120px; }
+    .policy-section { padding: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="policy-hero">
+  <a href="index.html" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    Back to Menu
+  </a>
+  <h1>Terms of Service</h1>
+  <p class="subtitle">The rules and guidelines for using Grill & Chill.</p>
+  <div class="effective-date">📋 Effective: May 25, 2026</div>
+  <div class="policy-nav">
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html" class="active">Terms of Service</a>
+  </div>
+</section>
+
+<!-- CONTENT -->
+<div class="policy-container">
+
+  <div class="policy-section">
+    <div class="section-number">1</div>
+    <h2>Acceptance of Terms</h2>
+    <p>By accessing and using the Grill & Chill website and ordering platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.</p>
+  </div>
+
+  <div class="policy-section">
+    <div class="section-number">2</div>
+    <h2>Our Services</h2>
+    <p>Grill & Chill provides an online food ordering platform that allows you to:</p>
+    <ul>
+      <li>Browse our restaurant menu and view item details</li>
+      <li>Place food orders for delivery via WhatsApp</li>
+      <li>Share your delivery location for accurate drop-off</li>
+      <li>View your order history</li>
+      <li>Install our Progressive Web App for faster access</li>
+    </ul>
+  </div>
+
+  <div class="policy-section">
+    <div class="section-number">3</div>
+    <h2>Order & Payment</h2>
+    <ul>
+      <li>All orders are placed and confirmed through WhatsApp</li>
+      <li>Menu prices are listed in Indian Rupees (₹) and may change without notice</li>
+      <li>Payment is handled at the time of delivery (Cash on Delivery)</li>
+      <li>We reserve the right to refuse or cancel orders at our discretion</li>
+      <li>Order confirmation is subject to item availability</li>
+    </ul>
+  </div>
+
+  <div class="policy-section">
+    <div class="section-number">4</div>
+    <h2>Delivery</h2>
+    <ul>
+      <li>We offer <strong>free delivery</strong> on all orders within our service area</li>
+      <li>Delivery times are estimates and may vary based on demand and location</li>
+      <li>You must provide accurate delivery details (address, phone number, landmarks)</li>
+      <li>We are not responsible for delays caused by incorrect address information</li>
+    </ul>
+  </div>
+
+  <div class="policy-section">
+    <div class="section-number">5</div>
+    <h2>User Responsibilities</h2>
+    <p>When using our platform, you agree to:</p>
+    <ul>
+      <li>Provide accurate and complete personal information</li>
+      <li>Not misuse, abuse, or disrupt the website or ordering process</li>
+      <li>Not place fraudulent or prank orders</li>
+      <li>Be available at the delivery address when the order arrives</li>
+    </ul>
+  </div>
+
+  <div class="policy-section">
+    <div class="section-number">6</div>
+    <h2>Intellectual Property</h2>
+    <p>All content on this website — including the logo, design, menu images, text, and code — is the property of Grill & Chill. You may not copy, reproduce, or distribute any content without our written permission.</p>
+  </div>
+
+  <div class="policy-section">
+    <div class="section-number">7</div>
+    <h2>Limitation of Liability</h2>
+    <p>Grill & Chill is not liable for:</p>
+    <ul>
+      <li>Allergic reactions — please check ingredients before ordering</li>
+      <li>Delays or service interruptions beyond our reasonable control</li>
+      <li>Losses arising from unauthorized use of your personal information due to your own negligence</li>
+    </ul>
+  </div>
+
+  <div class="policy-section">
+    <div class="section-number">8</div>
+    <h2>Modifications</h2>
+    <p>We may modify these Terms of Service at any time. Continued use of our platform after changes constitutes acceptance of the updated terms. We encourage you to review this page periodically.</p>
+  </div>
+
+  <div class="policy-section">
+    <div class="section-number">9</div>
+    <h2>Governing Law</h2>
+    <p>These terms shall be governed by and construed in accordance with the laws of India. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts in India.</p>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact-card">
+    <h3>Questions About These Terms?</h3>
+    <p>If you need clarification on anything, we're happy to help.</p>
+    <a href="https://wa.me/917901994174" target="_blank">💬 Contact Us on WhatsApp</a>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="policy-footer">
+  <a href="index.html">← Back to Grill & Chill</a>
+  <p>© 2026 Grill & Chill. All rights reserved.</p>
+</div>
+
+</body>
+</html>
