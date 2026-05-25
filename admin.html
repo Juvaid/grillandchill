@@ -215,7 +215,41 @@
       border-color: var(--primary);
       color: var(--primary);
     }
-  </style>
+    
+    /* --- RECEIPT MODAL AND THERMAL PAPER --- */
+    #receiptPaper {
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: 'Courier New', Courier, monospace !important;
+      font-size: 11px !important;
+      line-height: 1.35 !important;
+      width: 58mm !important;
+      max-width: 58mm !important;
+      box-sizing: border-box !important;
+      padding: 15px 10px !important;
+      border-top: 4px dotted #ccc !important;
+      border-bottom: 4px dotted #ccc !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+    }
+    #receiptPaper .center { text-align: center !important; }
+    #receiptPaper .bold { font-weight: bold !important; }
+    #receiptPaper .separator { border: none !important; border-top: 1px dashed #000 !important; margin: 6px 0 !important; }
+    #receiptPaper .double-separator { border: none !important; border-top: 2px solid #000 !important; margin: 6px 0 !important; }
+    #receiptPaper .store-logo { width: 60px !important; height: auto !important; margin: 0 auto 4px !important; display: block !important; }
+    #receiptPaper .store-name { font-size: 15px !important; font-weight: 900 !important; letter-spacing: 1px !important; margin-bottom: 2px !important; }
+    #receiptPaper .store-tagline { font-size: 10px !important; margin-bottom: 2px !important; }
+    #receiptPaper .store-address { font-size: 9px !important; color: #333 !important; line-height: 1.3 !important; }
+    #receiptPaper .bill-info { display: flex !important; justify-content: space-between !important; font-size: 10px !important; margin: 2px 0 !important; }
+    #receiptPaper .item-row { display: flex !important; justify-content: space-between !important; align-items: flex-start !important; font-size: 11px !important; margin: 3px 0 !important; gap: 4px !important; }
+    #receiptPaper .item-name { flex: 1 !important; word-break: break-word !important; text-align: left !important; }
+    #receiptPaper .item-price { white-space: nowrap !important; font-weight: 600 !important; }
+    #receiptPaper .total-row { display: flex !important; justify-content: space-between !important; font-size: 13px !important; font-weight: 900 !important; margin: 4px 0 !important; }
+    #receiptPaper .customer-info { font-size: 10px !important; margin: 3px 0 !important; text-align: left !important; }
+    #receiptPaper .tax-note { font-size: 9px !important; color: #555 !important; text-align: center !important; margin: 4px 0 !important; }
+    #receiptPaper .footer { text-align: center !important; margin-top: 6px !important; }
+    #receiptPaper .footer-thanks { font-size: 11px !important; font-weight: bold !important; margin-bottom: 2px !important; }
+    #receiptPaper .footer-url { font-size: 8px !important; color: #666 !important; margin-bottom: 6px !important; }
+    #receiptPaper .qr-code { width: 80px !important; height: 80px !important; margin: 4px auto !important; display: block !important; }
   </style>
 </head>
 <body>
@@ -495,6 +529,62 @@
       <div id="collectionsBody" class="mobile-list"></div>
       <div style="margin-top:auto; padding-top:20px">
         <button onclick="closeModal('categoriesModal')" class="btn-primary" style="width:100%">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIPT PREVIEW MODAL -->
+  <div class="modal" id="receiptPreviewModal" style="z-index: 4000;">
+    <div class="modal-content" style="max-width: 420px; width: 100%; display: flex; flex-direction: column; padding: 20px; background: #141416; max-height: 95vh; border-radius: 20px; border: 1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+        <h3 style="margin:0; color:var(--primary)">Receipt Preview</h3>
+        <button onclick="closeModal('receiptPreviewModal')" style="background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); cursor:pointer; width:36px; height:36px; border-radius:50%; font-size:1rem; display:flex; align-items:center; justify-content:center">&times;</button>
+      </div>
+      
+      <!-- Realistic Thermal Paper Preview Container -->
+      <div style="flex:1; overflow-y:auto; background:#1e1e24; border-radius:12px; padding:15px; display:flex; justify-content:center; align-items:flex-start; margin-bottom:15px; border:1px solid rgba(255,255,255,0.05)">
+        <div id="receiptPaper">
+          <!-- Content dynamically rendered -->
+        </div>
+      </div>
+      
+      <!-- Actions Container -->
+      <div style="display:flex; flex-direction:column; gap:10px">
+        <!-- Main row for printing -->
+        <div style="display:flex; gap:10px">
+          <!-- Web Bluetooth Direct Print -->
+          <button id="btnDirectBtPrint" class="btn-primary" style="flex:1.2; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; font-size:0.75rem; font-weight:800;">
+            <i data-lucide="bluetooth" style="width:16px"></i> BLE PRINT
+          </button>
+          
+          <!-- Standard Print (using browser print) -->
+          <button id="btnBrowserPrint" class="btn-primary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; font-size:0.75rem; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); font-weight:700;">
+            <i data-lucide="printer" style="width:16px"></i> PRINT
+          </button>
+        </div>
+        
+        <!-- Second row: App Print & Email & Share -->
+        <div style="display:flex; gap:10px">
+          <!-- Print via App (Original Bluetooth Print app link) -->
+          <button id="btnAppPrint" class="btn-primary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:12px; font-size:0.7rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); color:var(--text); font-weight:600;">
+            <i data-lucide="external-link" style="width:14px"></i> PRINT APP
+          </button>
+
+          <!-- Email receipt -->
+          <button id="btnEmailReceipt" class="btn-primary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:12px; font-size:0.7rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); color:var(--text); font-weight:600;">
+            <i data-lucide="mail" style="width:14px"></i> EMAIL
+          </button>
+          
+          <!-- Share receipt -->
+          <button id="btnShareReceipt" class="btn-primary" style="flex:0.8; display:flex; align-items:center; justify-content:center; gap:6px; padding:12px; font-size:0.7rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); color:var(--text); font-weight:600;">
+            <i data-lucide="share-2" style="width:14px"></i> SHARE
+          </button>
+        </div>
+
+        <!-- Optional: Disconnect BLE Printer -->
+        <button id="btnDisconnectBLE" class="mini-btn" style="width:100%; padding:10px; font-size:0.7rem; border-color:rgba(239,68,68,0.2); color:#ef4444; background:rgba(239,68,68,0.05); display:none;">
+          Disconnect Bluetooth Printer
+        </button>
       </div>
     </div>
   </div>
@@ -1237,25 +1327,155 @@
     }
 
 
+    // --- BLE printer state ---
+    let cachedPrinterChar = null;
+    let cachedPrinterDevice = null;
+    const PRINTER_SERVICES = [
+      '000018f0-0000-1000-8000-00805f9b34fb', // Standard BLE Print Service
+      '0000ffe0-0000-1000-8000-00805f9b34fb', // Common Custom BLE
+      '0000e7e1-0000-1000-8000-00805f9b34fb', // Custom BLE Printer
+      'e7e1a2c0-294d-11e5-bc34-0002a5d5c51b', // Custom Serial BLE
+      '0000ffe1-0000-1000-8000-00805f9b34fb',
+      '00004953-0000-1000-8000-00805f9b34fb'  // ISSC BLE
+    ];
+
+    async function getBLEPrinter() {
+      if (cachedPrinterChar && cachedPrinterDevice && cachedPrinterDevice.gatt.connected) {
+        return cachedPrinterChar;
+      }
+
+      showToast('Searching for BLE Printer... 🖨️');
+      
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: PRINTER_SERVICES
+      });
+
+      cachedPrinterDevice = device;
+      
+      device.addEventListener('gattserverdisconnected', () => {
+        cachedPrinterChar = null;
+        cachedPrinterDevice = null;
+        const disconnectBtn = document.getElementById('btnDisconnectBLE');
+        if (disconnectBtn) disconnectBtn.style.display = 'none';
+        showToast('Printer disconnected ❌');
+      });
+
+      showToast('Connecting to printer GATT server...');
+      const server = await device.gatt.connect();
+
+      showToast('Locating write service...');
+      let writeChar = null;
+
+      for (const serviceUuid of PRINTER_SERVICES) {
+        try {
+          const service = await server.getPrimaryService(serviceUuid);
+          const chars = await service.getCharacteristics();
+          for (const char of chars) {
+            if (char.properties.write || char.properties.writeWithoutResponse) {
+              writeChar = char;
+              break;
+            }
+          }
+          if (writeChar) break;
+        } catch (err) {
+          console.warn(`BLE service ${serviceUuid} not found: ${err.message}`);
+        }
+      }
+
+      if (!writeChar) {
+        try {
+          const services = await server.getPrimaryServices();
+          for (const service of services) {
+            const chars = await service.getCharacteristics();
+            for (const char of chars) {
+              if (char.properties.write || char.properties.writeWithoutResponse) {
+                writeChar = char;
+                break;
+              }
+            }
+            if (writeChar) break;
+          }
+        } catch (err) {
+          console.error('Fallback services list failed:', err);
+        }
+      }
+
+      if (!writeChar) {
+        throw new Error('Could not find a writable characteristic on this printer.');
+      }
+
+      cachedPrinterChar = writeChar;
+      const disconnectBtn = document.getElementById('btnDisconnectBLE');
+      if (disconnectBtn) disconnectBtn.style.display = 'block';
+      showToast('Printer Connected! 🎉');
+      return cachedPrinterChar;
+    }
+
+    function disconnectBLEPrinter() {
+      if (cachedPrinterDevice && cachedPrinterDevice.gatt.connected) {
+        cachedPrinterDevice.gatt.disconnect();
+      }
+      cachedPrinterChar = null;
+      cachedPrinterDevice = null;
+      const disconnectBtn = document.getElementById('btnDisconnectBLE');
+      if (disconnectBtn) disconnectBtn.style.display = 'none';
+      showToast('Printer disconnected');
+    }
+
+    async function printDirectlyViaBluetooth(bill) {
+      try {
+        const char = await getBLEPrinter();
+        const bytes = generateEscPosBytes(bill);
+        showToast('Printing receipt... 🖨️');
+        await writeInChunks(char, bytes);
+        showToast('Print complete! ✅');
+      } catch (err) {
+        console.error('BLE Print error:', err);
+        showToast('Direct BLE print failed: ' + err.message, true);
+      }
+    }
+
+    async function writeInChunks(char, data) {
+      const chunkSize = 20;
+      for (let i = 0; i < data.length; i += chunkSize) {
+        const chunk = data.slice(i, i + chunkSize);
+        if (char.writeValueWithoutResponse) {
+          await char.writeValueWithoutResponse(chunk);
+        } else {
+          await char.writeValue(chunk);
+        }
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+    }
+
+    function padLine(left, right, width = 32) {
+      const leftStr = String(left);
+      const rightStr = String(right);
+      const gap = width - leftStr.length - rightStr.length;
+      if (gap <= 0) return leftStr + ' ' + rightStr;
+      return leftStr + ' '.repeat(gap) + rightStr;
+    }
+
     function handleReceipt(idx, autoPrint) {
       generateReceipt(window.CURRENT_BILLS[idx], autoPrint);
     }
 
     function handleBluetoothPrint(idx) {
-      printBluetooth(window.CURRENT_BILLS[idx]);
+      const bill = window.CURRENT_BILLS[idx];
+      if (cachedPrinterChar && cachedPrinterDevice && cachedPrinterDevice.gatt.connected) {
+        printDirectlyViaBluetooth(bill);
+      } else {
+        generateReceipt(bill, false);
+      }
     }
 
     function handleShare(idx) {
       shareReceipt(window.CURRENT_BILLS[idx]);
     }
 
-    // ═══════════════════════════════════════════
-    //  BLUETOOTH THERMAL PRINTER (58mm)
-    //  Uses Bluetooth Print app (mate.bluetoothprint)
-    // ═══════════════════════════════════════════
     function printBluetooth(bill) {
       try {
-        // Encode bill data as base64 for the API endpoint
         const billPayload = {
           id: bill.id,
           customer_name: bill.customer_name || 'Walk-in',
@@ -1266,16 +1486,10 @@
           created_at: bill.created_at
         };
         const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(billPayload))));
-        
-        // Build the Bluetooth Print app URL scheme
-        // The app will fetch JSON from our /api/receipt endpoint
         const siteUrl = window.location.origin;
         const responseUrl = `${siteUrl}/api/receipt?bill=${encoded}`;
         const btPrintUrl = `my.bluetoothprint.scheme://${responseUrl}`;
-        
-        // Launch the Bluetooth Print app
         window.location.href = btPrintUrl;
-        
         showToast('Sending to printer... 🖨️');
       } catch (err) {
         console.error('Bluetooth print error:', err);
@@ -1344,14 +1558,189 @@
       }
     }
 
-    function generateReceipt(bill, autoPrint = false) {
-      const items = JSON.parse(bill.items || '[]');
+    function printElementViaIframe(htmlContent) {
+      let iframe = document.getElementById('printIframe');
+      if (iframe) iframe.remove();
+      
+      iframe = document.createElement('iframe');
+      iframe.id = 'printIframe';
+      iframe.style.position = 'absolute';
+      iframe.style.width = '0px';
+      iframe.style.height = '0px';
+      iframe.style.border = 'none';
+      
+      document.body.appendChild(iframe);
+      
+      const doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(htmlContent);
+      doc.close();
+      
+      iframe.contentWindow.focus();
+      setTimeout(() => {
+        iframe.contentWindow.print();
+      }, 500);
+    }
+
+    function generateReceiptText(bill) {
+      const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
       const dateObj = new Date(bill.created_at);
       const dateStr = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
       const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
       const billId = bill.id ? `#${String(bill.id).slice(0, 8).toUpperCase()}` : '#N/A';
 
-      // Group items by name+size for quantity
+      const grouped = {};
+      items.forEach(item => {
+        const key = `${item.name}|${item.size || ''}`;
+        if (!grouped[key]) {
+          grouped[key] = { ...item, qty: 0, totalPrice: 0 };
+        }
+        grouped[key].qty += (item.quantity || 1);
+        grouped[key].totalPrice += Number(item.price) * (item.quantity || 1);
+      });
+
+      let text = '';
+      text += '      GRILL & CHILL      \n';
+      text += '    Pizzeria & Bakery    \n';
+      text += '  Raikot Road, Sandhaur  \n';
+      text += 'Adj. HDFC Bank, Malerkotla\n';
+      text += '     Ph: 79019 94174     \n';
+      text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      text += padLine(`Bill ${billId}`, timeStr) + '\n';
+      text += `Date: ${dateStr}\n`;
+      text += '────────────────────────────────\n';
+      
+      Object.values(grouped).forEach(item => {
+        const qty = item.qty;
+        const nameWithSize = item.size ? `${item.name} (${item.size})` : item.name;
+        const label = `${qty}x ${nameWithSize}`;
+        const priceStr = `Rs.${item.totalPrice}`;
+        text += padLine(label, priceStr) + '\n';
+      });
+      
+      text += '────────────────────────────────\n';
+      text += padLine('TOTAL', `Rs.${bill.total_amount}`) + '\n';
+      text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      
+      if (bill.customer_phone && bill.customer_phone !== 'N/A') {
+        text += `Customer: ${bill.customer_phone}\n`;
+      }
+      if (bill.customer_name && bill.customer_name !== 'Walk-in') {
+        text += `Name: ${bill.customer_name}\n`;
+      }
+      
+      text += 'All prices inclusive of taxes\n';
+      text += '────────────────────────────────\n';
+      text += '    Thank you! Visit again.    \n';
+      text += 'grillandchillpizzeria.juvaid.in\n';
+      
+      return text;
+    }
+
+    function generateEscPosBytes(bill) {
+      const bytes = [];
+      const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
+      
+      function addText(str) {
+        for (let i = 0; i < str.length; i++) {
+          bytes.push(str.charCodeAt(i) & 0xFF);
+        }
+      }
+      
+      function addLine(str = '') {
+        addText(str + '\n');
+      }
+      
+      bytes.push(0x1B, 0x40);
+      bytes.push(0x1B, 0x61, 0x01);
+      bytes.push(0x1B, 0x45, 0x01);
+      bytes.push(0x1D, 0x21, 0x11);
+      addLine('GRILL & CHILL');
+      bytes.push(0x1D, 0x21, 0x00);
+      bytes.push(0x1B, 0x45, 0x00);
+      
+      addLine('Pizzeria & Bakery');
+      addLine('Raikot Road, Sandhaur');
+      addLine('Adj. HDFC Bank, Malerkotla');
+      addLine('Ph: 79019 94174');
+      addLine('================================');
+      
+      const date = bill.created_at ? new Date(bill.created_at) : new Date();
+      const billId = bill.id ? `#${String(bill.id).slice(0, 8).toUpperCase()}` : '#N/A';
+      const timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      
+      bytes.push(0x1B, 0x61, 0x00);
+      bytes.push(0x1B, 0x45, 0x01);
+      addLine(padLine(`Bill ${billId}`, timeStr));
+      bytes.push(0x1B, 0x45, 0x00);
+      addLine(`Date: ${dateStr}`);
+      addLine('--------------------------------');
+      
+      const grouped = {};
+      items.forEach(item => {
+        const key = `${item.name}|${item.size || ''}`;
+        if (!grouped[key]) {
+          grouped[key] = { ...item, qty: 0, totalPrice: 0 };
+        }
+        grouped[key].qty += (item.quantity || 1);
+        grouped[key].totalPrice += Number(item.price) * (item.quantity || 1);
+      });
+      
+      Object.values(grouped).forEach(item => {
+        const qty = item.qty;
+        const nameWithSize = item.size ? `${item.name} (${item.size})` : item.name;
+        const label = `${qty}x ${nameWithSize}`;
+        const priceStr = `Rs.${item.totalPrice}`;
+        
+        if (label.length + priceStr.length + 1 > 32) {
+          addLine(label);
+          bytes.push(0x1B, 0x61, 0x02);
+          addLine(priceStr);
+          bytes.push(0x1B, 0x61, 0x00);
+        } else {
+          addLine(padLine(label, priceStr));
+        }
+      });
+      
+      addLine('--------------------------------');
+      
+      const totalStr = `Rs.${bill.total_amount || 0}`;
+      bytes.push(0x1B, 0x45, 0x01);
+      bytes.push(0x1D, 0x21, 0x01);
+      addLine(padLine('TOTAL', totalStr));
+      bytes.push(0x1D, 0x21, 0x00);
+      bytes.push(0x1B, 0x45, 0x00);
+      addLine('================================');
+      
+      if (bill.customer_phone && bill.customer_phone !== 'N/A') {
+        addLine(`Customer: ${bill.customer_phone}`);
+      }
+      if (bill.customer_name && bill.customer_name !== 'Walk-in') {
+        addLine(`Name: ${bill.customer_name}`);
+      }
+      
+      bytes.push(0x1B, 0x61, 0x01);
+      addLine('All prices inclusive of taxes');
+      addLine('--------------------------------');
+      bytes.push(0x1B, 0x45, 0x01);
+      addLine('Thank you! Visit again.');
+      bytes.push(0x1B, 0x45, 0x00);
+      addLine('grillandchillpizzeria.juvaid.in');
+      
+      bytes.push(0x0A, 0x0A, 0x0A, 0x0A);
+      bytes.push(0x1D, 0x56, 0x42, 0x00);
+      
+      return new Uint8Array(bytes);
+    }
+
+    function generateReceipt(bill, autoPrint = false) {
+      const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
+      const dateObj = new Date(bill.created_at);
+      const dateStr = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const billId = bill.id ? `#${String(bill.id).slice(0, 8).toUpperCase()}` : '#N/A';
+
       const grouped = {};
       items.forEach(item => {
         const key = `${item.name}|${item.size || ''}`;
@@ -1365,7 +1754,81 @@
       const logoUrl = window.location.origin + '/assets/logo.svg';
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent('https://grillandchillpizzeria.juvaid.in')}`;
       
-      const receiptHtml = `
+      const receiptContentHtml = `
+        <div class="center">
+          <img src="${logoUrl}" class="store-logo" alt="Logo" onerror="this.style.display='none'">
+          <div class="store-name">GRILL & CHILL</div>
+          <div class="store-tagline">Pizzeria & Bakery</div>
+          <div class="store-address">
+            Raikot Road, Sandhaur<br>
+            Adj. HDFC Bank, Malerkotla<br>
+            Ph: 79019 94174
+          </div>
+        </div>
+
+        <hr class="double-separator">
+
+        <div class="bill-info">
+          <span class="bold">Bill ${billId}</span>
+          <span>${timeStr}</span>
+        </div>
+        <div class="bill-info">
+          <span>Date: ${dateStr}</span>
+        </div>
+
+        <hr class="separator">
+
+        <div class="items">
+          ${Object.values(grouped).map(item => {
+            const nameWithSize = item.size ? `${item.name} (${item.size})` : item.name;
+            return `
+              <div class="item-row">
+                <span class="item-name">${item.qty}x ${nameWithSize}</span>
+                <span class="item-price">₹${item.totalPrice}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <hr class="separator">
+
+        <div class="total-row">
+          <span>TOTAL</span>
+          <span>₹${bill.total_amount}</span>
+        </div>
+
+        <hr class="double-separator">
+
+        ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `<div class="customer-info">Customer: ${bill.customer_phone}</div>` : ''}
+        ${(bill.customer_name && bill.customer_name !== 'Walk-in') ? `<div class="customer-info">Name: ${bill.customer_name}</div>` : ''}
+
+        <div class="tax-note">All prices inclusive of taxes</div>
+
+        <hr class="separator">
+
+        <div class="footer">
+          <div class="footer-thanks">Thank you! Visit again.</div>
+          <div class="footer-url">grillandchillpizzeria.juvaid.in</div>
+          <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'">
+        </div>
+      `;
+
+      // Render into receipt modal preview paper
+      const paper = document.getElementById('receiptPaper');
+      if (paper) {
+        paper.innerHTML = receiptContentHtml;
+      }
+
+      // Configure Action Buttons
+      const btnDirectBLE = document.getElementById('btnDirectBtPrint');
+      const btnBrowser = document.getElementById('btnBrowserPrint');
+      const btnApp = document.getElementById('btnAppPrint');
+      const btnEmail = document.getElementById('btnEmailReceipt');
+      const btnShare = document.getElementById('btnShareReceipt');
+      const btnDisconnect = document.getElementById('btnDisconnectBLE');
+
+      // Writable frame for print
+      const printIframeHtml = `
         <html>
         <head>
           <title>Receipt ${billId} — Grill & Chill</title>
@@ -1431,7 +1894,7 @@
               margin: 3px 0;
               gap: 4px;
             }
-            .item-name { flex: 1; word-break: break-word; }
+            .item-name { flex: 1; word-break: break-word; text-align: left; }
             .item-price { white-space: nowrap; font-weight: 600; }
             .total-row {
               display: flex;
@@ -1443,6 +1906,7 @@
             .customer-info {
               font-size: 10px;
               margin: 3px 0;
+              text-align: left;
             }
             .tax-note {
               font-size: 9px;
@@ -1470,103 +1934,64 @@
               margin: 4px auto;
               display: block;
             }
-            .actions {
-              margin-top: 12px;
-              display: flex;
-              gap: 8px;
-            }
-            .action-btn {
-              flex: 1;
-              padding: 10px;
-              border: none;
-              border-radius: 6px;
-              font-weight: 700;
-              cursor: pointer;
-              font-size: 12px;
-            }
-            .btn-print { background: #000; color: #fff; }
-            .btn-close { background: #eee; color: #333; }
-            @media print {
-              .no-print { display: none !important; }
-              body { padding: 0 2px; }
-            }
           </style>
         </head>
         <body>
-          <div class="center">
-            <img src="${logoUrl}" class="store-logo" alt="Logo" onerror="this.style.display='none'">
-            <div class="store-name">GRILL & CHILL</div>
-            <div class="store-tagline">Pizzeria & Bakery</div>
-            <div class="store-address">
-              Raikot Road, Sandhaur<br>
-              Adj. HDFC Bank, Malerkotla<br>
-              Ph: 79019 94174
-            </div>
-          </div>
-
-          <hr class="double-separator">
-
-          <div class="bill-info">
-            <span class="bold">Bill ${billId}</span>
-            <span>${timeStr}</span>
-          </div>
-          <div class="bill-info">
-            <span>Date: ${dateStr}</span>
-          </div>
-
-          <hr class="separator">
-
-          <div class="items">
-            ${Object.values(grouped).map(item => {
-              const nameWithSize = item.size ? `${item.name} (${item.size})` : item.name;
-              return `
-                <div class="item-row">
-                  <span class="item-name">${item.qty}x ${nameWithSize}</span>
-                  <span class="item-price">₹${item.totalPrice}</span>
-                </div>
-              `;
-            }).join('')}
-          </div>
-
-          <hr class="separator">
-
-          <div class="total-row">
-            <span>TOTAL</span>
-            <span>₹${bill.total_amount}</span>
-          </div>
-
-          <hr class="double-separator">
-
-          ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `<div class="customer-info">Customer: ${bill.customer_phone}</div>` : ''}
-          ${(bill.customer_name && bill.customer_name !== 'Walk-in') ? `<div class="customer-info">Name: ${bill.customer_name}</div>` : ''}
-
-          <div class="tax-note">All prices inclusive of taxes</div>
-
-          <hr class="separator">
-
-          <div class="footer">
-            <div class="footer-thanks">Thank you! Visit again.</div>
-            <div class="footer-url">grillandchillpizzeria.juvaid.in</div>
-            <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'">
-          </div>
-
-          <div class="actions no-print">
-            <button class="action-btn btn-print" onclick="window.print()">🖨️ PRINT</button>
-            <button class="action-btn btn-close" onclick="window.close()">✕ CLOSE</button>
-          </div>
+          ${receiptContentHtml}
         </body>
         </html>
       `;
 
-      const win = window.open('', '_blank');
-      if (win) {
-        win.document.write(receiptHtml);
-        win.document.close();
-        if (autoPrint) {
-          win.onload = () => win.print();
-        }
-      } else {
-        showToast('Pop-up blocked! Allow pop-ups for this site.');
+      if (btnDirectBLE) {
+        btnDirectBLE.onclick = () => printDirectlyViaBluetooth(bill);
+      }
+      if (btnBrowser) {
+        btnBrowser.onclick = () => printElementViaIframe(printIframeHtml);
+      }
+      if (btnApp) {
+        btnApp.onclick = () => printBluetooth(bill);
+      }
+      if (btnEmail) {
+        btnEmail.onclick = () => {
+          const emailAddr = prompt('Enter customer email address:', '');
+          if (emailAddr) {
+            const receiptText = generateReceiptText(bill);
+            const subject = encodeURIComponent(`Receipt from Grill & Chill — Bill ${billId}`);
+            const body = encodeURIComponent(receiptText);
+            window.open(`mailto:${emailAddr}?subject=${subject}&body=${body}`, '_blank');
+          }
+        };
+      }
+      if (btnShare) {
+        btnShare.onclick = () => {
+          const receiptText = generateReceiptText(bill);
+          if (navigator.share) {
+            navigator.share({
+              title: `Grill & Chill Bill ${billId}`,
+              text: receiptText
+            }).catch(err => console.log('Share failed:', err));
+          } else {
+            navigator.clipboard.writeText(receiptText).then(() => {
+              showToast('Receipt text copied! 📋');
+            });
+          }
+        };
+      }
+      if (btnDisconnect) {
+        btnDisconnect.onclick = () => disconnectBLEPrinter();
+        btnDisconnect.style.display = (cachedPrinterDevice && cachedPrinterDevice.gatt.connected) ? 'block' : 'none';
+      }
+
+      // Open Modal
+      document.getElementById('receiptPreviewModal').style.display = 'flex';
+
+      // Recreate Lucide Icons inside modal
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+
+      if (autoPrint) {
+        printElementViaIframe(printIframeHtml);
       }
     }
 
