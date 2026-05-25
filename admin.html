@@ -1096,15 +1096,18 @@
           <div style="margin-top:10px; font-size:0.8rem; color:rgba(255,255,255,0.7)">
             ${JSON.parse(b.items || '[]').map(i => `${i.name} (${i.size})`).join(', ')}
           </div>
-          <div style="margin-top:20px; display:flex; gap:12px; ${isVoided ? 'pointer-events:none; opacity:0.3' : ''}">
-            <button onclick="handleReceipt(${idx}, true)" class="btn-primary" style="flex:1.5; display:flex; align-items:center; justify-content:center; gap:10px; padding:15px; font-weight:800">
-              <i data-lucide="printer" style="width:18px"></i> PRINT
+          <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; ${isVoided ? 'pointer-events:none; opacity:0.3' : ''}">
+            <button onclick="handleBluetoothPrint(${idx})" class="btn-primary" style="flex:1.2; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; font-weight:800; min-width:100px; font-size:0.7rem">
+              <i data-lucide="printer" style="width:16px"></i> PRINT
             </button>
-            <button onclick="handleShare(${idx})" class="btn-primary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:10px; padding:15px; background:rgba(255,255,255,0.05); border-color:var(--b); color:var(--text); font-weight:700">
-              <i data-lucide="share-2" style="width:18px"></i> SHARE
+            <button onclick="handleReceipt(${idx}, false)" class="btn-primary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); font-weight:700; min-width:90px; font-size:0.7rem">
+              <i data-lucide="eye" style="width:16px"></i> PREVIEW
             </button>
-            <button onclick="voidBill(${idx})" class="mini-btn" style="padding:15px; width:55px; background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.2); color:#ef4444; display:flex; align-items:center; justify-content:center">
-              <i data-lucide="trash-2" style="width:20px"></i>
+            <button onclick="handleShare(${idx})" class="btn-primary" style="flex:0.8; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); font-weight:700; min-width:80px; font-size:0.7rem">
+              <i data-lucide="share-2" style="width:16px"></i> SHARE
+            </button>
+            <button onclick="voidBill(${idx})" class="mini-btn" style="padding:14px; width:50px; background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.2); color:#ef4444; display:flex; align-items:center; justify-content:center">
+              <i data-lucide="trash-2" style="width:18px"></i>
             </button>
           </div>
         </div>
@@ -1238,8 +1241,46 @@
       generateReceipt(window.CURRENT_BILLS[idx], autoPrint);
     }
 
+    function handleBluetoothPrint(idx) {
+      printBluetooth(window.CURRENT_BILLS[idx]);
+    }
+
     function handleShare(idx) {
       shareReceipt(window.CURRENT_BILLS[idx]);
+    }
+
+    // ═══════════════════════════════════════════
+    //  BLUETOOTH THERMAL PRINTER (58mm)
+    //  Uses Bluetooth Print app (mate.bluetoothprint)
+    // ═══════════════════════════════════════════
+    function printBluetooth(bill) {
+      try {
+        // Encode bill data as base64 for the API endpoint
+        const billPayload = {
+          id: bill.id,
+          customer_name: bill.customer_name || 'Walk-in',
+          customer_phone: bill.customer_phone || 'N/A',
+          total_amount: bill.total_amount,
+          items: bill.items,
+          payment_status: bill.payment_status,
+          created_at: bill.created_at
+        };
+        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(billPayload))));
+        
+        // Build the Bluetooth Print app URL scheme
+        // The app will fetch JSON from our /api/receipt endpoint
+        const siteUrl = window.location.origin;
+        const responseUrl = `${siteUrl}/api/receipt?bill=${encoded}`;
+        const btPrintUrl = `my.bluetoothprint.scheme://${responseUrl}`;
+        
+        // Launch the Bluetooth Print app
+        window.location.href = btPrintUrl;
+        
+        showToast('Sending to printer... 🖨️');
+      } catch (err) {
+        console.error('Bluetooth print error:', err);
+        showToast('Print failed. Is the Bluetooth Print app installed?');
+      }
     }
 
     async function syncBills() {
@@ -1305,56 +1346,228 @@
 
     function generateReceipt(bill, autoPrint = false) {
       const items = JSON.parse(bill.items || '[]');
-      const date = new Date(bill.created_at).toLocaleString();
+      const dateObj = new Date(bill.created_at);
+      const dateStr = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const billId = bill.id ? `#${String(bill.id).slice(0, 8).toUpperCase()}` : '#N/A';
+
+      // Group items by name+size for quantity
+      const grouped = {};
+      items.forEach(item => {
+        const key = `${item.name}|${item.size || ''}`;
+        if (!grouped[key]) {
+          grouped[key] = { ...item, qty: 0, totalPrice: 0 };
+        }
+        grouped[key].qty += (item.quantity || 1);
+        grouped[key].totalPrice += Number(item.price) * (item.quantity || 1);
+      });
+
+      const logoUrl = window.location.origin + '/assets/logo.svg';
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent('https://grillandchillpizzeria.juvaid.in')}`;
       
       const receiptHtml = `
         <html>
         <head>
-          <title>Receipt - Grill & Chill</title>
+          <title>Receipt ${billId} — Grill & Chill</title>
+          <meta charset="UTF-8">
           <style>
-            body { font-family: 'Courier New', Courier, monospace; width: 300px; margin: 0 auto; padding: 20px; color: #000; }
-            .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
-            .item-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin: 5px 0; }
-            .total { border-top: 1px dashed #000; margin-top: 10px; padding-top: 10px; font-weight: bold; font-size: 1.1rem; }
-            .footer { text-align: center; font-size: 0.7rem; margin-top: 20px; color: #555; }
-            @media print { .no-print { display: none; } }
+            @page { size: 58mm auto; margin: 0; }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              font-family: 'Courier New', Courier, monospace;
+              width: 58mm;
+              max-width: 58mm;
+              margin: 0 auto;
+              padding: 8px 6px;
+              color: #000;
+              font-size: 11px;
+              line-height: 1.4;
+              background: #fff;
+            }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .separator {
+              border: none;
+              border-top: 1px dashed #000;
+              margin: 6px 0;
+            }
+            .double-separator {
+              border: none;
+              border-top: 2px solid #000;
+              margin: 6px 0;
+            }
+            .store-logo {
+              width: 60px;
+              height: auto;
+              margin: 0 auto 4px;
+              display: block;
+            }
+            .store-name {
+              font-size: 16px;
+              font-weight: 900;
+              letter-spacing: 1px;
+              margin-bottom: 2px;
+            }
+            .store-tagline {
+              font-size: 10px;
+              margin-bottom: 2px;
+            }
+            .store-address {
+              font-size: 9px;
+              color: #333;
+              line-height: 1.3;
+            }
+            .bill-info {
+              display: flex;
+              justify-content: space-between;
+              font-size: 10px;
+              margin: 2px 0;
+            }
+            .item-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              font-size: 11px;
+              margin: 3px 0;
+              gap: 4px;
+            }
+            .item-name { flex: 1; word-break: break-word; }
+            .item-price { white-space: nowrap; font-weight: 600; }
+            .total-row {
+              display: flex;
+              justify-content: space-between;
+              font-size: 14px;
+              font-weight: 900;
+              margin: 4px 0;
+            }
+            .customer-info {
+              font-size: 10px;
+              margin: 3px 0;
+            }
+            .tax-note {
+              font-size: 9px;
+              color: #555;
+              text-align: center;
+              margin: 4px 0;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 6px;
+            }
+            .footer-thanks {
+              font-size: 11px;
+              font-weight: bold;
+              margin-bottom: 2px;
+            }
+            .footer-url {
+              font-size: 8px;
+              color: #666;
+              margin-bottom: 6px;
+            }
+            .qr-code {
+              width: 80px;
+              height: 80px;
+              margin: 4px auto;
+              display: block;
+            }
+            .actions {
+              margin-top: 12px;
+              display: flex;
+              gap: 8px;
+            }
+            .action-btn {
+              flex: 1;
+              padding: 10px;
+              border: none;
+              border-radius: 6px;
+              font-weight: 700;
+              cursor: pointer;
+              font-size: 12px;
+            }
+            .btn-print { background: #000; color: #fff; }
+            .btn-close { background: #eee; color: #333; }
+            @media print {
+              .no-print { display: none !important; }
+              body { padding: 0 2px; }
+            }
           </style>
         </head>
-        <body onload="${autoPrint ? 'window.print()' : ''}">
-          <div class="header">
-            <h2 style="margin:0">GRILL & CHILL</h2>
-            <div style="font-size:0.8rem">Authentic Pizzeria & Grill</div>
-          </div>
-          <div style="font-size:0.8rem; margin-bottom:10px">
-            Date: ${date}<br>
-            Bill ID: #${(bill.id || 'N/A').toString().slice(0,8)}
-          </div>
-          <div class="items">
-            ${items.map(i => `
-              <div class="item-row">
-                <span>${i.name} (${i.size})</span>
-                <span>₹${i.price}</span>
-              </div>
-            `).join('')}
-          </div>
-          <div class="total">
-            <div class="item-row">
-              <span>TOTAL</span>
-              <span>₹${bill.total_amount}</span>
+        <body>
+          <div class="center">
+            <img src="${logoUrl}" class="store-logo" alt="Logo" onerror="this.style.display='none'">
+            <div class="store-name">GRILL & CHILL</div>
+            <div class="store-tagline">Pizzeria & Bakery</div>
+            <div class="store-address">
+              Raikot Road, Sandhaur<br>
+              Adj. HDFC Bank, Malerkotla<br>
+              Ph: 79019 94174
             </div>
           </div>
-          <div class="footer">
-            Thank you for dining with us!<br>
-            Visit again soon.
+
+          <hr class="double-separator">
+
+          <div class="bill-info">
+            <span class="bold">Bill ${billId}</span>
+            <span>${timeStr}</span>
           </div>
-          <button class="no-print" onclick="window.print()" style="width:100%; margin-top:20px; padding:10px; background:#000; color:#fff; border:none; border-radius:5px; cursor:pointer">PRINT RECEIPT</button>
+          <div class="bill-info">
+            <span>Date: ${dateStr}</span>
+          </div>
+
+          <hr class="separator">
+
+          <div class="items">
+            ${Object.values(grouped).map(item => {
+              const nameWithSize = item.size ? `${item.name} (${item.size})` : item.name;
+              return `
+                <div class="item-row">
+                  <span class="item-name">${item.qty}x ${nameWithSize}</span>
+                  <span class="item-price">₹${item.totalPrice}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <hr class="separator">
+
+          <div class="total-row">
+            <span>TOTAL</span>
+            <span>₹${bill.total_amount}</span>
+          </div>
+
+          <hr class="double-separator">
+
+          ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `<div class="customer-info">Customer: ${bill.customer_phone}</div>` : ''}
+          ${(bill.customer_name && bill.customer_name !== 'Walk-in') ? `<div class="customer-info">Name: ${bill.customer_name}</div>` : ''}
+
+          <div class="tax-note">All prices inclusive of taxes</div>
+
+          <hr class="separator">
+
+          <div class="footer">
+            <div class="footer-thanks">Thank you! Visit again.</div>
+            <div class="footer-url">grillandchillpizzeria.juvaid.in</div>
+            <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'">
+          </div>
+
+          <div class="actions no-print">
+            <button class="action-btn btn-print" onclick="window.print()">🖨️ PRINT</button>
+            <button class="action-btn btn-close" onclick="window.close()">✕ CLOSE</button>
+          </div>
         </body>
         </html>
       `;
 
       const win = window.open('', '_blank');
-      win.document.write(receiptHtml);
-      win.document.close();
+      if (win) {
+        win.document.write(receiptHtml);
+        win.document.close();
+        if (autoPrint) {
+          win.onload = () => win.print();
+        }
+      } else {
+        showToast('Pop-up blocked! Allow pop-ups for this site.');
+      }
     }
 
     // Listen for auth state changes
