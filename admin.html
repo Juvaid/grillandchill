@@ -424,6 +424,24 @@
         <div class="mobile-list" id="billingBody"></div>
       </div>
 
+      <div id="settingsSection" class="hidden">
+        <div class="section-header">
+          <h3 class="section-title">Store Settings</h3>
+        </div>
+        
+        <form id="settingsForm" onsubmit="saveSettings(event)" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:flex; flex-direction:column; gap:15px">
+          <div class="form-group">
+            <label class="form-label">Store UPI ID (for QR Payments)</label>
+            <input type="text" id="storeUpiId" class="auth-input" placeholder="e.g. storename@okaxis" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Store Merchant Name</label>
+            <input type="text" id="storeMerchantName" class="auth-input" placeholder="e.g. Grill & Chill" required>
+          </div>
+          <button type="submit" class="btn-primary" style="height:50px">SAVE SETTINGS</button>
+        </form>
+      </div>
+
     </div>
 
     <nav class="bottom-nav">
@@ -439,9 +457,9 @@
         <span class="nav-icon">💰</span>
         <span>Billing</span>
       </div>
-      <div class="nav-item" onclick="alert('Settings coming soon!')">
+      <div class="nav-item" id="nav-settings" onclick="switchTab('settings')">
         <span class="nav-icon">⚙️</span>
-        <span>Stats</span>
+        <span>Store Settings</span>
       </div>
     </nav>
   </div>
@@ -551,7 +569,6 @@
             <select id="billPaymentMethod" class="auth-input" style="margin:0; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); font-size:0.8rem; height:36px; width:90px; border-radius:10px; padding:0 8px; color:var(--text); background:#141416;">
               <option value="Cash">💵 Cash</option>
               <option value="UPI">📱 UPI</option>
-              <option value="Card">💳 Card</option>
             </select>
           </div>
           <!-- Customer Phone -->
@@ -641,6 +658,26 @@
       <div id="collectionsBody" class="mobile-list"></div>
       <div style="margin-top:auto; padding-top:20px">
         <button onclick="closeModal('categoriesModal')" class="btn-primary" style="width:100%">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPI PAYMENT MODAL -->
+  <div class="modal" id="upiPayModal" style="z-index: 5000">
+    <div class="modal-content" style="max-width: 340px; text-align: center; padding: 25px; border-radius: 20px; background: #141416; border: 1px solid var(--border)">
+      <h3 style="margin-top:0; color:var(--primary)">UPI Payment QR</h3>
+      <p style="font-size:0.85rem; color:var(--text); margin-bottom: 15px">Scan the QR code below using any UPI app to pay.</p>
+      
+      <div style="background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 15px">
+        <img id="upiQrCodeImg" src="" style="width: 200px; height: 200px; display: block">
+      </div>
+      
+      <div style="font-size: 1.25rem; font-weight: 900; color: var(--primary); margin-bottom: 5px" id="upiPayAmount">₹0</div>
+      <div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 20px" id="upiPayDetails">To: store@upi</div>
+      
+      <div style="display:flex; gap:10px">
+        <button id="upiPaidBtn" class="btn-primary" style="flex:1; height: 45px">PAID & COMPLETE</button>
+        <button onclick="closeModal('upiPayModal')" class="mini-btn" style="flex:0.6; height: 45px; border-color:var(--border); color:var(--muted)">CANCEL</button>
       </div>
     </div>
   </div>
@@ -827,6 +864,7 @@
       loadBilling();
       await loadCategories();
       await loadProducts();
+      loadSettings();
       subscribeToOrders();
       subscribeToBills();
     }
@@ -856,7 +894,7 @@
 
     // --- TAB LOGIC ---
     function switchTab(tabId) {
-      ['orders', 'products', 'billing'].forEach(t => {
+      ['orders', 'products', 'billing', 'settings'].forEach(t => {
         const section = document.getElementById(t + 'Section');
         const navItem = document.getElementById('nav-' + t);
         if (section) section.classList.toggle('hidden', t !== tabId);
@@ -866,6 +904,7 @@
       if (tabId === 'orders') loadOrders();
       if (tabId === 'products') loadProducts();
       if (tabId === 'billing') loadBilling();
+      if (tabId === 'settings') loadSettings();
     }
 
     async function loadOrders() {
@@ -876,6 +915,7 @@
       
       const body = document.getElementById('ordersBody');
       if (!data) return;
+      window.allOrders = data;
 
       body.innerHTML = data.map(o => {
         const isCancelled = o.status === 'cancelled';
@@ -910,6 +950,7 @@
           <div class="action-row" style="${isCancelled ? 'pointer-events:none; opacity:0.3' : ''}">
             <button class="mini-btn" onclick="updateStatus(${o.id}, 'cooking')">COOK</button>
             <button class="mini-btn primary" onclick="updateStatus(${o.id}, 'completed')">FINISH</button>
+            <button class="mini-btn" onclick="billOrder(${o.id})" style="background:rgba(0,242,255,0.1); border-color:rgba(0,242,255,0.2); color:var(--accent)">BILL</button>
             <button class="mini-btn danger" onclick="updateStatus(${o.id}, 'cancelled')">X</button>
           </div>
         </div>
@@ -1046,6 +1087,118 @@
     async function updateStatus(id, status) {
       await supabaseClient.from('orders').update({ status }).eq('id', id);
       loadOrders();
+    }
+
+    function loadSettings() {
+      const upiId = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
+      const merchantName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
+      
+      document.getElementById('storeUpiId').value = upiId;
+      document.getElementById('storeMerchantName').value = merchantName;
+    }
+
+    function saveSettings(e) {
+      if (e) e.preventDefault();
+      const upiId = document.getElementById('storeUpiId').value.trim();
+      const merchantName = document.getElementById('storeMerchantName').value.trim();
+      
+      localStorage.setItem('gc_store_upi_id', upiId);
+      localStorage.setItem('gc_store_merchant_name', merchantName);
+      
+      showToast('Settings Saved successfully! ⚙️');
+    }
+
+    async function billOrder(orderId) {
+      const order = (window.allOrders || []).find(o => o.id === orderId);
+      if (!order) return alert('Order not found!');
+      
+      let paymentMethod = prompt(`Billing Order #${orderId.toString().slice(-4)} for ₹${order.total_amount}.\nEnter Payment Method (Cash/UPI):`, "Cash");
+      if (paymentMethod === null) return; // Cancelled
+      
+      paymentMethod = paymentMethod.trim();
+      if (paymentMethod.toLowerCase() === 'cash') paymentMethod = 'Cash';
+      else if (paymentMethod.toLowerCase() === 'upi') paymentMethod = 'UPI';
+      else {
+        alert("Invalid payment method! Please choose Cash or UPI.");
+        return;
+      }
+
+      // Map order_items to flat bill items
+      const billItems = [];
+      order.order_items.forEach(oi => {
+        const qty = oi.quantity || 1;
+        const basePrice = Number(oi.price);
+        
+        let addonPrice = 0;
+        let nameWithAddons = oi.item_name;
+        if (oi.addons && Array.isArray(oi.addons) && oi.addons.length > 0) {
+          const addonNames = oi.addons.map(a => a.name).join(', ');
+          nameWithAddons += ` + ${addonNames}`;
+          addonPrice = oi.addons.reduce((sum, a) => sum + Number(a.price), 0);
+        }
+        
+        for (let q = 0; q < qty; q++) {
+          billItems.push({
+            id: oi.menu_item_id,
+            name: nameWithAddons,
+            size: oi.size,
+            price: basePrice + addonPrice
+          });
+        }
+      });
+
+      const saveAndComplete = async () => {
+        const uid = generateUUID();
+        const billData = {
+          id: uid,
+          client_uuid: uid,
+          customer_name: order.customer_name || 'Online Customer',
+          customer_phone: order.customer_phone || 'N/A',
+          total_amount: order.total_amount,
+          items: JSON.stringify(billItems),
+          payment_status: 'paid',
+          payment_method: paymentMethod,
+          created_at: new Date().toISOString(),
+          sync_status: 'pending'
+        };
+
+        try {
+          await db.local_bills.add(billData);
+          showToast('Bill Created offline! 💾');
+          
+          const { error: orderErr } = await supabaseClient
+            .from('orders')
+            .update({ status: 'completed', payment_status: 'paid' })
+            .eq('id', orderId);
+          
+          if (orderErr) throw orderErr;
+          
+          await loadOrders();
+          syncBills();
+          generateReceipt(billData, false);
+        } catch (err) {
+          console.error('Billing failed:', err);
+          alert('Error billing order: ' + err.message);
+        }
+      };
+
+      if (paymentMethod === 'UPI') {
+        const storeUpi = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
+        const storeName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
+        const upiUrl = `upi://pay?pa=${storeUpi}&pn=${encodeURIComponent(storeName)}&am=${order.total_amount}&cu=INR`;
+        
+        document.getElementById('upiQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+        document.getElementById('upiPayAmount').innerText = `₹${order.total_amount}`;
+        document.getElementById('upiPayDetails').innerText = `To: ${storeUpi}`;
+        
+        document.getElementById('upiPaidBtn').onclick = async () => {
+          closeModal('upiPayModal');
+          await saveAndComplete();
+        };
+        document.getElementById('upiPayModal').style.display = 'flex';
+      } else {
+        await saveAndComplete();
+      }
     }
 
     async function toggleAvailable(id, available) {
@@ -1450,8 +1603,28 @@
       if (currentBillItems.length === 0) return alert('Bill is empty!');
       const phone = document.getElementById('customerPhone').value || 'N/A';
       const paymentMethod = document.getElementById('billPaymentMethod').value || 'Cash';
-      
       const total = currentBillItems.reduce((sum, i) => sum + i.price, 0);
+
+      if (paymentMethod === 'UPI') {
+        const storeUpi = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
+        const storeName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
+        const upiUrl = `upi://pay?pa=${storeUpi}&pn=${encodeURIComponent(storeName)}&am=${total}&cu=INR`;
+        
+        document.getElementById('upiQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+        document.getElementById('upiPayAmount').innerText = `₹${total}`;
+        document.getElementById('upiPayDetails').innerText = `To: ${storeUpi}`;
+        
+        document.getElementById('upiPaidBtn').onclick = async () => {
+          closeModal('upiPayModal');
+          await finalizeBill(phone, paymentMethod, total, currentBillItems);
+        };
+        document.getElementById('upiPayModal').style.display = 'flex';
+      } else {
+        await finalizeBill(phone, paymentMethod, total, currentBillItems);
+      }
+    }
+
+    async function finalizeBill(phone, paymentMethod, total, items) {
       const uid = generateUUID();
       const billData = {
         id: uid,
@@ -1459,7 +1632,7 @@
         customer_name: 'Walk-in',
         customer_phone: phone,
         total_amount: total,
-        items: JSON.stringify(currentBillItems),
+        items: JSON.stringify(items),
         payment_status: 'paid',
         payment_method: paymentMethod,
         created_at: new Date().toISOString(),
@@ -1472,6 +1645,7 @@
         closeQuickBill();
         loadBilling();
         syncBills(); 
+        generateReceipt(billData, false);
       } catch (err) {
         console.error('Save failed:', err);
       }
