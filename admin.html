@@ -1544,10 +1544,86 @@
       showToast('Printer disconnected');
     }
 
+    async function logoToEscPos(url, targetWidth = 256) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          try {
+            const scale = targetWidth / img.width;
+            const targetHeight = Math.round(img.height * scale);
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+            
+            const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+            const data = imgData.data;
+            
+            const bytes = [];
+            const xBytes = targetWidth / 8;
+            const xL = xBytes & 0xFF;
+            const xH = (xBytes >> 8) & 0xFF;
+            const yL = targetHeight & 0xFF;
+            const yH = (targetHeight >> 8) & 0xFF;
+            
+            bytes.push(0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH);
+            
+            for (let y = 0; y < targetHeight; y++) {
+              for (let xByte = 0; xByte < xBytes; xByte++) {
+                let byteVal = 0;
+                for (let bit = 0; bit < 8; bit++) {
+                  const x = xByte * 8 + bit;
+                  const idx = (y * targetWidth + x) * 4;
+                  const r = data[idx];
+                  const g = data[idx + 1];
+                  const b = data[idx + 2];
+                  const a = data[idx + 3];
+                  
+                  let isBlack = 0;
+                  if (a >= 128) {
+                    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                    if (gray < 128) {
+                      isBlack = 1;
+                    }
+                  }
+                  if (isBlack) {
+                    byteVal |= (1 << (7 - bit));
+                  }
+                }
+                bytes.push(byteVal);
+              }
+            }
+            resolve(new Uint8Array(bytes));
+          } catch (e) {
+            console.error('Error encoding logo:', e);
+            resolve(null);
+          }
+        };
+        img.onerror = () => {
+          console.error("Failed to load logo image for printing");
+          resolve(null);
+        };
+        img.src = url;
+      });
+    }
+
     async function printDirectlyViaBluetooth(bill) {
       try {
         const char = await getBLEPrinter();
-        const bytes = generateEscPosBytes(bill);
+        
+        showToast('Processing logo... ⏳');
+        const logoUrl = window.location.origin + '/assets/logo-transparent.png';
+        let logoBytes = null;
+        try {
+          logoBytes = await logoToEscPos(logoUrl, 256);
+        } catch (e) {
+          console.error('Failed to convert logo to ESC/POS:', e);
+        }
+        
+        const bytes = generateEscPosBytes(bill, logoBytes);
         showToast('Printing receipt... 🖨️');
         await writeInChunks(char, bytes);
         showToast('Print complete! ✅');
@@ -2053,7 +2129,7 @@
       return text;
     }
 
-    function generateEscPosBytes(bill) {
+    function generateEscPosBytes(bill, logoBytes) {
       const bytes = [];
       const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
       
@@ -2066,8 +2142,40 @@
       function addLine(str = '') {
         addText(str + '\n');
       }
+
+      function addQrCode(value) {
+        // 1. Set model (Model 2)
+        bytes.push(0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00);
+        // 2. Set dot size (default size 6 dots)
+        bytes.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x06);
+        // 3. Set error correction level (Level M)
+        bytes.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x44, 0x31);
+        // 4. Store data
+        const dataBytes = [];
+        for (let i = 0; i < value.length; i++) {
+          dataBytes.push(value.charCodeAt(i) & 0xFF);
+        }
+        const len = dataBytes.length + 3;
+        const pL = len & 0xFF;
+        const pH = (len >> 8) & 0xFF;
+        bytes.push(0x1D, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30);
+        bytes.push(...dataBytes);
+        // 5. Print QR code
+        bytes.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30);
+      }
       
+      // Initialize printer
       bytes.push(0x1B, 0x40);
+      
+      // Add logo if available
+      if (logoBytes && logoBytes.length > 0) {
+        bytes.push(0x1B, 0x61, 0x01); // Center align logo
+        for (let i = 0; i < logoBytes.length; i++) {
+          bytes.push(logoBytes[i]);
+        }
+        bytes.push(0x0A); // Line feed
+      }
+
       bytes.push(0x1B, 0x61, 0x01);
       bytes.push(0x1B, 0x45, 0x01);
       bytes.push(0x1D, 0x21, 0x11);
@@ -2146,6 +2254,10 @@
       addLine('Thank you! Visit again.');
       bytes.push(0x1B, 0x45, 0x00);
       addLine('grillandchillpizzeria.juvaid.in');
+      
+      // Print QR Code
+      bytes.push(0x0A); // Line feed
+      addQrCode('https://grillandchillpizzeria.juvaid.in');
       
       bytes.push(0x0A, 0x0A, 0x0A, 0x0A);
       bytes.push(0x1D, 0x56, 0x42, 0x00);
