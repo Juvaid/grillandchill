@@ -944,7 +944,8 @@ async function fetchMenu() {
       .from('menu_items')
       .select('*')
       .eq('available', true)
-      .order('sort_order', { ascending: true });
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true });
 
     if (error) throw error;
 
@@ -960,7 +961,11 @@ async function fetchMenu() {
       MENU[it.cat].push(it);
     });
 
-    const { data: catData } = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true });
+    const { data: catData } = await supabaseClient
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true });
     if (catData) {
       CATEGORIES = catData;
       const sortedMenu = {};

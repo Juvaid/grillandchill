@@ -342,10 +342,6 @@
           <input type="text" id="menuSearch" class="auth-input" placeholder="🔍 Search menu..." style="margin-bottom:0; flex:1" oninput="filterProducts()">
           <select id="categoryFilter" class="auth-input" style="margin-bottom:0; width:120px" onchange="filterProducts()">
             <option value="all">All Items</option>
-            <option value="🍕 Pizza Kingdom">Pizza</option>
-            <option value="🔥 KFC Chicken & Buckets">Chicken</option>
-            <option value="🥪 Sandwiches">Sandwich</option>
-            <option value="🍔 Burgers">Burgers</option>
           </select>
         </div>
 
@@ -477,15 +473,13 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
           <div class="form-group">
             <label class="form-label">Category</label>
-            <select id="itemCat" class="auth-input" required>
-              <option value="🍕 Pizza Kingdom">Pizza Kingdom</option>
-              <option value="🔥 KFC Chicken & Buckets">KFC Chicken</option>
-              <option value="🥤 Beverages & Shakes">Beverages</option>
-              <option value="🥪 Sandwiches">Sandwiches</option>
-              <option value="🍟 Fries & Sides">Fries & Sides</option>
-              <option value="🍔 Burgers">Burgers</option>
-              <option value="🍜 Maggi">Maggi</option>
+            <select id="itemCat" class="auth-input" required onchange="handleCategoryChange(this.value)">
+              <!-- Populated dynamically from DB categories -->
             </select>
+            <div id="newCatGroup" class="hidden" style="margin-top: 10px">
+              <label class="form-label" style="font-size: 0.75rem; color: var(--primary)">New Category Name (e.g. 🍨 Desserts)</label>
+              <input type="text" id="itemCatNew" class="auth-input" placeholder="Enter new category name">
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label">Emoji Icon</label>
@@ -506,6 +500,20 @@
         <div class="form-group">
           <label class="form-label">Addons Configuration (JSON Array)</label>
           <textarea id="itemAddons" class="json-area" placeholder='[{"name": "Extra Cheese", "price": 50}]'></textarea>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div class="form-group">
+            <label class="form-label">Sort Order</label>
+            <input type="number" id="itemSortOrder" class="auth-input" value="0" min="0" placeholder="Auto if 0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Available</label>
+            <select id="itemAvailable" class="auth-input">
+              <option value="true">Yes — Visible</option>
+              <option value="false">No — Hidden</option>
+            </select>
+          </div>
         </div>
 
         <div style="display:flex;gap:15px;margin-top:40px; margin-bottom: 20px">
@@ -582,7 +590,7 @@
   <div class="modal" id="collectionModal" style="z-index: 3000">
     <div class="modal-content">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px">
-        <h2 style="margin:0; color:var(--primary)">Edit Collection</h2>
+        <h2 id="collectionModalTitle" style="margin:0; color:var(--primary)">Edit Category</h2>
         <button onclick="closeModal('collectionModal')" style="background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); cursor:pointer; width:40px; height:40px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center">&times;</button>
       </div>
       <form id="collectionForm">
@@ -618,7 +626,10 @@
         <h2 style="margin:0; color:var(--primary)">Bento Grid Settings</h2>
         <button onclick="closeModal('categoriesModal')" style="background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); cursor:pointer; width:40px; height:40px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center">&times;</button>
       </div>
-      <p style="font-size:0.8rem; color:var(--muted); margin-bottom:20px">Manage your categories and bento grid cover images.</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:15px">
+        <p style="font-size:0.8rem; color:var(--muted); margin:0">Manage your categories and bento grid cover images.</p>
+        <button onclick="addCollection()" class="mini-btn" style="background:rgba(255,107,0,0.1); border-color:rgba(255,107,0,0.2); color:var(--primary); font-weight:700; white-space:nowrap">+ NEW CATEGORY</button>
+      </div>
       <div id="collectionsBody" class="mobile-list"></div>
       <div style="margin-top:auto; padding-top:20px">
         <button onclick="closeModal('categoriesModal')" class="btn-primary" style="width:100%">CLOSE</button>
@@ -806,8 +817,8 @@
       await migrateOldBills();
       loadOrders();
       loadBilling();
-      loadProducts();
-      loadCategories();
+      await loadCategories();
+      await loadProducts();
       subscribeToOrders();
       subscribeToBills();
     }
@@ -911,12 +922,65 @@
       if (actEl) actEl.innerText = active;
     }
 
+    function getCategorySortIndex(catName) {
+      if (!window.allCategories) return 9999;
+      const idx = window.allCategories.findIndex(c => c.name === catName);
+      return idx === -1 ? 9999 : idx;
+    }
+
     async function loadProducts() {
-      const { data } = await supabaseClient.from('menu_items').select('*').order('category', { ascending: true });
+      const { data } = await supabaseClient.from('menu_items').select('*');
       if (!data) return;
+      
+      // Sort data: category's sort_order first, then item's sort_order, then name
+      data.sort((a, b) => {
+        const catIdxA = getCategorySortIndex(a.category);
+        const catIdxB = getCategorySortIndex(b.category);
+        if (catIdxA !== catIdxB) return catIdxA - catIdxB;
+        if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0);
+        return a.name.localeCompare(b.name);
+      });
+      
       window.allProducts = data;
       document.getElementById('statTotalItems').innerText = data.length;
       renderProducts(data);
+      populateCategoryDropdown();
+    }
+
+    function populateCategoryDropdown() {
+      const select = document.getElementById('itemCat');
+      const filterSelect = document.getElementById('categoryFilter');
+      const cats = window.allCategories || [];
+      const catNames = cats.length > 0
+        ? cats.map(c => c.name)
+        : [...new Set((window.allProducts || []).map(p => p.category))].sort();
+      
+      select.innerHTML = catNames.map(c => `<option value="${c}">${c}</option>`).join('') + 
+        `<option value="__new__">+ Create New Category...</option>`;
+      
+      if (filterSelect) {
+        const currentValue = filterSelect.value;
+        filterSelect.innerHTML = `<option value="all">All Items</option>` + 
+          catNames.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (catNames.includes(currentValue)) {
+          filterSelect.value = currentValue;
+        } else {
+          filterSelect.value = 'all';
+        }
+      }
+    }
+
+    function handleCategoryChange(val) {
+      const newCatGroup = document.getElementById('newCatGroup');
+      const itemCatNew = document.getElementById('itemCatNew');
+      if (val === '__new__') {
+        newCatGroup.classList.remove('hidden');
+        itemCatNew.setAttribute('required', 'true');
+      } else {
+        newCatGroup.classList.add('hidden');
+        itemCatNew.removeAttribute('required');
+        itemCatNew.value = '';
+      }
     }
 
     function previewImage(input) {
@@ -941,13 +1005,16 @@
           }
           <div style="flex:1">
             <div style="font-weight:800">${i.name}</div>
-            <div style="font-size:0.7rem;color:var(--muted)">${i.category}</div>
+            <div style="font-size:0.7rem;color:var(--muted)">${i.category} · #${i.sort_order || 0}</div>
             <div style="font-size:0.75rem;color:var(--primary);font-weight:800;margin-top:4px">
-              ${Object.entries(i.sizes).map(([s, p]) => `${s}: ₹${p}`).join(' | ')}
+              ${Object.entries(i.sizes || {}).map(([s, p]) => `${s}: ₹${p}`).join(' | ')}
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
-            <button class="mini-btn" onclick="editProduct(${i.id})" style="padding:6px 12px">EDIT</button>
+            <div style="display:flex; gap:6px">
+              <button class="mini-btn" onclick="editProduct(${i.id})" style="padding:6px 12px">EDIT</button>
+              <button class="mini-btn" onclick="deleteProduct(${i.id}, '${i.name.replace(/'/g, "\\'")}')" style="padding:6px 12px; border-color:#ef4444; color:#ef4444">DELETE</button>
+            </div>
             <label class="toggle-switch">
               <input type="checkbox" ${i.available ? 'checked' : ''} onchange="toggleAvailable(${i.id}, this.checked)">
               <span class="slider"></span>
@@ -955,6 +1022,17 @@
           </div>
         </div>
       `).join('');
+    }
+
+    async function deleteProduct(id, name) {
+      if (!confirm(`Are you sure you want to delete the menu item "${name}"?`)) return;
+      try {
+        const { error } = await supabaseClient.from('menu_items').delete().eq('id', id);
+        if (error) throw error;
+        await loadProducts();
+      } catch (err) {
+        alert('Error deleting menu item: ' + err.message);
+      }
     }
 
     async function updateStatus(id, status) {
@@ -972,6 +1050,20 @@
       document.getElementById('modalTitle').innerText = 'Add New Item';
       document.getElementById('imagePreview').classList.add('hidden');
       document.getElementById('uploadPlaceholder').classList.remove('hidden');
+      
+      // Default templates
+      document.getElementById('itemSizes').value = '{\n  "Regular": 199\n}';
+      document.getElementById('itemAddons').value = '[]';
+      
+      // Reset category select & hide new category text box
+      const select = document.getElementById('itemCat');
+      if (select && select.options.length > 0) {
+        select.value = select.options[0].value;
+        handleCategoryChange(select.value);
+      } else {
+        handleCategoryChange('');
+      }
+
       document.getElementById('productModal').style.display = 'flex';
     }
 
@@ -980,10 +1072,13 @@
       document.getElementById('itemId').value = item.id;
       document.getElementById('itemName').value = item.name;
       document.getElementById('itemCat').value = item.category;
+      handleCategoryChange(item.category);
       document.getElementById('itemEmoji').value = item.emoji;
       document.getElementById('itemDesc').value = item.description || '';
       document.getElementById('itemSizes').value = JSON.stringify(item.sizes, null, 2);
       document.getElementById('itemAddons').value = JSON.stringify(item.addons, null, 2);
+      document.getElementById('itemSortOrder').value = item.sort_order || 0;
+      document.getElementById('itemAvailable').value = item.available ? 'true' : 'false';
       
       if (item.image_url) {
         document.getElementById('imagePreview').src = item.image_url;
@@ -1011,7 +1106,7 @@
     }
 
     async function loadCategories() {
-      const { data } = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true });
+      const { data } = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true }).order('name', { ascending: true });
       if (!data) return;
       window.allCategories = data;
       renderCategories(data);
@@ -1026,7 +1121,10 @@
             <div style="font-weight:800">${c.name}</div>
             <div style="font-size:0.7rem;color:var(--muted)">Grid Rank: ${c.sort_order}</div>
           </div>
-          <button class="mini-btn" onclick="editCollection(${c.id})" style="border-color:var(--primary); color:var(--primary)">EDIT</button>
+          <div style="display:flex; gap:8px">
+            <button class="mini-btn" onclick="editCollection(${c.id})" style="border-color:var(--primary); color:var(--primary)">EDIT</button>
+            <button class="mini-btn" onclick="deleteCollection(${c.id}, '${c.name.replace(/'/g, "\\'")}')" style="border-color:#ef4444; color:#ef4444">DELETE</button>
+          </div>
         </div>
       `).join('');
     }
@@ -1034,6 +1132,22 @@
     function openCategoriesModal() {
       loadCategories();
       document.getElementById('categoriesModal').style.display = 'flex';
+    }
+
+    function addCollection() {
+      document.getElementById('collectionForm').reset();
+      document.getElementById('catId').value = '';
+      document.getElementById('catNameInput').value = '';
+      
+      const maxSort = (window.allCategories || []).reduce((max, c) => Math.max(max, c.sort_order || 0), 0);
+      document.getElementById('catSortInput').value = maxSort + 10;
+      
+      document.getElementById('catImagePreview').src = '';
+      document.getElementById('catImagePreview').classList.add('hidden');
+      document.getElementById('catUploadPlaceholder').classList.remove('hidden');
+      
+      document.getElementById('collectionModalTitle').innerText = 'Add Category';
+      document.getElementById('collectionModal').style.display = 'flex';
     }
 
     function editCollection(id) {
@@ -1049,7 +1163,20 @@
         document.getElementById('catImagePreview').classList.add('hidden');
         document.getElementById('catUploadPlaceholder').classList.remove('hidden');
       }
+      document.getElementById('collectionModalTitle').innerText = 'Edit Category';
       document.getElementById('collectionModal').style.display = 'flex';
+    }
+
+    async function deleteCollection(id, name) {
+      if (!confirm(`Are you sure you want to delete the category "${name}"?\nThis will not delete the menu items in it, but they will be categorized under an orphaned category.`)) return;
+      try {
+        const { error } = await supabaseClient.from('categories').delete().eq('id', id);
+        if (error) throw error;
+        await loadCategories();
+        await loadProducts();
+      } catch (err) {
+        alert('Error deleting category: ' + err.message);
+      }
     }
 
     function previewCatImage(input) {
@@ -1066,27 +1193,40 @@
 
     document.getElementById('collectionForm').onsubmit = async (e) => {
       e.preventDefault();
-      const id = document.getElementById('catId').value;
-      const name = document.getElementById('catNameInput').value;
-      const sortOrder = parseInt(document.getElementById('catSortInput').value);
-      const file = document.getElementById('catImageFile').files[0];
-      
-      let image_url = null;
-      if (file) {
-        const fileName = `${Date.now()}_cat.png`;
-        const { error: uploadError } = await supabaseClient.storage.from('menu-images').upload(`categories/${fileName}`, file);
-        if (!uploadError) {
-          const { data } = supabaseClient.storage.from('menu-images').getPublicUrl(`categories/${fileName}`);
-          image_url = data.publicUrl;
+      try {
+        const id = document.getElementById('catId').value;
+        const name = document.getElementById('catNameInput').value.trim();
+        const sortOrder = parseInt(document.getElementById('catSortInput').value) || 0;
+        const file = document.getElementById('catImageFile').files[0];
+        
+        let image_url = null;
+        if (file) {
+          const fileName = `${Date.now()}_cat.png`;
+          const { error: uploadError } = await supabaseClient.storage.from('menu-images').upload(`categories/${fileName}`, file);
+          if (!uploadError) {
+            const { data } = supabaseClient.storage.from('menu-images').getPublicUrl(`categories/${fileName}`);
+            image_url = data.publicUrl;
+          }
+        } else if (id) {
+          const existingCat = window.allCategories.find(c => c.id == id);
+          image_url = existingCat ? existingCat.image_url : null;
         }
-      } else {
-        image_url = window.allCategories.find(c => c.id == id).image_url;
-      }
 
-      await supabaseClient.from('categories').update({ name, image_url, sort_order: sortOrder }).eq('id', id);
-      closeModal('collectionModal');
-      loadCategories();
-    }
+        if (id) {
+          const { error } = await supabaseClient.from('categories').update({ name, image_url, sort_order: sortOrder }).eq('id', id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabaseClient.from('categories').insert([{ name, image_url, sort_order: sortOrder }]);
+          if (error) throw error;
+        }
+        
+        closeModal('collectionModal');
+        await loadCategories();
+        await loadProducts();
+      } catch (err) {
+        alert('Error saving category: ' + err.message);
+      }
+    };
 
     function closeModal(id) {
       if (id) {
@@ -1118,21 +1258,81 @@
           image_url = existing.image_url;
         }
 
+        // 1. JSON validation
+        let sizes, addons;
+        try {
+          sizes = JSON.parse(document.getElementById('itemSizes').value);
+          if (typeof sizes !== 'object' || Array.isArray(sizes) || sizes === null) {
+            throw new Error('Sizes & Prices must be a valid JSON object (e.g. {"Regular": 199})');
+          }
+        } catch (err) {
+          alert('Invalid Sizes JSON: ' + err.message);
+          return;
+        }
+
+        try {
+          addons = JSON.parse(document.getElementById('itemAddons').value);
+          if (!Array.isArray(addons)) {
+            throw new Error('Addons must be a valid JSON array (e.g. [{"name": "Extra Cheese", "price": 50}])');
+          }
+        } catch (err) {
+          alert('Invalid Addons JSON: ' + err.message);
+          return;
+        }
+
+        // 2. Handle Inline Category Creation
+        let category = document.getElementById('itemCat').value;
+        if (category === '__new__') {
+          const newCatName = document.getElementById('itemCatNew').value.trim();
+          if (!newCatName) {
+            alert('Please enter a name for the new category.');
+            return;
+          }
+          
+          // Check if already exists (case-insensitive)
+          const existingCat = (window.allCategories || []).find(c => c.name.toLowerCase() === newCatName.toLowerCase());
+          if (!existingCat) {
+            // Find max sort_order
+            const maxSort = (window.allCategories || []).reduce((max, c) => Math.max(max, c.sort_order || 0), 0);
+            const { data: newCatData, error: catErr } = await supabaseClient
+              .from('categories')
+              .insert([{ name: newCatName, sort_order: maxSort + 10 }])
+              .select().single();
+            if (catErr) throw new Error("Failed to create category: " + catErr.message);
+            category = newCatName;
+            await loadCategories(); // Refresh categories
+          } else {
+            category = existingCat.name;
+          }
+        }
+
+        // 3. Auto-calculate sort order if 0 or empty
+        let sortOrder = parseInt(document.getElementById('itemSortOrder').value);
+        if (isNaN(sortOrder) || sortOrder === 0) {
+          const catProducts = (window.allProducts || []).filter(p => p.category === category);
+          const maxSort = catProducts.reduce((max, p) => Math.max(max, p.sort_order || 0), 0);
+          sortOrder = maxSort + 10;
+        }
+
+        const available = document.getElementById('itemAvailable').value === 'true';
+
         const product = {
-          name: document.getElementById('itemName').value,
-          category: document.getElementById('itemCat').value,
-          emoji: document.getElementById('itemEmoji').value,
-          description: document.getElementById('itemDesc').value,
-          sizes: JSON.parse(document.getElementById('itemSizes').value),
-          addons: JSON.parse(document.getElementById('itemAddons').value),
-          image_url: image_url
+          name: document.getElementById('itemName').value.trim(),
+          category: category,
+          emoji: document.getElementById('itemEmoji').value.trim() || '🍽️',
+          description: document.getElementById('itemDesc').value.trim(),
+          sizes: sizes,
+          addons: addons,
+          image_url: image_url,
+          sort_order: sortOrder,
+          available: available
         };
 
         if (id) await supabaseClient.from('menu_items').update(product).eq('id', id);
         else await supabaseClient.from('menu_items').insert([product]);
         
         closeModal('productModal');
-        loadProducts();
+        await loadProducts();
       } catch (err) { alert('Error: ' + err.message); }
     };
 
@@ -1142,7 +1342,7 @@
     let allMenuItems = [];
 
     async function showQuickBill() {
-      const { data, error } = await supabaseClient.from('menu_items').select('*');
+      const { data, error } = await supabaseClient.from('menu_items').select('*').eq('available', true).order('category', { ascending: true }).order('sort_order', { ascending: true }).order('name', { ascending: true });
       if (data) {
         allMenuItems = data;
         renderPosItems(data);
