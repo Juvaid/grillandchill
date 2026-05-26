@@ -1614,17 +1614,8 @@
       try {
         const char = await getBLEPrinter();
         
-        showToast('Processing logo... ⏳');
-        const logoUrl = window.location.origin + '/assets/logo-receipt-bw.png';
-        let logoBytes = null;
-        try {
-          logoBytes = await logoToEscPos(logoUrl, 160);
-        } catch (e) {
-          console.error('Failed to convert logo to ESC/POS:', e);
-        }
-        
-        const bytes = generateEscPosBytes(bill, logoBytes);
         showToast('Printing receipt... 🖨️');
+        const bytes = generateEscPosBytes(bill);
         await writeInChunks(char, bytes);
         showToast('Print complete! ✅');
       } catch (err) {
@@ -2129,7 +2120,7 @@
       return text;
     }
 
-    function generateEscPosBytes(bill, logoBytes) {
+    function generateEscPosBytes(bill) {
       const bytes = [];
       const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
       
@@ -2167,14 +2158,9 @@
       // Initialize printer
       bytes.push(0x1B, 0x40);
       
-      // Add logo if available
-      if (logoBytes && logoBytes.length > 0) {
-        bytes.push(0x1B, 0x61, 0x01); // Center align logo
-        for (let i = 0; i < logoBytes.length; i++) {
-          bytes.push(logoBytes[i]);
-        }
-        bytes.push(0x0A); // Line feed
-      }
+      // NOTE: Logo bitmap disabled — GS v 0 raster image command
+      // is not supported by this thermal printer (prints gibberish).
+      // The bold double-height store name below serves as the header.
 
       bytes.push(0x1B, 0x61, 0x01);
       bytes.push(0x1B, 0x45, 0x01);
