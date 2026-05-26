@@ -11,6 +11,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="env.js"></script>
   <style>
+    .no-print { display: none !important; }
     :root {
       --primary: #ff6b00;
       --secondary: #ff8c00;
@@ -440,6 +441,15 @@
           </div>
           <button type="submit" class="btn-primary" style="height:50px">SAVE SETTINGS</button>
         </form>
+
+        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px;">
+          <div class="section-header">
+            <h3 class="section-title">Customer Order Locations (Stats)</h3>
+          </div>
+          <div id="locationStatsList" style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Location stats will be rendered here dynamically -->
+          </div>
+        </div>
       </div>
 
     </div>
@@ -1095,6 +1105,8 @@
       
       document.getElementById('storeUpiId').value = upiId;
       document.getElementById('storeMerchantName').value = merchantName;
+      
+      loadLocationStats();
     }
 
     function saveSettings(e) {
@@ -1106,6 +1118,95 @@
       localStorage.setItem('gc_store_merchant_name', merchantName);
       
       showToast('Settings Saved successfully! ⚙️');
+    }
+
+    async function loadLocationStats() {
+      const statsList = document.getElementById('locationStatsList');
+      if (!statsList) return;
+      
+      statsList.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:0.8rem;">Loading location stats...</div>';
+      
+      try {
+        const { data, error } = await supabaseClient
+          .from('orders')
+          .select('*, order_items(*)')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        // Filter orders that have location data (either GPS coords or typed address)
+        const locationOrders = data.filter(o => (o.delivery_lat && o.delivery_lng) || o.delivery_address);
+        
+        if (locationOrders.length === 0) {
+          statsList.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:0.85rem;">No customer orders with location data found.</div>';
+          return;
+        }
+        
+        statsList.innerHTML = locationOrders.map(o => {
+          const itemsStr = o.order_items.map(item => {
+            const sz = item.size ? ` (${item.size})` : '';
+            return `${item.quantity}x ${item.item_name}${sz}`;
+          }).join(', ');
+          
+          const date = new Date(o.created_at).toLocaleString('en-IN', {
+            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true
+          });
+          
+          const hasGps = o.delivery_lat && o.delivery_lng;
+          
+          return `
+            <div class="stat-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; cursor: default;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                  <div style="font-weight: 800; font-size: 0.9rem; color: var(--text);">${o.customer_name}</div>
+                  <div style="font-size: 0.75rem; color: var(--muted);">${o.customer_phone}</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-weight: 800; font-size: 0.85rem; color: var(--primary);">₹${o.total_amount}</div>
+                  <div style="font-size: 0.65rem; color: var(--muted);">${date}</div>
+                </div>
+              </div>
+              <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 4px 0;">
+              <div>
+                <span style="font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Ordered:</span>
+                <span style="font-size: 0.8rem; color: var(--text);">${itemsStr}</span>
+              </div>
+              ${o.delivery_address ? `
+                <div style="margin-top: 2px;">
+                  <span style="font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Address:</span>
+                  <span style="font-size: 0.8rem; color: var(--text);">${o.delivery_address}</span>
+                </div>
+              ` : ''}
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; gap: 10px;">
+                <div>
+                  <span style="font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Coords:</span>
+                  <span style="font-size: 0.75rem; color: var(--text); font-family: monospace;">
+                    ${hasGps ? `${Number(o.delivery_lat).toFixed(5)}, ${Number(o.delivery_lng).toFixed(5)}` : '_(GPS Not shared)_'}
+                  </span>
+                </div>
+                ${hasGps ? `
+                  <a href="https://www.google.com/maps?q=${o.delivery_lat},${o.delivery_lng}" target="_blank" class="mini-btn" style="padding: 6px 12px; font-size: 0.65rem; color: var(--primary); border-color: var(--primary); background: rgba(255,107,0,0.05); text-decoration: none; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                    📍 VIEW MAP
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+        statsList.innerHTML = '<div style="text-align:center; padding:20px; color:var(--danger); font-size:0.8rem;">Failed to load location stats.</div>';
+      }
+    }
+
+    function sendWhatsAppReceipt(phone, bill) {
+      let cleanedPhone = String(phone).replace(/\D/g, '');
+      if (cleanedPhone.length === 10) {
+        cleanedPhone = '91' + cleanedPhone;
+      }
+      const text = generateReceiptText(bill);
+      const url = `https://wa.me/${cleanedPhone}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
     }
 
     async function billOrder(orderId) {
@@ -2635,6 +2736,7 @@
     }
 
     function generateReceipt(bill, autoPrint = false) {
+      window.lastGeneratedBill = bill;
       const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
       const dateObj = new Date(bill.created_at);
       const dateStr = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -2703,7 +2805,14 @@
         <div class="footer">
           <div class="footer-thanks">Thank you! Visit again.</div>
           <div class="footer-url" style="margin-top:2px;font-weight:bold">Order Online &bull; Free Delivery</div>
-          <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'">
+          <div class="qr-container" style="position: relative; display: inline-block; margin: 4px auto;">
+            <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'" style="margin: 0 !important;">
+            ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `
+              <button class="no-print whatsapp-qr-share-btn" onclick="sendWhatsAppReceipt('${encodeURIComponent(bill.customer_phone)}', window.lastGeneratedBill)" style="position: absolute; bottom: 0; right: 0; background: #25D366; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); color: white; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Share via WhatsApp">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.455L0 24zm6.49-4.203a9.884 9.884 0 0 0 5.511 1.659h.005c5.561 0 10.086-4.523 10.09-10.086.002-2.695-1.047-5.227-2.951-7.133C17.296 2.33 14.77 1.28 12.01 1.28c-5.568 0-10.094 4.524-10.099 10.087-.001 1.905.499 3.766 1.448 5.421l-.955 3.486 3.57-.936zm12.39-5.147c-.345-.173-2.042-1.009-2.357-1.124-.315-.115-.545-.173-.775.173-.23.345-.889 1.124-1.09 1.354-.201.23-.402.26-.747.087a10.06 10.06 0 0 1-2.772-1.71 11.08 11.08 0 0 1-1.916-2.385c-.345-.575-.037-.887.251-1.173.259-.258.575-.672.863-.827.288-.175.384-.288.575-.69a.97.97 0 0 0-.048-.918c-.086-.173-.775-1.868-1.062-2.558-.28-.673-.56-.58-.775-.592-.2-.011-.429-.013-.659-.013-.23 0-.603.086-.918.429-.315.345-1.207 1.179-1.207 2.874 0 1.695 1.235 3.333 1.407 3.563.173.23 2.43 3.71 5.887 5.198.822.354 1.464.566 1.966.726.825.262 1.576.225 2.169.137.66-.098 2.043-.834 2.33-1.639.287-.805.287-1.495.2-.163z"/></svg>
+              </button>
+            ` : ''}
+          </div>
           <div class="footer-url">grillandchillpizzeria.juvaid.in</div>
         </div>
       `;
@@ -2828,6 +2937,9 @@
               height: 80px;
               margin: 4px auto;
               display: block;
+            }
+            .no-print {
+              display: none !important;
             }
           </style>
         </head>

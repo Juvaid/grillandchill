@@ -846,6 +846,7 @@ async function syncPendingOrders() {
           total_amount: ord.total,
           delivery_lat: ord.lat,
           delivery_lng: ord.lng,
+          delivery_address: ord.address || null,
           status: 'pending'
         }])
         .select().single();
@@ -1467,6 +1468,7 @@ async function sendOrder(){
         total_amount: total,
         delivery_lat: lat,
         delivery_lng: lng,
+        delivery_address: manualAddr || null,
         status: 'pending'
       }])
       .select()
@@ -1530,7 +1532,7 @@ async function sendOrder(){
     
     // Save to sync queue
     const pending = JSON.parse(localStorage.getItem('pending_sync_orders') || '[]');
-    pending.push({ name, phone, total, lat, lng, cart: JSON.parse(JSON.stringify(cart)), date: new Date() });
+    pending.push({ name, phone, total, lat, lng, address: manualAddr || null, cart: JSON.parse(JSON.stringify(cart)), date: new Date() });
     localStorage.setItem('pending_sync_orders', JSON.stringify(pending));
 
     alert("No internet? No problem! We've saved your order and will sync it with our kitchen soon. We're opening WhatsApp now to confirm your order!");

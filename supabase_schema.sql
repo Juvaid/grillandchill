@@ -56,6 +56,7 @@ create table if not exists public.orders (
   payment_status  text default 'unpaid' check (payment_status in ('unpaid', 'paid')),
   delivery_lat    numeric,
   delivery_lng    numeric,
+  delivery_address text,
   created_at      timestamptz default now(),
   updated_at      timestamptz default now()
 );
