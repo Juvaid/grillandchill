@@ -34,11 +34,8 @@ function imageEntry(path, align = 1) {
   return { type: 1, path, align };
 }
 
-function qrEntry(value, size = 6, align = 1) {
-  // Use public QR code generator API to fetch QR as a standard image (type: 1)
-  // because many printers do not support native QR codes (type: 3)
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(value)}`;
-  return { type: 1, path: qrImageUrl, align };
+function qrEntry(value, size = 40, align = 1) {
+  return { type: 3, value: String(value), size: Number(size), align: Number(align) };
 }
 
 function emptyLine() {
@@ -63,13 +60,14 @@ function padLine(left, right, width = 32) {
 }
 
 // ─── Build the receipt JSON payload ───
-function buildReceipt(bill) {
+function buildReceipt(bill, baseUrl) {
   const entries = [];
   const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
   const date = bill.created_at ? new Date(bill.created_at) : new Date();
 
   // ── Logo ──
-  entries.push(imageEntry(STORE.logoUrl, 1));
+  const logoUrl = baseUrl ? `${baseUrl}/assets/logo-transparent.png` : STORE.logoUrl;
+  entries.push(imageEntry(logoUrl, 1));
   entries.push(emptyLine());
 
   // ── Store Header ──
@@ -144,7 +142,7 @@ function buildReceipt(bill) {
   entries.push(emptyLine());
 
   // ── QR Code ──
-  entries.push(qrEntry(STORE.qrValue, 6, 1));
+  entries.push(qrEntry(STORE.qrValue, 40, 1));
   entries.push(emptyLine());
   entries.push(emptyLine());
   entries.push(emptyLine());
@@ -184,7 +182,11 @@ export default function handler(req, res) {
       }
     }
 
-    const receipt = buildReceipt(billData);
+    const host = req.headers.host || 'grillandchillpizzeria.juvaid.in';
+    const protocol = req.headers['x-forwarded-proto'] || (host.includes('localhost') || host.includes('127.0.0.1') || host.includes('192.168.') ? 'http' : 'https');
+    const baseUrl = `${protocol}://${host}`;
+
+    const receipt = buildReceipt(billData, baseUrl);
 
     // Bluetooth Print app expects an object with numeric keys
     const indexed = {};
