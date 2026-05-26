@@ -74,21 +74,33 @@ create table if not exists public.order_items (
 
 -- 7. Bills Table
 create table if not exists public.bills (
-  id              uuid primary key,
-  customer_name   text not null default 'Walk-in',
+  id              uuid primary key default gen_random_uuid(),
+  customer_name   text default 'Walk-in Customer',
   total_amount    numeric(10,2) not null,
-  items           text not null,
+  items           jsonb default '[]'::jsonb,
   payment_status  text default 'paid' check (payment_status in ('paid', 'voided')),
   payment_method  text default 'Cash' check (payment_method in ('Cash', 'UPI', 'Card')),
+  client_uuid     uuid unique,
+  customer_phone  text,
   created_at      timestamptz default now()
 );
 
--- 8. Storage Bucket for item images
+-- 8. Categories Table
+create table if not exists public.categories (
+  id            bigint generated always as identity primary key,
+  name          text not null,
+  image_url     text,
+  sort_order    int default 0,
+  is_featured   boolean default false,
+  created_at    timestamptz default now()
+);
+
+-- 9. Storage Bucket for item images
 insert into storage.buckets (id, name, public)
 values ('menu-images', 'menu-images', true)
 on conflict do nothing;
 
--- 9. Security Helper Function (Bypasses RLS to avoid recursion)
+-- 10. Security Helper Function (Bypasses RLS to avoid recursion)
 create or replace function public.is_admin()
 returns boolean security definer as $$
 begin
@@ -99,14 +111,15 @@ begin
 end;
 $$ language plpgsql;
 
--- 10. Enable Row Level Security (RLS)
+-- 11. Enable Row Level Security (RLS)
 alter table public.menu_items enable row level security;
 alter table public.profiles enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 alter table public.bills enable row level security;
+alter table public.categories enable row level security;
 
--- 11. RLS Policies
+-- 12. RLS Policies
 
 -- Menu Items
 create policy "Public read available items"
@@ -153,5 +166,15 @@ create policy "Public can add order items"
 create policy "Admins manage all bills"
   on public.bills for all
   using (public.is_admin());
+
+-- Categories
+create policy "Public read categories"
+  on public.categories for select
+  using (true);
+
+create policy "Admins manage all categories"
+  on public.categories for all
+  using (public.is_admin())
+  with check (public.is_admin());
 
 -- Done! ✅
