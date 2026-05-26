@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gc-menu-v3'; // Version bump forces cache refresh
+const CACHE_NAME = 'gc-menu-v4'; // Version bump forces cache refresh
 const ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const ASSETS = [
   './styles.css',
   './manifest.json',
   './env.js',
+  './assets/logo-transparent.png',
   './assets/logo.png',
   './assets/logo.svg',
   './assets/burger.png',
