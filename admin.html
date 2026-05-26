@@ -611,6 +611,14 @@
           <label class="form-label">Sort Order</label>
           <input type="number" id="catSortInput" class="auth-input" value="0">
         </div>
+        <div class="form-group">
+          <label class="form-label">Bento Card Size</label>
+          <select id="catSizeInput" class="auth-input">
+            <option value="normal">Normal (1x1)</option>
+            <option value="large">Large (2x2)</option>
+            <option value="wide">Wide (2x1)</option>
+          </select>
+        </div>
         <div style="display:flex;gap:15px;margin-top:20px">
           <button type="submit" class="btn-primary" style="flex:2">SAVE CHANGES</button>
           <button type="button" onclick="closeModal('collectionModal')" class="mini-btn" style="flex:1">CANCEL</button>
@@ -1119,7 +1127,7 @@
           <img src="${c.image_url || 'assets/woody_bg.png'}" class="product-img" style="border-radius:12px">
           <div style="flex:1">
             <div style="font-weight:800">${c.name}</div>
-            <div style="font-size:0.7rem;color:var(--muted)">Grid Rank: ${c.sort_order}</div>
+            <div style="font-size:0.7rem;color:var(--muted)">Grid Rank: ${c.sort_order} · Size: ${c.layout_size || 'normal'}</div>
           </div>
           <div style="display:flex; gap:8px">
             <button class="mini-btn" onclick="editCollection(${c.id})" style="border-color:var(--primary); color:var(--primary)">EDIT</button>
@@ -1141,6 +1149,7 @@
       
       const maxSort = (window.allCategories || []).reduce((max, c) => Math.max(max, c.sort_order || 0), 0);
       document.getElementById('catSortInput').value = maxSort + 10;
+      document.getElementById('catSizeInput').value = 'normal';
       
       document.getElementById('catImagePreview').src = '';
       document.getElementById('catImagePreview').classList.add('hidden');
@@ -1155,6 +1164,7 @@
       document.getElementById('catId').value = cat.id;
       document.getElementById('catNameInput').value = cat.name;
       document.getElementById('catSortInput').value = cat.sort_order;
+      document.getElementById('catSizeInput').value = cat.layout_size || 'normal';
       if (cat.image_url) {
         document.getElementById('catImagePreview').src = cat.image_url;
         document.getElementById('catImagePreview').classList.remove('hidden');
@@ -1197,6 +1207,7 @@
         const id = document.getElementById('catId').value;
         const name = document.getElementById('catNameInput').value.trim();
         const sortOrder = parseInt(document.getElementById('catSortInput').value) || 0;
+        const layoutSize = document.getElementById('catSizeInput').value;
         const file = document.getElementById('catImageFile').files[0];
         
         let image_url = null;
@@ -1213,10 +1224,10 @@
         }
 
         if (id) {
-          const { error } = await supabaseClient.from('categories').update({ name, image_url, sort_order: sortOrder }).eq('id', id);
+          const { error } = await supabaseClient.from('categories').update({ name, image_url, sort_order: sortOrder, layout_size: layoutSize }).eq('id', id);
           if (error) throw error;
         } else {
-          const { error } = await supabaseClient.from('categories').insert([{ name, image_url, sort_order: sortOrder }]);
+          const { error } = await supabaseClient.from('categories').insert([{ name, image_url, sort_order: sortOrder, layout_size: layoutSize }]);
           if (error) throw error;
         }
         

@@ -902,10 +902,11 @@ function renderCategoryGrid() {
     
     const card = document.createElement('div');
     card.className = 'category-card';
-    if (i === 0) card.classList.add('large');
-    else if (i === 4) card.classList.add('wide');
     
     const catData = CATEGORIES.find(c => c.name === cat);
+    const cardSize = catData?.layout_size || 'normal';
+    if (cardSize === 'large') card.classList.add('large');
+    else if (cardSize === 'wide') card.classList.add('wide');
     const img = catData?.image_url || 'assets/woody_bg.png';
     const cleanName = cat.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
     const count = processed.length;

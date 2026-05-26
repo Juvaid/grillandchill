@@ -92,6 +92,7 @@ create table if not exists public.categories (
   image_url     text,
   sort_order    int default 0,
   is_featured   boolean default false,
+  layout_size   text default 'normal' check (layout_size in ('normal', 'large', 'wide')),
   created_at    timestamptz default now()
 );
 
