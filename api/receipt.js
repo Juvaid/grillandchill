@@ -17,7 +17,7 @@ const STORE = {
   address2: 'Adj. HDFC Bank, Malerkotla',
   phone: 'Ph: 79019 94174',
   website: 'grillandchillpizzeria.juvaid.in',
-  logoUrl: 'https://grillandchillpizzeria.juvaid.in/assets/logo.svg',
+  logoUrl: 'https://grillandchillpizzeria.juvaid.in/assets/logo-transparent.png',
   qrValue: 'https://grillandchillpizzeria.juvaid.in',
 };
 
@@ -35,7 +35,10 @@ function imageEntry(path, align = 1) {
 }
 
 function qrEntry(value, size = 6, align = 1) {
-  return { type: 3, value, size, align };
+  // Use public QR code generator API to fetch QR as a standard image (type: 1)
+  // because many printers do not support native QR codes (type: 3)
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(value)}`;
+  return { type: 1, path: qrImageUrl, align };
 }
 
 function emptyLine() {
@@ -186,7 +189,12 @@ export default function handler(req, res) {
     // Bluetooth Print app expects an object with numeric keys
     const indexed = {};
     receipt.forEach((entry, i) => {
-      indexed[String(i)] = entry;
+      Object.defineProperty(indexed, String(i), {
+        value: entry,
+        enumerable: true,
+        writable: true,
+        configurable: true
+      });
     });
 
     return res.status(200).json(indexed);

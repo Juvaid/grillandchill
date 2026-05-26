@@ -250,6 +250,25 @@
     #receiptPaper .footer-thanks { font-size: 11px !important; font-weight: bold !important; margin-bottom: 2px !important; }
     #receiptPaper .footer-url { font-size: 8px !important; color: #666 !important; margin-bottom: 6px !important; }
     #receiptPaper .qr-code { width: 80px !important; height: 80px !important; margin: 4px auto !important; display: block !important; }
+    
+    #zReportPaper {
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: 'Courier New', Courier, monospace !important;
+      font-size: 11px !important;
+      line-height: 1.35 !important;
+      width: 58mm !important;
+      max-width: 58mm !important;
+      box-sizing: border-box !important;
+      padding: 15px 10px !important;
+      border-top: 4px dotted #ccc !important;
+      border-bottom: 4px dotted #ccc !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+    }
+    #zReportPaper .center { text-align: center !important; }
+    #zReportPaper .bold { font-weight: bold !important; }
+    #zReportPaper .separator { border: none !important; border-top: 1px dashed #000 !important; margin: 6px 0 !important; }
+    #zReportPaper .double-separator { border: none !important; border-top: 2px solid #000 !important; margin: 6px 0 !important; }
   </style>
 </head>
 <body>
@@ -338,9 +357,73 @@
           <h3 class="section-title">Billing History</h3>
           <button class="mini-btn primary" onclick="showQuickBill()">+ QUICK BILL</button>
         </div>
+        <!-- Billing Stats Summary Cards Grid -->
+        <div class="billing-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px;">
+          <div class="stat-card-mini" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
+            <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Revenue</div>
+            <div id="statRevenue" style="font-size: 1.1rem; font-weight: 800; color: #ff6b00; margin-top: 4px;">₹0</div>
+          </div>
+          <div class="stat-card-mini" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
+            <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Bills Count</div>
+            <div id="statBillsCount" style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin-top: 4px;">0</div>
+          </div>
+          <div class="stat-card-mini" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
+            <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Avg Order</div>
+            <div id="statAvgBill" style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin-top: 4px;">₹0</div>
+          </div>
+          <div class="stat-card-mini" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid var(--border);">
+            <div style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Voided</div>
+            <div id="statVoidedCount" style="font-size: 1.1rem; font-weight: 800; color: #ef4444; margin-top: 4px;">0</div>
+          </div>
+        </div>
+
+        <!-- Billing Search & Filters -->
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px">
+          <div style="display:flex; gap:10px">
+            <input type="text" id="billingSearch" placeholder="🔍 Search bills (Phone, ID...)" oninput="filterBills()" class="auth-input" style="margin:0; flex:1; height:42px; font-size:0.8rem; border-radius:12px; padding-left:15px">
+            <button onclick="exportBillsCSV()" class="mini-btn" style="height:42px; border-radius:12px; border-color:var(--border); display:flex; align-items:center; justify-content:center; gap:6px; font-weight:bold; color:var(--text); background:rgba(255,255,255,0.02); padding:0 15px">
+              <i data-lucide="download" style="width:16px"></i> EXPORT
+            </button>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:10px;">
+            <select id="billingMethodFilter" onchange="filterBills()" class="auth-input" style="margin:0; height:38px; font-size:0.75rem; border-radius:10px; padding:0 8px; background:#141416; color:white; border-color:var(--border)">
+              <option value="all">All Payments</option>
+              <option value="Cash">💵 Cash</option>
+              <option value="UPI">📱 UPI</option>
+              <option value="Card">💳 Card</option>
+            </select>
+            <select id="billingStatusFilter" onchange="filterBills()" class="auth-input" style="margin:0; height:38px; font-size:0.75rem; border-radius:10px; padding:0 8px; background:#141416; color:white; border-color:var(--border)">
+              <option value="all">All Statuses</option>
+              <option value="paid">✅ Paid</option>
+              <option value="voided">🚫 Voided</option>
+            </select>
+            <select id="billingSyncFilter" onchange="filterBills()" class="auth-input" style="margin:0; height:38px; font-size:0.75rem; border-radius:10px; padding:0 8px; background:#141416; color:white; border-color:var(--border)">
+              <option value="all">All Sync</option>
+              <option value="synced">Synced</option>
+              <option value="pending">Offline</option>
+            </select>
+            <select id="billingDateFilter" onchange="onBillingDateFilterChange()" class="auth-input" style="margin:0; height:38px; font-size:0.75rem; border-radius:10px; padding:0 8px; background:#141416; color:white; border-color:var(--border)">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="7days">Last 7 Days</option>
+              <option value="custom">Custom Date</option>
+            </select>
+          </div>
+          <div id="billingCustomDateRange" style="display:none; gap:10px; align-items:center; background:rgba(255,255,255,0.01); padding:10px; border-radius:10px; border:1px solid var(--border)">
+            <span style="font-size:0.7rem; color:var(--muted)">From:</span>
+            <input type="date" id="billingDateStart" onchange="filterBills()" class="auth-input" style="margin:0; height:32px; font-size:0.75rem; border-radius:8px; padding:0 8px; background:#141416; color:white; flex:1">
+            <span style="font-size:0.7rem; color:var(--muted)">To:</span>
+            <input type="date" id="billingDateEnd" onchange="filterBills()" class="auth-input" style="margin:0; height:32px; font-size:0.75rem; border-radius:8px; padding:0 8px; background:#141416; color:white; flex:1">
+          </div>
+        </div>
+        
         <div id="syncStatusBox" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background:rgba(255,255,255,0.02); padding:10px 15px; border-radius:12px; border:1px solid var(--border)">
           <div id="syncStatus" style="font-size:0.65rem; color:var(--muted); font-weight:700; text-transform:uppercase">Local DB Active</div>
-          <button onclick="syncBills()" class="mini-btn primary" style="padding:6px 12px; font-size:0.6rem">FORCE SYNC 🔄</button>
+          <div style="display:flex; gap:8px">
+            <button onclick="printDailyZReport()" class="mini-btn" style="padding:6px 12px; font-size:0.6rem; border-color:var(--primary); color:var(--primary); background:rgba(255,107,0,0.05)">REPORT 📊</button>
+            <button onclick="syncBills()" class="mini-btn primary" style="padding:6px 12px; font-size:0.6rem">FORCE SYNC 🔄</button>
+          </div>
         </div>
         <div class="mobile-list" id="billingBody"></div>
       </div>
@@ -453,8 +536,18 @@
           <span style="font-size:0.75rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Order Total</span>
           <div id="billTotalBox" style="font-weight:900; font-size:1.5rem; color:var(--primary); letter-spacing:-0.5px">₹0</div>
         </div>
-        <div style="display:flex; justify-content:flex-end">
-          <input type="tel" id="customerPhone" class="auth-input" placeholder="📱 Phone (Optional)" style="margin:0; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); font-size:0.85rem; height:42px; width:180px; border-radius:12px; text-align:right; padding-right:15px">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px">
+          <!-- Payment Method Selector -->
+          <div style="display:flex; align-items:center; gap:8px">
+            <span style="font-size:0.7rem; font-weight:700; color:var(--muted)">METHOD:</span>
+            <select id="billPaymentMethod" class="auth-input" style="margin:0; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); font-size:0.8rem; height:36px; width:90px; border-radius:10px; padding:0 8px; color:var(--text); background:#141416;">
+              <option value="Cash">💵 Cash</option>
+              <option value="UPI">📱 UPI</option>
+              <option value="Card">💳 Card</option>
+            </select>
+          </div>
+          <!-- Customer Phone -->
+          <input type="tel" id="customerPhone" class="auth-input" placeholder="📱 Phone (Optional)" style="margin:0; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); font-size:0.85rem; height:36px; width:150px; border-radius:10px; text-align:right; padding-right:10px">
         </div>
       </div>
       <button class="btn-primary" onclick="saveBill()" style="height:52px; font-size:0.95rem; letter-spacing:1px; font-weight:900; background:var(--primary); box-shadow: 0 8px 20px rgba(255,107,0,0.2)">GENERATE & SAVE BILL</button>
@@ -584,6 +677,33 @@
         <!-- Optional: Disconnect BLE Printer -->
         <button id="btnDisconnectBLE" class="mini-btn" style="width:100%; padding:10px; font-size:0.7rem; border-color:rgba(239,68,68,0.2); color:#ef4444; background:rgba(239,68,68,0.05); display:none;">
           Disconnect Bluetooth Printer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Z-REPORT PREVIEW MODAL -->
+  <div class="modal" id="zReportPreviewModal" style="z-index: 4000;">
+    <div class="modal-content" style="max-width: 420px; width: 100%; display: flex; flex-direction: column; padding: 20px; background: #141416; max-height: 95vh; border-radius: 20px; border: 1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+        <h3 style="margin:0; color:var(--primary)">Z-Report Preview</h3>
+        <button onclick="closeModal('zReportPreviewModal')" style="background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); cursor:pointer; width:36px; height:36px; border-radius:50%; font-size:1rem; display:flex; align-items:center; justify-content:center">&times;</button>
+      </div>
+      
+      <!-- Realistic Thermal Paper Preview Container -->
+      <div style="flex:1; overflow-y:auto; background:#1e1e24; border-radius:12px; padding:15px; display:flex; justify-content:center; align-items:flex-start; margin-bottom:15px; border:1px solid rgba(255,255,255,0.05)">
+        <div id="zReportPaper">
+          <!-- Content dynamically rendered -->
+        </div>
+      </div>
+      
+      <!-- Actions Container -->
+      <div style="display:flex; gap:10px">
+        <button id="btnDirectBtPrintZ" class="btn-primary" style="flex:1.2; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; font-size:0.75rem; font-weight:800;">
+          <i data-lucide="bluetooth" style="width:16px"></i> BLE PRINT
+        </button>
+        <button onclick="closeModal('zReportPreviewModal')" class="btn-primary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; font-size:0.75rem; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); font-weight:700;">
+          CLOSE
         </button>
       </div>
     </div>
@@ -1118,6 +1238,7 @@
     async function saveBill() {
       if (currentBillItems.length === 0) return alert('Bill is empty!');
       const phone = document.getElementById('customerPhone').value || 'N/A';
+      const paymentMethod = document.getElementById('billPaymentMethod').value || 'Cash';
       
       const total = currentBillItems.reduce((sum, i) => sum + i.price, 0);
       const uid = generateUUID();
@@ -1129,6 +1250,7 @@
         total_amount: total,
         items: JSON.stringify(currentBillItems),
         payment_status: 'paid',
+        payment_method: paymentMethod,
         created_at: new Date().toISOString(),
         sync_status: 'pending'
       };
@@ -1160,13 +1282,15 @@
       allBills.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       
       window.CURRENT_BILLS = allBills;
-      renderBilling(allBills);
+      filterBills();
     }
 
     function renderBilling(bills) {
       const body = document.getElementById('billingBody');
       body.innerHTML = bills.map((b, idx) => {
         const isVoided = b.payment_status === 'voided';
+        const methodMap = { Cash: '💵 Cash', UPI: '📱 UPI', Card: '💳 Card' };
+        const methodStr = methodMap[b.payment_method || 'Cash'] || '💵 Cash';
         return `
         <div class="order-card" style="position:relative; overflow:hidden; ${isVoided ? 'opacity:0.6; filter:grayscale(1)' : ''}">
           ${isVoided ? `
@@ -1175,7 +1299,7 @@
             </div>
           ` : ''}
           <div class="order-header">
-            <div class="order-id">₹${b.total_amount}</div>
+            <div class="order-id">₹${b.total_amount} <span style="font-size:0.7rem; font-weight:normal; color:var(--muted); margin-left:6px">${methodStr}</span></div>
             <div class="status-badge ${b.sync_status === 'synced' ? 'badge-completed' : 'badge-warning'}">
               ${b.sync_status === 'synced' ? 'SYNCED' : 'OFFLINE'}
             </div>
@@ -1497,6 +1621,297 @@
       }
     }
 
+    function updateBillingStats(bills) {
+      const active = bills.filter(b => b.payment_status !== 'voided');
+      const voided = bills.filter(b => b.payment_status === 'voided');
+      
+      const rev = active.reduce((sum, b) => sum + Number(b.total_amount), 0);
+      const count = active.length;
+      const avg = count > 0 ? Math.round(rev / count) : 0;
+      const vCount = voided.length;
+      
+      document.getElementById('statRevenue').innerText = `₹${rev}`;
+      document.getElementById('statBillsCount').innerText = count;
+      document.getElementById('statAvgBill').innerText = `₹${avg}`;
+      document.getElementById('statVoidedCount').innerText = vCount;
+    }
+
+    function onBillingDateFilterChange() {
+      const val = document.getElementById('billingDateFilter').value;
+      const customBox = document.getElementById('billingCustomDateRange');
+      if (val === 'custom') {
+        customBox.style.display = 'flex';
+      } else {
+        customBox.style.display = 'none';
+      }
+      filterBills();
+    }
+
+    function exportBillsCSV() {
+      const q = document.getElementById('billingSearch').value.toLowerCase().trim();
+      const method = document.getElementById('billingMethodFilter').value;
+      const status = document.getElementById('billingStatusFilter').value;
+      const sync = document.getElementById('billingSyncFilter').value;
+      const dateFilter = document.getElementById('billingDateFilter').value;
+      
+      const todayStr = new Date().toISOString().split('T')[0];
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      const filtered = window.CURRENT_BILLS.filter(b => {
+        const matchesSearch = !q || 
+          (b.customer_phone && b.customer_phone.toLowerCase().includes(q)) || 
+          (b.customer_name && b.customer_name.toLowerCase().includes(q)) ||
+          (b.id && b.id.toLowerCase().includes(q)) ||
+          (b.items && b.items.toLowerCase().includes(q));
+          
+        const matchesMethod = method === 'all' || b.payment_method === method || (!b.payment_method && method === 'Cash');
+        const matchesStatus = status === 'all' || b.payment_status === status || (!b.payment_status && status === 'paid');
+        const matchesSync = sync === 'all' || b.sync_status === sync || (sync === 'synced' && (!b.sync_status || b.sync_status === 'synced'));
+        
+        let matchesDate = true;
+        if (dateFilter === 'today') {
+          matchesDate = b.created_at.startsWith(todayStr);
+        } else if (dateFilter === 'yesterday') {
+          matchesDate = b.created_at.startsWith(yesterdayStr);
+        } else if (dateFilter === '7days') {
+          const cut = new Date();
+          cut.setDate(cut.getDate() - 7);
+          matchesDate = new Date(b.created_at) >= cut;
+        } else if (dateFilter === 'custom') {
+          const start = document.getElementById('billingDateStart').value;
+          const end = document.getElementById('billingDateEnd').value;
+          if (start) {
+            matchesDate = matchesDate && (b.created_at.split('T')[0] >= start);
+          }
+          if (end) {
+            matchesDate = matchesDate && (b.created_at.split('T')[0] <= end);
+          }
+        }
+        
+        return matchesSearch && matchesMethod && matchesStatus && matchesSync && matchesDate;
+      });
+
+      if (filtered.length === 0) {
+        showToast('No bills to export! 📊', true);
+        return;
+      }
+
+      let csv = 'Bill ID,Date,Customer Name,Customer Phone,Payment Method,Status,Sync,Items,Total Amount\n';
+      filtered.forEach(b => {
+        const items = JSON.parse(b.items || '[]').map(i => `${i.name} (x${i.quantity || 1} ${i.size || ''})`).join(' | ');
+        const id = b.id ? String(b.id).toUpperCase() : '';
+        const date = new Date(b.created_at).toLocaleString();
+        const name = (b.customer_name || 'Walk-in').replace(/"/g, '""');
+        const phone = b.customer_phone || 'N/A';
+        const method = b.payment_method || 'Cash';
+        const status = b.payment_status || 'paid';
+        const syncStatus = b.sync_status === 'synced' || !b.sync_status ? 'Synced' : 'Offline';
+        const total = b.total_amount;
+        
+        csv += `"${id}","${date}","${name}","${phone}","${method}","${status}","${syncStatus}","${items.replace(/"/g, '""')}",${total}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `bills_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('CSV Exported! 📊');
+    }
+
+    function filterBills() {
+      const q = document.getElementById('billingSearch').value.toLowerCase().trim();
+      const method = document.getElementById('billingMethodFilter').value;
+      const status = document.getElementById('billingStatusFilter').value;
+      const sync = document.getElementById('billingSyncFilter').value;
+      const dateFilter = document.getElementById('billingDateFilter').value;
+      
+      const todayStr = new Date().toISOString().split('T')[0];
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      const filtered = window.CURRENT_BILLS.filter(b => {
+        const matchesSearch = !q || 
+          (b.customer_phone && b.customer_phone.toLowerCase().includes(q)) || 
+          (b.customer_name && b.customer_name.toLowerCase().includes(q)) ||
+          (b.id && b.id.toLowerCase().includes(q)) ||
+          (b.items && b.items.toLowerCase().includes(q));
+          
+        const matchesMethod = method === 'all' || b.payment_method === method || (!b.payment_method && method === 'Cash');
+        const matchesStatus = status === 'all' || b.payment_status === status || (!b.payment_status && status === 'paid');
+        const matchesSync = sync === 'all' || b.sync_status === sync || (sync === 'synced' && (!b.sync_status || b.sync_status === 'synced'));
+        
+        let matchesDate = true;
+        if (dateFilter === 'today') {
+          matchesDate = b.created_at.startsWith(todayStr);
+        } else if (dateFilter === 'yesterday') {
+          matchesDate = b.created_at.startsWith(yesterdayStr);
+        } else if (dateFilter === '7days') {
+          const cut = new Date();
+          cut.setDate(cut.getDate() - 7);
+          matchesDate = new Date(b.created_at) >= cut;
+        } else if (dateFilter === 'custom') {
+          const start = document.getElementById('billingDateStart').value;
+          const end = document.getElementById('billingDateEnd').value;
+          if (start) {
+            matchesDate = matchesDate && (b.created_at.split('T')[0] >= start);
+          }
+          if (end) {
+            matchesDate = matchesDate && (b.created_at.split('T')[0] <= end);
+          }
+        }
+        
+        return matchesSearch && matchesMethod && matchesStatus && matchesSync && matchesDate;
+      });
+      
+      updateBillingStats(filtered);
+      renderBilling(filtered);
+    }
+
+    async function printDailyZReport() {
+      try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const localBills = await db.local_bills.toArray();
+        const todayBills = localBills.filter(b => b.created_at.startsWith(todayStr) && b.payment_status !== 'voided');
+        
+        if (todayBills.length === 0) {
+          return alert('No bills generated today to generate Z-Report!');
+        }
+
+        const totalRevenue = todayBills.reduce((sum, b) => sum + Number(b.total_amount), 0);
+        
+        const paymentStats = { Cash: 0, UPI: 0, Card: 0 };
+        todayBills.forEach(b => {
+          const method = b.payment_method || 'Cash';
+          if (paymentStats[method] !== undefined) {
+            paymentStats[method] += Number(b.total_amount);
+          } else {
+            paymentStats['Cash'] += Number(b.total_amount);
+          }
+        });
+        
+        const itemStats = {};
+        todayBills.forEach(b => {
+          const items = JSON.parse(b.items || '[]');
+          items.forEach(item => {
+            const name = item.name + (item.size ? ` (${item.size})` : '');
+            itemStats[name] = (itemStats[name] || 0) + (item.quantity || 1);
+          });
+        });
+        
+        const topItems = Object.entries(itemStats)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+          
+        const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+        window.CURRENT_Z_REPORT_TEXT = (() => {
+          let rText = '';
+          rText += '================================\n';
+          rText += '         GRILL & CHILL          \n';
+          rText += '         DAILY SUMMARY          \n';
+          rText += '          (Z-REPORT)            \n';
+          rText += '================================\n';
+          rText += padLine(`Date: ${dateStr}`, timeStr) + '\n';
+          rText += '--------------------------------\n';
+          rText += padLine('Total Bills:', todayBills.length) + '\n';
+          rText += padLine('Total Revenue:', `Rs.${totalRevenue}`) + '\n';
+          rText += '--------------------------------\n';
+          rText += 'PAYMENT BREAKDOWN:\n';
+          rText += padLine(' - Cash:', `Rs.${paymentStats.Cash}`) + '\n';
+          rText += padLine(' - UPI:', `Rs.${paymentStats.UPI}`) + '\n';
+          rText += padLine(' - Card:', `Rs.${paymentStats.Card}`) + '\n';
+          rText += '--------------------------------\n';
+          rText += 'TOP ITEMS SOLD:\n';
+          topItems.forEach(([name, qty]) => {
+            rText += padLine(` ${name}`, `x${qty}`) + '\n';
+          });
+          rText += '================================\n';
+          rText += '        Z-Report End.           \n';
+          rText += '\n\n\n\n';
+          return rText;
+        })();
+
+        const zReportHtml = `
+          <div class="center">
+            <div class="bold" style="font-size: 14px; margin-bottom: 2px;">GRILL & CHILL</div>
+            <div class="bold" style="font-size: 11px;">DAILY SUMMARY</div>
+            <div style="font-size: 10px; margin-bottom: 4px;">(Z-REPORT)</div>
+          </div>
+          <hr class="double-separator">
+          <div style="display:flex; justify-content:space-between; font-size:10px">
+            <span>Date: ${dateStr}</span>
+            <span>${timeStr}</span>
+          </div>
+          <hr class="separator">
+          <div style="display:flex; justify-content:space-between; font-size:11px; margin: 3px 0;">
+            <span>Total Bills:</span>
+            <span class="bold">${todayBills.length}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:11px; margin: 3px 0;">
+            <span>Total Revenue:</span>
+            <span class="bold">₹${totalRevenue}</span>
+          </div>
+          <hr class="separator">
+          <div class="bold" style="font-size: 11px; margin-bottom: 4px;">PAYMENT BREAKDOWN:</div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; padding-left: 5px; margin: 2px 0;">
+            <span>💵 Cash:</span>
+            <span>₹${paymentStats.Cash}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; padding-left: 5px; margin: 2px 0;">
+            <span>📱 UPI:</span>
+            <span>₹${paymentStats.UPI}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; padding-left: 5px; margin: 2px 0;">
+            <span>💳 Card:</span>
+            <span>₹${paymentStats.Card}</span>
+          </div>
+          <hr class="separator">
+          <div class="bold" style="font-size: 11px; margin-bottom: 4px;">TOP ITEMS SOLD:</div>
+          ${topItems.map(([name, qty]) => `
+            <div style="display:flex; justify-content:space-between; font-size:10px; padding-left: 5px; margin: 2px 0;">
+              <span>${name}</span>
+              <span>x${qty}</span>
+            </div>
+          `).join('')}
+          <hr class="double-separator">
+          <div class="center" style="font-size: 9px; margin-top: 4px;">Z-Report End.</div>
+        `;
+
+        document.getElementById('zReportPaper').innerHTML = zReportHtml;
+        
+        const btnPrintZ = document.getElementById('btnDirectBtPrintZ');
+        btnPrintZ.onclick = async () => {
+          if (cachedPrinterChar && cachedPrinterDevice && cachedPrinterDevice.gatt.connected) {
+            showToast('Printing Z-Report... 📊');
+            const bytes = [];
+            bytes.push(0x1B, 0x40);
+            for (let i = 0; i < window.CURRENT_Z_REPORT_TEXT.length; i++) {
+              bytes.push(window.CURRENT_Z_REPORT_TEXT.charCodeAt(i) & 0xFF);
+            }
+            bytes.push(0x1D, 0x56, 0x42, 0x00);
+            await writeInChunks(cachedPrinterChar, new Uint8Array(bytes));
+            showToast('Z-Report Printed! ✅');
+            closeModal('zReportPreviewModal');
+          } else {
+            showToast('BLE Printer Not Connected! ❌', true);
+          }
+        };
+
+        openModal('zReportPreviewModal');
+      } catch (err) {
+        console.error('Z-Report generation failed:', err);
+        alert('Error generating report: ' + err.message);
+      }
+    }
+
     async function syncBills() {
       if (!navigator.onLine) return;
       const syncEl = document.getElementById('syncStatus');
@@ -1517,6 +1932,7 @@
             total_amount: bill.total_amount,
             items: bill.items,
             payment_status: bill.payment_status,
+            payment_method: bill.payment_method || 'Cash',
             created_at: bill.created_at
           }]);
           
@@ -1628,6 +2044,9 @@
       if (bill.customer_name && bill.customer_name !== 'Walk-in') {
         text += `Name: ${bill.customer_name}\n`;
       }
+      if (bill.payment_method) {
+        text += `Payment: ${bill.payment_method}\n`;
+      }
       
       text += 'All prices inclusive of taxes\n';
       text += '────────────────────────────────\n';
@@ -1719,6 +2138,9 @@
       if (bill.customer_name && bill.customer_name !== 'Walk-in') {
         addLine(`Name: ${bill.customer_name}`);
       }
+      if (bill.payment_method) {
+        addLine(`Payment: ${bill.payment_method}`);
+      }
       
       bytes.push(0x1B, 0x61, 0x01);
       addLine('All prices inclusive of taxes');
@@ -1751,7 +2173,7 @@
         grouped[key].totalPrice += Number(item.price) * (item.quantity || 1);
       });
 
-      const logoUrl = window.location.origin + '/assets/logo.svg';
+      const logoUrl = window.location.origin + '/assets/logo-transparent.png';
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent('https://grillandchillpizzeria.juvaid.in')}`;
       
       const receiptContentHtml = `
@@ -1801,6 +2223,7 @@
 
         ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `<div class="customer-info">Customer: ${bill.customer_phone}</div>` : ''}
         ${(bill.customer_name && bill.customer_name !== 'Walk-in') ? `<div class="customer-info">Name: ${bill.customer_name}</div>` : ''}
+        ${(bill.payment_method) ? `<div class="customer-info">Payment: ${bill.payment_method}</div>` : ''}
 
         <div class="tax-note">All prices inclusive of taxes</div>
 

@@ -37,21 +37,7 @@ create trigger on_menu_item_updated
   before update on public.menu_items
   for each row execute procedure public.handle_updated_at();
 
--- 4. Row Level Security
-alter table public.menu_items enable row level security;
-
--- Public can SELECT available items
-create policy "Public read available items"
-  on public.menu_items for select
-  using (available = true);
-
--- Authenticated users (admins) can do everything
-create policy "Authenticated full access"
-  on public.menu_items for all
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
-
--- 5. Profiles Table (for Auth & Roles)
+-- 4. Profiles Table (for Auth & Roles)
 create table if not exists public.profiles (
   id          uuid references auth.users on delete cascade primary key,
   full_name   text,
@@ -59,7 +45,7 @@ create table if not exists public.profiles (
   created_at  timestamptz default now()
 );
 
--- 6. Orders Table
+-- 5. Orders Table
 create table if not exists public.orders (
   id              bigint generated always as identity primary key,
   customer_id     uuid references public.profiles(id),
@@ -74,7 +60,7 @@ create table if not exists public.orders (
   updated_at      timestamptz default now()
 );
 
--- 7. Order Items (Snapshots)
+-- 6. Order Items (Snapshots)
 create table if not exists public.order_items (
   id            bigint generated always as identity primary key,
   order_id      bigint references public.orders(id) on delete cascade,
@@ -86,33 +72,86 @@ create table if not exists public.order_items (
   addons        jsonb default '[]'
 );
 
+-- 7. Bills Table
+create table if not exists public.bills (
+  id              uuid primary key,
+  customer_name   text not null default 'Walk-in',
+  total_amount    numeric(10,2) not null,
+  items           text not null,
+  payment_status  text default 'paid' check (payment_status in ('paid', 'voided')),
+  payment_method  text default 'Cash' check (payment_method in ('Cash', 'UPI', 'Card')),
+  created_at      timestamptz default now()
+);
+
 -- 8. Storage Bucket for item images
 insert into storage.buckets (id, name, public)
 values ('menu-images', 'menu-images', true)
 on conflict do nothing;
 
--- 9. More RLS Policies
+-- 9. Security Helper Function (Bypasses RLS to avoid recursion)
+create or replace function public.is_admin()
+returns boolean security definer as $$
+begin
+  return exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+end;
+$$ language plpgsql;
+
+-- 10. Enable Row Level Security (RLS)
+alter table public.menu_items enable row level security;
 alter table public.profiles enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
+alter table public.bills enable row level security;
 
--- Profiles: Users can read their own, Admins can read all
-create policy "Users read own profile" on public.profiles for select using (auth.uid() = id);
-create policy "Admins read all profiles" on public.profiles for select using (
-  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-);
+-- 11. RLS Policies
 
--- Orders: Users can read own, Admins can do everything, Public can INSERT
-create policy "Users read own orders" on public.orders for select using (customer_id = auth.uid());
-create policy "Admins manage all orders" on public.orders for all using (
-  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-);
-create policy "Public can place orders" on public.orders for insert with check (true);
+-- Menu Items
+create policy "Public read available items"
+  on public.menu_items for select
+  using (available = true);
 
--- Order Items: Admins manage all, Public can INSERT
-create policy "Admins manage all order items" on public.order_items for all using (
-  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-);
-create policy "Public can add order items" on public.order_items for insert with check (true);
+create policy "Admins full access to menu_items"
+  on public.menu_items for all
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- Profiles
+create policy "Users read own profile"
+  on public.profiles for select
+  using (auth.uid() = id);
+
+create policy "Admins read all profiles"
+  on public.profiles for select
+  using (public.is_admin());
+
+-- Orders
+create policy "Users read own orders"
+  on public.orders for select
+  using (customer_id = auth.uid());
+
+create policy "Admins manage all orders"
+  on public.orders for all
+  using (public.is_admin());
+
+create policy "Public can place orders"
+  on public.orders for insert
+  with check (true);
+
+-- Order Items
+create policy "Admins manage all order items"
+  on public.order_items for all
+  using (public.is_admin());
+
+create policy "Public can add order items"
+  on public.order_items for insert
+  with check (true);
+
+-- Bills
+create policy "Admins manage all bills"
+  on public.bills for all
+  using (public.is_admin());
 
 -- Done! ✅
