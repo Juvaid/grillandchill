@@ -97,3 +97,51 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(fetch(e.request));
   }
 });
+
+// 4. Background Push Notification Event Listener
+self.addEventListener('push', (e) => {
+  let data = { title: 'New Order Received! 🍕', body: 'A new customer has placed an order.' };
+  if (e.data) {
+    try {
+      data = e.data.json();
+    } catch (err) {
+      data = { title: 'New Order Received! 🍕', body: e.data.text() };
+    }
+  }
+  
+  const options = {
+    body: data.body,
+    icon: './assets/logo-transparent.png',
+    badge: './assets/logo-transparent.png',
+    vibrate: [200, 100, 200, 100, 400],
+    data: {
+      url: './admin.html'
+    }
+  };
+  
+  e.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+// 5. Notification Click Handler
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const urlToOpen = new URL(e.notification.data.url, self.location.origin).href;
+  
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // If an admin tab is already open, focus it
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i];
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise, open a new tab
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});

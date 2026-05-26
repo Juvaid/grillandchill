@@ -869,6 +869,21 @@
     };
 
     async function logout() {
+      if (currentUser) {
+        try {
+          // Delete subscription from Database to avoid piling up dead subscriptions
+          await supabaseClient.from('admin_push_subscriptions').delete().eq('user_id', currentUser.id);
+          
+          // Unsubscribe locally from Push Manager
+          const reg = await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.getSubscription();
+          if (sub) {
+            await sub.unsubscribe();
+          }
+        } catch(e) {
+          console.error("Error unsubscribing on logout:", e);
+        }
+      }
       await supabaseClient.auth.signOut();
       location.reload();
     }
@@ -884,6 +899,72 @@
       loadSettings();
       subscribeToOrders();
       subscribeToBills();
+      setupPushNotifications();
+    }
+
+    async function setupPushNotifications() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        console.warn('Push notifications or Service Worker is not supported in this browser');
+        return;
+      }
+
+      try {
+        const reg = await navigator.serviceWorker.register('service-worker.js');
+        console.log('Service Worker registered for Admin:', reg);
+        
+        if (Notification.permission === 'default') {
+          await Notification.requestPermission();
+        }
+        
+        if (Notification.permission !== 'granted') {
+          console.warn('Push notifications permission not granted');
+          return;
+        }
+        
+        const VAPID_PUBLIC_KEY = 'BLd5176BENuYPrDrfx3388HbyX-BwJ2Ln8jaa4KtWEvhrzC-icfjzk5CxxSL6m_rgsW9qDA_Zv_m1EFLhAcrfnI';
+        
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+          });
+          console.log('New Push Subscription created:', sub);
+        } else {
+          console.log('Existing Push Subscription found:', sub);
+        }
+        
+        if (currentUser) {
+          const subJson = JSON.parse(JSON.stringify(sub));
+          // Delete existing for this user and insert fresh subscription to avoid duplicate entries
+          await supabaseClient.from('admin_push_subscriptions').delete().eq('user_id', currentUser.id);
+          const { error: insErr } = await supabaseClient
+            .from('admin_push_subscriptions')
+            .insert({
+              user_id: currentUser.id,
+              subscription: subJson
+            });
+          if (insErr) console.error('Failed to save push subscription to DB:', insErr);
+          else console.log('Push subscription saved to Supabase successfully!');
+        }
+      } catch (err) {
+        console.error('Error setting up push notifications:', err);
+      }
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
     }
 
     function subscribeToOrders() {
