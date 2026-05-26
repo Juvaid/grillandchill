@@ -17,7 +17,7 @@ const STORE = {
   address2: 'Adj. HDFC Bank, Malerkotla',
   phone: 'Ph: 79019 94174',
   website: 'grillandchillpizzeria.juvaid.in',
-  logoUrl: 'https://grillandchillpizzeria.juvaid.in/assets/logo-transparent.png',
+  logoUrl: 'https://grillandchillpizzeria.juvaid.in/assets/logo-receipt-bw.png',
   qrValue: 'https://grillandchillpizzeria.juvaid.in',
 };
 
@@ -66,7 +66,7 @@ function buildReceipt(bill, baseUrl) {
   const date = bill.created_at ? new Date(bill.created_at) : new Date();
 
   // ── Logo ──
-  const logoUrl = baseUrl ? `${baseUrl}/assets/logo-transparent.png` : STORE.logoUrl;
+  const logoUrl = baseUrl ? `${baseUrl}/assets/logo-receipt-bw.png` : STORE.logoUrl;
   entries.push(imageEntry(logoUrl, 1));
   entries.push(emptyLine());
 
