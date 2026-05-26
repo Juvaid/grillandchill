@@ -524,6 +524,137 @@ body {
   .store-login-btn { padding: 12px; }
   .top-actions { gap: 6px !important; }
 }
+
+/* Premium Payment Modal Design */
+.upi-modal-wrapper {
+  background: #111112;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 24px;
+  padding: 28px 24px;
+  max-width: 350px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.upi-modal-title {
+  margin: 0 0 6px 0;
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.upi-modal-subtitle {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0 0 20px 0;
+  line-height: 1.45;
+  font-weight: 500;
+  max-width: 280px;
+}
+.upi-qr-card {
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 18px;
+  display: inline-block;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.upi-qr-card img {
+  width: 160px;
+  height: 160px;
+  display: block;
+}
+.upi-pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  text-decoration: none;
+  height: 48px;
+  background: linear-gradient(135deg, #f05023 0%, #dd3e12 100%);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+.upi-pay-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.upi-pay-btn:active {
+  transform: translateY(1px);
+}
+.upi-alert-banner {
+  font-size: 0.74rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+  margin: 16px 0 20px;
+  background: rgba(240, 80, 35, 0.05);
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(240, 80, 35, 0.12);
+  text-align: left;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.upi-alert-banner svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.whatsapp-confirm-btn {
+  margin: 0;
+  height: 48px;
+  background: linear-gradient(135deg, #25D366 0%, #1ebd5a 100%);
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.5px;
+}
+.whatsapp-confirm-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+.whatsapp-confirm-btn:active {
+  transform: translateY(1px);
+}
+.upi-cancel-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 12px;
+  width: 100%;
+  transition: color 0.2s, transform 0.2s;
+  letter-spacing: 0.5px;
+}
+.upi-cancel-btn:hover {
+  color: #ffffff;
+}
 </style>
 </head>
 <body>
@@ -774,30 +905,46 @@ body {
 </div>
 
 <!-- UPI PAYMENT INSTRUCTION MODAL -->
-<div id="customerUpiModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#1e1e24; border:1px solid var(--b); border-radius:20px; padding:25px; max-width:340px; width:100%; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-    <h3 style="margin-top:0; color:var(--accent); font-size:1.15rem; font-weight:800; letter-spacing:0.5px;">Pay via UPI</h3>
-    <p style="font-size:0.8rem; color:var(--text); margin-bottom:15px; line-height:1.4;">Please pay the billing amount to complete your order.</p>
+<div id="customerUpiModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(10,10,12,0.85); z-index:9999; align-items:center; justify-content:center; padding:20px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+  <div class="upi-modal-wrapper">
+    <h3 class="upi-modal-title">Pay via UPI</h3>
+    <p class="upi-modal-subtitle">Scan the QR code with any UPI app or click to pay directly.</p>
     
     <!-- QR Code for desktop -->
-    <div id="custUpiQrContainer" style="background:white; padding:12px; border-radius:12px; display:inline-block; margin-bottom:15px;">
-      <img id="custUpiQrImg" src="" style="width:160px; height:160px; display:block;">
+    <div id="custUpiQrContainer" class="upi-qr-card">
+      <img id="custUpiQrImg" src="">
     </div>
     
     <!-- Deep link button for mobile -->
-    <a id="custUpiPayBtn" href="#" class="sheet-cta" style="display:flex; align-items:center; justify-content:center; gap:8px; margin: 0 auto 15px; text-decoration:none; height:45px; background:var(--accent); color:#fff; font-weight:800; font-size:0.85rem; border-radius:10px;">
-      📱 CLICK TO PAY ₹<span id="custUpiAmount">0</span>
+    <a id="custUpiPayBtn" href="#" class="upi-pay-btn">
+      <!-- Phone/Device SVG Icon -->
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+        <line x1="12" y1="18" x2="12.01" y2="18"/>
+      </svg>
+      <span>PAY ₹<span id="custUpiAmount">0</span> ON MOBILE</span>
     </a>
     
-    <div style="font-size:0.7rem; color:var(--muted); line-height:1.4; margin-bottom:20px; background:rgba(255,255,255,0.02); padding:10px; border-radius:8px;">
-      ⚠️ Important: After payment is successful, click the button below to send your order details to our WhatsApp.
+    <!-- Important confirmation instructions -->
+    <div class="upi-alert-banner">
+      <!-- Warning/Info Circle SVG Icon -->
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f05023" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span><strong>Important:</strong> After paying, you must click the green button below to submit your order details on WhatsApp.</span>
     </div>
     
-    <div style="display:flex; flex-direction:column; gap:10px;">
-      <button onclick="confirmUpiAndSendWhatsApp()" class="sheet-cta" style="margin:0; height:45px; background:#22c55e; border-radius:10px; font-weight:800; color:#fff; border:none; cursor:pointer;">
-        ✅ SENT ORDER TO WHATSAPP
+    <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+      <button onclick="confirmUpiAndSendWhatsApp()" class="whatsapp-confirm-btn">
+        <!-- Official WhatsApp SVG Icon -->
+        <svg viewBox="0 0 448 512" width="16" height="16" fill="currentColor" style="display:inline-block; vertical-align:middle;">
+          <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L3.2 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+        </svg>
+        <span>CONFIRM & SEND ON WHATSAPP</span>
       </button>
-      <button onclick="closeCustomerUpiModal()" style="background:none; border:none; color:var(--muted); font-size:0.75rem; font-weight:700; cursor:pointer; padding:5px;">
+      <button onclick="closeCustomerUpiModal()" class="upi-cancel-btn">
         CANCEL
       </button>
     </div>
