@@ -1624,18 +1624,8 @@
     async function printDirectlyViaBluetooth(bill) {
       try {
         const char = await getBLEPrinter();
-
-        showToast('Processing logo... ⏳');
-        const logoUrl = window.location.origin + '/assets/logo-receipt-bw.png';
-        let logoBytes = null;
-        try {
-          logoBytes = await logoToEscPos(logoUrl, 120);
-        } catch (e) {
-          console.error('Failed to convert logo to ESC/POS:', e);
-        }
-
         showToast('Printing receipt... 🖨️');
-        const bytes = generateEscPosBytes(bill, logoBytes);
+        const bytes = generateEscPosBytes(bill);
         await writeInChunks(char, bytes);
         showToast('Print complete! ✅');
       } catch (err) {
@@ -2140,7 +2130,7 @@
       return text;
     }
 
-    function generateEscPosBytes(bill, logoBytes) {
+    function generateEscPosBytes(bill) {
       const bytes = [];
       const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
       
@@ -2155,13 +2145,9 @@
       }
 
       function addQrCode(value) {
-        // 1. Set model (Model 2)
         bytes.push(0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00);
-        // 2. Set dot size (default size 6 dots)
-        bytes.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x06);
-        // 3. Set error correction level (Level M)
+        bytes.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x04); // QR size 4 (smaller)
         bytes.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x44, 0x31);
-        // 4. Store data
         const dataBytes = [];
         for (let i = 0; i < value.length; i++) {
           dataBytes.push(value.charCodeAt(i) & 0xFF);
@@ -2171,46 +2157,37 @@
         const pH = (len >> 8) & 0xFF;
         bytes.push(0x1D, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30);
         bytes.push(...dataBytes);
-        // 5. Print QR code
         bytes.push(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30);
       }
       
       // Initialize printer
       bytes.push(0x1B, 0x40);
-      
-      // Add logo using ESC * bit-image strips (universally supported)
-      if (logoBytes && logoBytes.length > 0) {
-        for (let i = 0; i < logoBytes.length; i++) {
-          bytes.push(logoBytes[i]);
-        }
-        bytes.push(0x0A); // Extra line feed after logo
-      }
 
-      bytes.push(0x1B, 0x61, 0x01);
-      bytes.push(0x1B, 0x45, 0x01);
-      bytes.push(0x1D, 0x21, 0x11);
+      // ── Store Header (compact) ──
+      bytes.push(0x1B, 0x61, 0x01); // Center
+      bytes.push(0x1B, 0x45, 0x01); // Bold on
+      bytes.push(0x1D, 0x21, 0x11); // Double height+width
       addLine('GRILL & CHILL');
-      bytes.push(0x1D, 0x21, 0x00);
-      bytes.push(0x1B, 0x45, 0x00);
-      
+      bytes.push(0x1D, 0x21, 0x00); // Normal size
+      bytes.push(0x1B, 0x45, 0x00); // Bold off
       addLine('Pizzeria & Bakery');
-      addLine('Raikot Road, Sandhaur');
-      addLine('Adj. HDFC Bank, Malerkotla');
+      addLine('Raikot Rd, Sandhaur | Malerkotla');
       addLine('Ph: 79019 94174');
       addLine('================================');
-      
+
+      // ── Bill Info ──
       const date = bill.created_at ? new Date(bill.created_at) : new Date();
       const billId = bill.id ? `#${String(bill.id).slice(0, 8).toUpperCase()}` : '#N/A';
       const timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
       const dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
       
-      bytes.push(0x1B, 0x61, 0x00);
+      bytes.push(0x1B, 0x61, 0x00); // Left align
       bytes.push(0x1B, 0x45, 0x01);
-      addLine(padLine(`Bill ${billId}`, timeStr));
+      addLine(padLine(`Bill ${billId}`, `${dateStr} ${timeStr}`));
       bytes.push(0x1B, 0x45, 0x00);
-      addLine(`Date: ${dateStr}`);
       addLine('--------------------------------');
-      
+
+      // ── Items ──
       const grouped = {};
       items.forEach(item => {
         const key = `${item.name}|${item.size || ''}`;
@@ -2238,41 +2215,35 @@
       });
       
       addLine('--------------------------------');
-      
+
+      // ── Total ──
       const totalStr = `Rs.${bill.total_amount || 0}`;
       bytes.push(0x1B, 0x45, 0x01);
-      bytes.push(0x1D, 0x21, 0x01);
+      bytes.push(0x1D, 0x21, 0x01); // Double height
       addLine(padLine('TOTAL', totalStr));
       bytes.push(0x1D, 0x21, 0x00);
       bytes.push(0x1B, 0x45, 0x00);
       addLine('================================');
-      
+
+      // ── Customer / Payment ──
       if (bill.customer_phone && bill.customer_phone !== 'N/A') {
         addLine(`Customer: ${bill.customer_phone}`);
-      }
-      if (bill.customer_name && bill.customer_name !== 'Walk-in') {
-        addLine(`Name: ${bill.customer_name}`);
       }
       if (bill.payment_method) {
         addLine(`Payment: ${bill.payment_method}`);
       }
-      
-      bytes.push(0x1B, 0x61, 0x01);
-      addLine('All prices inclusive of taxes');
+
+      // ── Footer (compact) ──
+      bytes.push(0x1B, 0x61, 0x01); // Center
+      addLine('Prices inclusive of taxes');
       addLine('--------------------------------');
-      bytes.push(0x1B, 0x45, 0x01);
       addLine('Thank you! Visit again.');
-      bytes.push(0x1B, 0x45, 0x00);
-      addLine('');
       addLine('Order Online - Free Delivery');
-      
-      // Print QR Code
-      bytes.push(0x0A); // Line feed
       addQrCode('https://grillandchillpizzeria.juvaid.in');
-      bytes.push(0x0A);
       addLine('grillandchillpizzeria.juvaid.in');
-      
-      bytes.push(0x0A, 0x0A, 0x0A, 0x0A);
+
+      // Minimal paper feed + cut
+      bytes.push(0x0A, 0x0A);
       bytes.push(0x1D, 0x56, 0x42, 0x00);
       
       return new Uint8Array(bytes);
@@ -2295,17 +2266,14 @@
         grouped[key].totalPrice += Number(item.price) * (item.quantity || 1);
       });
 
-      const logoUrl = window.location.origin + '/assets/logo-receipt-bw.png';
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent('https://grillandchillpizzeria.juvaid.in')}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent('https://grillandchillpizzeria.juvaid.in')}`;
       
       const receiptContentHtml = `
         <div class="center">
-          <img src="${logoUrl}" class="store-logo" alt="Logo" onerror="this.style.display='none'">
           <div class="store-name">GRILL & CHILL</div>
           <div class="store-tagline">Pizzeria & Bakery</div>
           <div class="store-address">
-            Raikot Road, Sandhaur<br>
-            Adj. HDFC Bank, Malerkotla<br>
+            Raikot Rd, Sandhaur | Malerkotla<br>
             Ph: 79019 94174
           </div>
         </div>
@@ -2314,10 +2282,7 @@
 
         <div class="bill-info">
           <span class="bold">Bill ${billId}</span>
-          <span>${timeStr}</span>
-        </div>
-        <div class="bill-info">
-          <span>Date: ${dateStr}</span>
+          <span>${dateStr} ${timeStr}</span>
         </div>
 
         <hr class="separator">
@@ -2344,16 +2309,15 @@
         <hr class="double-separator">
 
         ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `<div class="customer-info">Customer: ${bill.customer_phone}</div>` : ''}
-        ${(bill.customer_name && bill.customer_name !== 'Walk-in') ? `<div class="customer-info">Name: ${bill.customer_name}</div>` : ''}
         ${(bill.payment_method) ? `<div class="customer-info">Payment: ${bill.payment_method}</div>` : ''}
 
-        <div class="tax-note">All prices inclusive of taxes</div>
+        <div class="tax-note">Prices inclusive of taxes</div>
 
         <hr class="separator">
 
         <div class="footer">
           <div class="footer-thanks">Thank you! Visit again.</div>
-          <div class="footer-url" style="margin-top:4px;font-weight:bold">Order Online &bull; Free Delivery</div>
+          <div class="footer-url" style="margin-top:2px;font-weight:bold">Order Online &bull; Free Delivery</div>
           <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'">
           <div class="footer-url">grillandchillpizzeria.juvaid.in</div>
         </div>

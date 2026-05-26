@@ -65,31 +65,23 @@ function buildReceipt(bill, baseUrl) {
   const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
   const date = bill.created_at ? new Date(bill.created_at) : new Date();
 
-  // ── Logo ──
-  const logoUrl = baseUrl ? `${baseUrl}/assets/logo-receipt-bw.png` : STORE.logoUrl;
-  entries.push(imageEntry(logoUrl, 1));
-  entries.push(emptyLine());
-
-  // ── Store Header ──
+  // ── Store Header (compact, no logo) ──
   entries.push(separator('━', 32));
   entries.push(textEntry(STORE.name, { bold: 1, align: 1, format: 2 }));
   entries.push(textEntry(STORE.tagline, { bold: 0, align: 1, format: 0 }));
-  entries.push(textEntry(STORE.address1, { bold: 0, align: 1, format: 4 }));
-  entries.push(textEntry(STORE.address2, { bold: 0, align: 1, format: 4 }));
+  entries.push(textEntry('Raikot Rd, Sandhaur | Malerkotla', { bold: 0, align: 1, format: 4 }));
   entries.push(textEntry(STORE.phone, { bold: 0, align: 1, format: 4 }));
   entries.push(separator('━', 32));
 
-  // ── Bill Info ──
+  // ── Bill Info (date + time on one line) ──
   const billId = bill.id ? `#${String(bill.id).slice(0, 8).toUpperCase()}` : '#N/A';
   const timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
   const dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
-  entries.push(textEntry(padLine(`Bill ${billId}`, timeStr), { bold: 1, align: 0, format: 4 }));
-  entries.push(textEntry(`Date: ${dateStr}`, { bold: 0, align: 0, format: 4 }));
+  entries.push(textEntry(padLine(`Bill ${billId}`, `${dateStr} ${timeStr}`), { bold: 1, align: 0, format: 4 }));
   entries.push(dashSeparator(32));
 
   // ── Items ──
-  // Group items by name+size for quantity counting
   const grouped = {};
   items.forEach(item => {
     const key = `${item.name}|${item.size || ''}`;
@@ -106,7 +98,6 @@ function buildReceipt(bill, baseUrl) {
     const label = `${qty}x ${nameWithSize}`;
     const priceStr = `Rs.${item.totalPrice}`;
 
-    // If the line is too long, split into two lines
     if (label.length + priceStr.length + 1 > 32) {
       entries.push(textEntry(label, { bold: 0, align: 0, format: 4 }));
       entries.push(textEntry(priceStr, { bold: 0, align: 2, format: 4 }));
@@ -126,26 +117,19 @@ function buildReceipt(bill, baseUrl) {
   if (bill.customer_phone && bill.customer_phone !== 'N/A') {
     entries.push(textEntry(`Customer: ${bill.customer_phone}`, { bold: 0, align: 0, format: 4 }));
   }
-  if (bill.customer_name && bill.customer_name !== 'Walk-in') {
-    entries.push(textEntry(`Name: ${bill.customer_name}`, { bold: 0, align: 0, format: 4 }));
+  if (bill.payment_method) {
+    entries.push(textEntry(`Payment: ${bill.payment_method}`, { bold: 0, align: 0, format: 4 }));
   }
 
-  // ── Tax Note ──
-  entries.push(emptyLine());
-  entries.push(textEntry('All prices inclusive of taxes', { bold: 0, align: 1, format: 4 }));
+  // ── Footer (compact) ──
+  entries.push(textEntry('Prices inclusive of taxes', { bold: 0, align: 1, format: 4 }));
   entries.push(dashSeparator(32));
-
-  // ── Footer ──
-  entries.push(emptyLine());
   entries.push(textEntry('Thank you! Visit again.', { bold: 1, align: 1, format: 0 }));
-  entries.push(emptyLine());
   entries.push(textEntry('Order Online - Free Delivery', { bold: 1, align: 1, format: 0 }));
 
   // ── QR Code ──
-  entries.push(qrEntry(STORE.qrValue, 40, 1));
+  entries.push(qrEntry(STORE.qrValue, 30, 1));
   entries.push(textEntry(STORE.website, { bold: 0, align: 1, format: 4 }));
-  entries.push(emptyLine());
-  entries.push(emptyLine());
   entries.push(emptyLine());
 
   return entries;
