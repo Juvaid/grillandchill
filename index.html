@@ -474,13 +474,6 @@ body {
 .category-card {
   animation: card-entrance 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
-.category-card:nth-child(1) { animation-delay: 0.1s; }
-.category-card:nth-child(2) { animation-delay: 0.15s; }
-.category-card:nth-child(3) { animation-delay: 0.2s; }
-.category-card:nth-child(4) { animation-delay: 0.25s; }
-.category-card:nth-child(5) { animation-delay: 0.3s; }
-.category-card:nth-child(6) { animation-delay: 0.35s; }
-.category-card:nth-child(7) { animation-delay: 0.4s; }
 .store-login-btn {
   display: flex;
   align-items: center;
@@ -902,6 +895,7 @@ function renderCategoryGrid() {
     
     const card = document.createElement('div');
     card.className = 'category-card';
+    card.style.animationDelay = `${0.05 + i * 0.03}s`;
     
     const catData = CATEGORIES.find(c => c.name === cat);
     const cardSize = catData?.layout_size || 'normal';
@@ -1047,14 +1041,14 @@ function renderAll(){
     });
     let processed = processItems(allItems);
     if(processed.length > 0) {
-      area.innerHTML=`<div class="section-head"><h2>Sorted Results</h2><span>${processed.length} items</span></div><div class="item-grid">${processed.map(it=>gridCard(it,it.cat)).join('')}</div>`;
+      area.innerHTML=`<div class="section-head"><h2>Sorted Results</h2><span>${processed.length} items</span></div><div class="item-grid">${processed.map((it, idx)=>gridCard(it,it.cat, idx)).join('')}</div>`;
     }
   } else {
     Object.entries(MENU).forEach(([cat,items])=>{
       let processed = processItems(items);
       if(processed.length > 0) {
         area.innerHTML+=`<div class="section-head"><h2>${cat}</h2><span>${processed.length} items</span></div>`;
-        area.innerHTML+=`<div class="item-grid">${processed.map(it=>gridCard(it,cat)).join('')}</div><div class="divider" style="margin:16px 0"></div>`;
+        area.innerHTML+=`<div class="item-grid">${processed.map((it, idx)=>gridCard(it,cat, idx)).join('')}</div><div class="divider" style="margin:16px 0"></div>`;
       }
     });
   }
@@ -1071,7 +1065,7 @@ function renderCat(cat){
   if(processed.length === 0) {
     area.innerHTML = `<div class="section-head"><h2>${cat}</h2><span>0 items</span></div>` + '<div class="empty"><div class="ei">🥗</div><p>No items match your filters in this category</p></div>';
   } else {
-    area.innerHTML=`<div class="section-head"><h2>${cat}</h2><span>${processed.length} items</span></div><div class="item-grid">${processed.map(it=>gridCard(it,cat)).join('')}</div>`;
+    area.innerHTML=`<div class="section-head"><h2>${cat}</h2><span>${processed.length} items</span></div><div class="item-grid">${processed.map((it, idx)=>gridCard(it,cat, idx)).join('')}</div>`;
   }
 }
 
@@ -1142,7 +1136,7 @@ function toggleVegOnly() {
   }
 }
 
-function gridCard(it,cat){
+function gridCard(it,cat,idx=0){
   const tags=it.tags.map(t=>{
     const map={pop:'t-pop ⭐ Popular',hot:'t-hot 🌶 Spicy',new:'t-new ✨ New',best:'t-best 🔥 Best'};
     const[cls,...rest]=map[t]?.split(' ')||[];
@@ -1157,7 +1151,7 @@ function gridCard(it,cat){
     : `<div class="item-card-emoji">${it.e}</div>`;
 
   return `
-  <div class="item-card">
+  <div class="item-card" style="animation-delay: ${0.05 + idx * 0.03}s">
     ${dot}
     ${media}
     <div class="item-card-body">
@@ -1166,7 +1160,7 @@ function gridCard(it,cat){
       ${tags?`<div class="tag-row" style="margin-top:4px">${tags}</div>`:''}
       <div class="item-card-footer">
         <div class="item-price">₹${minP}<br><span class="item-price-sub">onwards</span></div>
-        <button class="add-btn" onclick="openSize(${it.id},'${encodeURIComponent(cat)}')">+</button>
+        <button class="add-btn" onclick="openSize(${it.id},'${encodeURIComponent(cat)}')">ADD +</button>
       </div>
     </div>
   </div>`;
@@ -1186,7 +1180,7 @@ function handleSearch(){
   const processed = processItems(results);
   
   if(!processed.length){area.innerHTML='<div class="empty"><div class="ei">🔍</div><p>No items found for "'+q+'"'+(vegOnly?' (Veg Only)':'')+'</p></div>';return;}
-  area.innerHTML=`<div class="section-head"><h2>Search Results</h2><span>${processed.length} found</span></div><div class="item-grid">${processed.map(it=>gridCard(it,it.cat)).join('')}</div>`;
+  area.innerHTML=`<div class="section-head"><h2>Search Results</h2><span>${processed.length} found</span></div><div class="item-grid">${processed.map((it, idx)=>gridCard(it,it.cat, idx)).join('')}</div>`;
 }
 
 function clearSearch(){
