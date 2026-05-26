@@ -180,3 +180,20 @@ create policy "Admins manage all categories"
   with check (public.is_admin());
 
 -- Done! ✅
+
+-- 13. Store Settings Table (shared between Admin and Customers)
+create table if not exists public.store_settings (
+  key   text primary key,
+  value text not null
+);
+
+alter table public.store_settings enable row level security;
+
+create policy "Public read store settings"
+  on public.store_settings for select
+  using (true);
+
+create policy "Admins manage store settings"
+  on public.store_settings for all
+  using (get_auth_role() = 'admin')
+  with check (get_auth_role() = 'admin');

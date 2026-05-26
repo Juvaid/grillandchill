@@ -685,6 +685,11 @@
       <div style="font-size: 1.25rem; font-weight: 900; color: var(--primary); margin-bottom: 5px" id="upiPayAmount">₹0</div>
       <div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 20px" id="upiPayDetails">To: store@upi</div>
       
+      <button id="upiShareWhatsAppBtn" class="btn-primary" style="width:100%; margin-bottom:15px; background:#25D366; display:none; align-items:center; justify-content:center; gap:8px; height: 45px;" onclick="shareUpiRequestToWhatsApp()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.455L0 24zm6.49-4.203a9.884 9.884 0 0 0 5.511 1.659h.005c5.561 0 10.086-4.523 10.09-10.086.002-2.695-1.047-5.227-2.951-7.133C17.296 2.33 14.77 1.28 12.01 1.28c-5.568 0-10.094 4.524-10.099 10.087-.001 1.905.499 3.766 1.448 5.421l-.955 3.486 3.57-.936zm12.39-5.147c-.345-.173-2.042-1.009-2.357-1.124-.315-.115-.545-.173-.775.173-.23.345-.889 1.124-1.09 1.354-.201.23-.402.26-.747.087a10.06 10.06 0 0 1-2.772-1.71 11.08 11.08 0 0 1-1.916-2.385c-.345-.575-.037-.887.251-1.173.259-.258.575-.672.863-.827.288-.175.384-.288.575-.69a.97.97 0 0 0-.048-.918c-.086-.173-.775-1.868-1.062-2.558-.28-.673-.56-.58-.775-.592-.2-.011-.429-.013-.659-.013-.23 0-.603.086-.918.429-.315.345-1.207 1.179-1.207 2.874 0 1.695 1.235 3.333 1.407 3.563.173.23 2.43 3.71 5.887 5.198.822.354 1.464.566 1.966.726.825.262 1.576.225 2.169.137.66-.098 2.043-.834 2.33-1.639.287-.805.287-1.495.2-.163z"/></svg>
+        SHARE VIA WHATSAPP
+      </button>
+      
       <div style="display:flex; gap:10px">
         <button id="upiPaidBtn" class="btn-primary" style="flex:1; height: 45px">PAID & COMPLETE</button>
         <button onclick="closeModal('upiPayModal')" class="mini-btn" style="flex:0.6; height: 45px; border-color:var(--border); color:var(--muted)">CANCEL</button>
@@ -881,13 +886,80 @@
 
     function subscribeToOrders() {
       console.log('📡 Subscribing to Live Orders...');
+      
+      // Request permission on first live load/auth
+      if (window.Notification && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
       supabaseClient
         .channel('orders-live')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+          console.log('🔥 New Live Order:', payload);
+          
+          // Sound double beep
+          playNotificationSound();
+          
+          // Browser Notification
+          if (window.Notification && Notification.permission === 'granted') {
+            new Notification('New Order Received! 🍕', {
+              body: `${payload.new.customer_name} ordered for ₹${payload.new.total_amount}`,
+              icon: 'assets/logo-transparent.png'
+            });
+          }
+          
+          // Custom Alert / Toast
+          showToast(`🔔 New Order from ${payload.new.customer_name} of ₹${payload.new.total_amount}!`);
+          alert(`🔔 NEW ORDER RECEIVED!\n\nCustomer: ${payload.new.customer_name}\nPhone: ${payload.new.customer_phone}\nAmount: ₹${payload.new.total_amount}`);
+          
+          loadOrders();
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
           console.log('🔥 Live Order Update:', payload);
           loadOrders();
         })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'orders' }, payload => {
+          loadOrders();
+        })
         .subscribe();
+    }
+
+    function playNotificationSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const playBeep = (delay, freq, duration) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+          gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + delay + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + duration);
+          
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + duration);
+        };
+        playBeep(0, 587.33, 0.15); // D5
+        playBeep(0.18, 880, 0.25); // A5
+      } catch (e) {
+        console.warn('Audio Context failed to play sound:', e);
+      }
+    }
+
+    function shareUpiRequestToWhatsApp() {
+      if (!window.upiCurrentPhone) return;
+      const storeUpi = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
+      const storeName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
+      const upiUrl = `upi://pay?pa=${storeUpi}&pn=${encodeURIComponent(storeName)}&am=${window.upiCurrentAmount}&cu=INR`;
+      const message = `Hello! Please click the link below to pay ₹${window.upiCurrentAmount} to Grill & Chill:\n\n${upiUrl}`;
+      
+      let cleanedPhone = window.upiCurrentPhone.replace(/\D/g, '');
+      if (cleanedPhone.length === 10) {
+        cleanedPhone = '91' + cleanedPhone;
+      }
+      window.open(`https://wa.me/${cleanedPhone}?text=${encodeURIComponent(message)}`, '_blank');
     }
 
     function subscribeToBills() {
@@ -1099,17 +1171,37 @@
       loadOrders();
     }
 
-    function loadSettings() {
-      const upiId = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
-      const merchantName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
+    async function loadSettings() {
+      let upiId = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
+      let merchantName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
       
+      try {
+        const { data, error } = await supabaseClient
+          .from('store_settings')
+          .select('*');
+        if (data && !error) {
+          const upiRow = data.find(r => r.key === 'upi_id');
+          const merchantRow = data.find(r => r.key === 'merchant_name');
+          if (upiRow) {
+            upiId = upiRow.value;
+            localStorage.setItem('gc_store_upi_id', upiId);
+          }
+          if (merchantRow) {
+            merchantName = merchantRow.value;
+            localStorage.setItem('gc_store_merchant_name', merchantName);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load store settings from Supabase:', err);
+      }
+
       document.getElementById('storeUpiId').value = upiId;
       document.getElementById('storeMerchantName').value = merchantName;
       
       loadLocationStats();
     }
 
-    function saveSettings(e) {
+    async function saveSettings(e) {
       if (e) e.preventDefault();
       const upiId = document.getElementById('storeUpiId').value.trim();
       const merchantName = document.getElementById('storeMerchantName').value.trim();
@@ -1117,7 +1209,16 @@
       localStorage.setItem('gc_store_upi_id', upiId);
       localStorage.setItem('gc_store_merchant_name', merchantName);
       
-      showToast('Settings Saved successfully! ⚙️');
+      try {
+        await supabaseClient.from('store_settings').upsert([
+          { key: 'upi_id', value: upiId },
+          { key: 'merchant_name', value: merchantName }
+        ]);
+        showToast('Settings Saved successfully! ⚙️');
+      } catch (err) {
+        console.error('Failed to save settings to Supabase:', err);
+        showToast('Local settings saved, but failed to sync online.');
+      }
     }
 
     async function loadLocationStats() {
@@ -1288,10 +1389,22 @@
         const storeName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
         const upiUrl = `upi://pay?pa=${storeUpi}&pn=${encodeURIComponent(storeName)}&am=${order.total_amount}&cu=INR`;
         
+        window.upiCurrentPhone = order.customer_phone;
+        window.upiCurrentAmount = order.total_amount;
+        
         document.getElementById('upiQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
         document.getElementById('upiPayAmount').innerText = `₹${order.total_amount}`;
         document.getElementById('upiPayDetails').innerText = `To: ${storeUpi}`;
         
+        const shareBtn = document.getElementById('upiShareWhatsAppBtn');
+        if (shareBtn) {
+          if (window.upiCurrentPhone && window.upiCurrentPhone !== 'N/A' && window.upiCurrentPhone.trim() !== '') {
+            shareBtn.style.display = 'flex';
+          } else {
+            shareBtn.style.display = 'none';
+          }
+        }
+
         document.getElementById('upiPaidBtn').onclick = async () => {
           closeModal('upiPayModal');
           await saveAndComplete();
@@ -1711,10 +1824,22 @@
         const storeName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
         const upiUrl = `upi://pay?pa=${storeUpi}&pn=${encodeURIComponent(storeName)}&am=${total}&cu=INR`;
         
+        window.upiCurrentPhone = phone;
+        window.upiCurrentAmount = total;
+
         document.getElementById('upiQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
         document.getElementById('upiPayAmount').innerText = `₹${total}`;
         document.getElementById('upiPayDetails').innerText = `To: ${storeUpi}`;
         
+        const shareBtn = document.getElementById('upiShareWhatsAppBtn');
+        if (shareBtn) {
+          if (window.upiCurrentPhone && window.upiCurrentPhone !== 'N/A' && window.upiCurrentPhone.trim() !== '') {
+            shareBtn.style.display = 'flex';
+          } else {
+            shareBtn.style.display = 'none';
+          }
+        }
+
         document.getElementById('upiPaidBtn').onclick = async () => {
           closeModal('upiPayModal');
           await finalizeBill(phone, paymentMethod, total, currentBillItems);

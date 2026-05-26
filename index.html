@@ -700,6 +700,23 @@ body {
       </div>
     </div>
 
+    <!-- PAYMENT METHOD SECTION -->
+    <div style="padding:0 20px 16px">
+      <div style="background:var(--s2);padding:12px;border-radius:12px;border:1px dashed var(--b)">
+        <div style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:8px">PAYMENT METHOD</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <label style="background:var(--s3);border:1.5px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.82rem;user-select:none" id="paymentCodLabel">
+            <input type="radio" name="custPaymentMethod" value="Cash" checked style="accent-color:var(--accent)">
+            <span>💵 Cash / COD</span>
+          </label>
+          <label style="background:var(--s3);border:1.5px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.82rem;user-select:none" id="paymentUpiLabel">
+            <input type="radio" name="custPaymentMethod" value="UPI" style="accent-color:var(--accent)">
+            <span>📱 Pay via UPI</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <div style="display:flex;justify-content:space-between;padding:0 20px 16px"><span style="color:#777;font-size:.82rem">Delivery Fee</span><span style="color:#22c55e;font-weight:700;font-size:.82rem">FREE 🎉</span></div>
     
     <button class="sheet-cta" id="waBtn" onclick="sendOrder()" style="display:flex;align-items:center;justify-content:center;gap:8px"><span>🛵</span><span>ORDER ON WHATSAPP</span></button>
@@ -755,6 +772,38 @@ body {
     <button onclick="closeAll()" style="background:transparent;border:none;color:var(--muted);font-size:.85rem;font-weight:700;padding:10px;cursor:pointer;margin-top:12px">MAYBE LATER</button>
   </div>
 </div>
+
+<!-- UPI PAYMENT INSTRUCTION MODAL -->
+<div id="customerUpiModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#1e1e24; border:1px solid var(--b); border-radius:20px; padding:25px; max-width:340px; width:100%; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+    <h3 style="margin-top:0; color:var(--accent); font-size:1.15rem; font-weight:800; letter-spacing:0.5px;">Pay via UPI</h3>
+    <p style="font-size:0.8rem; color:var(--text); margin-bottom:15px; line-height:1.4;">Please pay the billing amount to complete your order.</p>
+    
+    <!-- QR Code for desktop -->
+    <div id="custUpiQrContainer" style="background:white; padding:12px; border-radius:12px; display:inline-block; margin-bottom:15px;">
+      <img id="custUpiQrImg" src="" style="width:160px; height:160px; display:block;">
+    </div>
+    
+    <!-- Deep link button for mobile -->
+    <a id="custUpiPayBtn" href="#" class="sheet-cta" style="display:flex; align-items:center; justify-content:center; gap:8px; margin: 0 auto 15px; text-decoration:none; height:45px; background:var(--accent); color:#fff; font-weight:800; font-size:0.85rem; border-radius:10px;">
+      📱 CLICK TO PAY ₹<span id="custUpiAmount">0</span>
+    </a>
+    
+    <div style="font-size:0.7rem; color:var(--muted); line-height:1.4; margin-bottom:20px; background:rgba(255,255,255,0.02); padding:10px; border-radius:8px;">
+      ⚠️ Important: After payment is successful, click the button below to send your order details to our WhatsApp.
+    </div>
+    
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button onclick="confirmUpiAndSendWhatsApp()" class="sheet-cta" style="margin:0; height:45px; background:#22c55e; border-radius:10px; font-weight:800; color:#fff; border:none; cursor:pointer;">
+        ✅ SENT ORDER TO WHATSAPP
+      </button>
+      <button onclick="closeCustomerUpiModal()" style="background:none; border:none; color:var(--muted); font-size:0.75rem; font-weight:700; cursor:pointer; padding:5px;">
+        CANCEL
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
@@ -766,6 +815,8 @@ body {
 const supabaseClient = supabase.createClient(window.ENV.SUPABASE_URL, window.ENV.SUPABASE_ANON_KEY);
 let MENU = {}; // Will be populated from DB
 let ALL_ITEMS_FLAT = [];
+let STORE_UPI = 'paytm.slux68h@pty'; // Default fallback
+let STORE_MERCHANT_NAME = 'Grill & Chill'; // Default fallback
 let CATEGORIES = [];
 
 // ═══════ STATE ═══════
@@ -796,6 +847,17 @@ function initCta() {
 async function init(){
   loadFromLocal(); // Instant load from phone memory
   renderCategoryGrid();
+  
+  // Fetch Store settings from Supabase
+  try {
+    const { data } = await supabaseClient.from('store_settings').select('*');
+    if (data) {
+      const upiRow = data.find(r => r.key === 'upi_id');
+      const merchantRow = data.find(r => r.key === 'merchant_name');
+      if (upiRow) STORE_UPI = upiRow.value;
+      if (merchantRow) STORE_MERCHANT_NAME = merchantRow.value;
+    }
+  } catch (e) { console.warn("Failed to fetch store settings", e); }
   
   // Background Sync from Cloud
   fetchMenu().then(() => {
@@ -1193,7 +1255,7 @@ function clearSearch(){
 // ═══════ SIZE SHEET & ADDONS ═══════
 function openSize(id,catEnc){
   const cat=decodeURIComponent(catEnc);
-  const item=ALL_ITEMS_FLAT.find(i=>i.id===id);
+  const item=ALL_ITEMS_FLAT.find(i=>String(i.id)===String(id));
   pendingItem=item;
   const sizes=Object.keys(item.sz);
   pendingSize=sizes[0];
@@ -1446,8 +1508,6 @@ async function sendOrder(){
     await getLocation();
   }
   
-  btn.textContent='🚀 PROCESSING...'; btn.disabled=true;
-  
   // Extract coordinates from marker if map exists
   let lat = 30.5716, lng = 75.7401; // Default
   if(marker) {
@@ -1457,6 +1517,26 @@ async function sendOrder(){
   }
 
   const total = cart.reduce((s,i)=>s+i.price,0);
+  const selectedPayment = document.querySelector('input[name="custPaymentMethod"]:checked').value;
+
+  if (selectedPayment === 'UPI') {
+    // Open UPI Instruction modal
+    window.pendingUpiOrderData = { name, phone, manualAddr, lat, lng, total, cart: JSON.parse(JSON.stringify(cart)) };
+    
+    const upiUrl = `upi://pay?pa=${STORE_UPI}&pn=${encodeURIComponent(STORE_MERCHANT_NAME)}&am=${total}&cu=INR`;
+    document.getElementById('custUpiQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiUrl)}`;
+    document.getElementById('custUpiPayBtn').href = upiUrl;
+    document.getElementById('custUpiAmount').innerText = total;
+    
+    document.getElementById('customerUpiModal').style.display = 'flex';
+  } else {
+    executeOrderPlacement('Cash', name, phone, manualAddr, lat, lng, total, cart);
+  }
+}
+
+async function executeOrderPlacement(paymentMethod, name, phone, manualAddr, lat, lng, total, itemsCart) {
+  const btn = document.getElementById('waBtn');
+  btn.textContent = '🚀 PROCESSING...'; btn.disabled = true;
 
   try {
     // 1. Create Order in Supabase
@@ -1469,7 +1549,8 @@ async function sendOrder(){
         delivery_lat: lat,
         delivery_lng: lng,
         delivery_address: manualAddr || null,
-        status: 'pending'
+        status: 'pending',
+        payment_status: paymentMethod === 'UPI' ? 'paid' : 'unpaid'
       }])
       .select()
       .single();
@@ -1477,11 +1558,11 @@ async function sendOrder(){
     if (orderErr) throw orderErr;
 
     // 2. Add Order Items
-    const orderItems = cart.map(i => ({
+    const orderItems = itemsCart.map(i => ({
       order_id: order.id,
       menu_item_id: i.id,
       item_name: i.n,
-      quantity: 1, // Currently only 1-by-1 add, but structure allows expansion
+      quantity: 1,
       price: i.price,
       size: i.chosenSize,
       addons: i.chosenAddons
@@ -1491,7 +1572,7 @@ async function sendOrder(){
     if (itemsErr) throw itemsErr;
 
     // 3. Trigger WhatsApp
-    const orderLines = cart.map(i => {
+    const orderLines = itemsCart.map(i => {
       let adStr = '';
       if(i.chosenAddons){
         const adArr = [];
@@ -1505,6 +1586,7 @@ async function sendOrder(){
     const lines = [
       `*🔥 NEW ORDER — GRILL & CHILL*`,
       `*ORDER ID: #${order.id}*`,
+      `*PAYMENT: ${paymentMethod === 'UPI' ? '📱 UPI (Paid)' : '💵 Cash/COD'}*`,
       `━━━━━━━━━━━━━━━━━━━━`,
       ...orderLines,
       `━━━━━━━━━━━━━━━━━━━━`,
@@ -1516,7 +1598,7 @@ async function sendOrder(){
     
     // Save locally for offline access
     const recentOrders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
-    recentOrders.unshift({ id: order.id, date: new Date(), total, items: cart });
+    recentOrders.unshift({ id: order.id, date: new Date(), total, items: itemsCart });
     localStorage.setItem('recent_orders', JSON.stringify(recentOrders.slice(0, 10)));
 
     window.open(`https://wa.me/917901994174?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
@@ -1532,15 +1614,16 @@ async function sendOrder(){
     
     // Save to sync queue
     const pending = JSON.parse(localStorage.getItem('pending_sync_orders') || '[]');
-    pending.push({ name, phone, total, lat, lng, address: manualAddr || null, cart: JSON.parse(JSON.stringify(cart)), date: new Date() });
+    pending.push({ name, phone, total, lat, lng, address: manualAddr || null, payment: paymentMethod, cart: JSON.parse(JSON.stringify(itemsCart)), date: new Date() });
     localStorage.setItem('pending_sync_orders', JSON.stringify(pending));
 
     alert("No internet? No problem! We've saved your order and will sync it with our kitchen soon. We're opening WhatsApp now to confirm your order!");
 
     // Fallback to pure WhatsApp
-    const orderLines = cart.map(i => `• ${i.n} (${i.chosenSize}) - ₹${i.price}`);
+    const orderLines = itemsCart.map(i => `• ${i.n} (${i.chosenSize}) - ₹${i.price}`);
     const fallbackLines = [
       `*🔥 OFFLINE ORDER — GRILL & CHILL*`,
+      `*PAYMENT: ${paymentMethod === 'UPI' ? '📱 UPI (Paid)' : '💵 Cash/COD'}*`,
       `━━━━━━━━━━━━━━━━━━━━`,
       ...orderLines,
       `━━━━━━━━━━━━━━━━━━━━`,
@@ -1552,9 +1635,27 @@ async function sendOrder(){
     cart = [];
     updateCartBar();
     closeAll();
+  } finally {
+    btn.innerHTML = '<span>🛵</span><span>ORDER ON WHATSAPP</span>'; btn.disabled = false;
   }
+}
 
-  btn.innerHTML = '<span>🛵</span><span>ORDER ON WHATSAPP</span>'; btn.disabled = false;
+function confirmUpiAndSendWhatsApp() {
+  const modal = document.getElementById('customerUpiModal');
+  modal.style.display = 'none';
+  
+  if (window.pendingUpiOrderData) {
+    const d = window.pendingUpiOrderData;
+    executeOrderPlacement('UPI', d.name, d.phone, d.manualAddr, d.lat, d.lng, d.total, d.cart);
+    window.pendingUpiOrderData = null;
+  }
+}
+
+function closeCustomerUpiModal() {
+  document.getElementById('customerUpiModal').style.display = 'none';
+  const btn = document.getElementById('waBtn');
+  btn.innerHTML = '<span>🛵</span><span>ORDER ON WHATSAPP</span>';
+  btn.disabled = false;
 }
 
 
