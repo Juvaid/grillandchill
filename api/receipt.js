@@ -138,11 +138,12 @@ function buildReceipt(bill, baseUrl) {
   // ── Footer ──
   entries.push(emptyLine());
   entries.push(textEntry('Thank you! Visit again.', { bold: 1, align: 1, format: 0 }));
-  entries.push(textEntry(STORE.website, { bold: 0, align: 1, format: 4 }));
   entries.push(emptyLine());
+  entries.push(textEntry('Order Online - Free Delivery', { bold: 1, align: 1, format: 0 }));
 
   // ── QR Code ──
   entries.push(qrEntry(STORE.qrValue, 40, 1));
+  entries.push(textEntry(STORE.website, { bold: 0, align: 1, format: 4 }));
   entries.push(emptyLine());
   entries.push(emptyLine());
   entries.push(emptyLine());

@@ -2263,11 +2263,14 @@
       bytes.push(0x1B, 0x45, 0x01);
       addLine('Thank you! Visit again.');
       bytes.push(0x1B, 0x45, 0x00);
-      addLine('grillandchillpizzeria.juvaid.in');
+      addLine('');
+      addLine('Order Online - Free Delivery');
       
       // Print QR Code
       bytes.push(0x0A); // Line feed
       addQrCode('https://grillandchillpizzeria.juvaid.in');
+      bytes.push(0x0A);
+      addLine('grillandchillpizzeria.juvaid.in');
       
       bytes.push(0x0A, 0x0A, 0x0A, 0x0A);
       bytes.push(0x1D, 0x56, 0x42, 0x00);
@@ -2350,8 +2353,9 @@
 
         <div class="footer">
           <div class="footer-thanks">Thank you! Visit again.</div>
-          <div class="footer-url">grillandchillpizzeria.juvaid.in</div>
+          <div class="footer-url" style="margin-top:4px;font-weight:bold">Order Online &bull; Free Delivery</div>
           <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'">
+          <div class="footer-url">grillandchillpizzeria.juvaid.in</div>
         </div>
       `;
 
