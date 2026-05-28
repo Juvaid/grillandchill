@@ -574,17 +574,7 @@
     </header>
 
     <div class="container">
-      <div class="stats-grid" style="grid-template-columns: 1fr; margin-top: 10px;">
-        <div class="stat-card" style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, var(--card-bg) 0%, rgba(255,107,0,0.05) 100%); border: 1px solid rgba(255,107,0,0.2); cursor: default;">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px;">
-            <div class="stat-label" style="letter-spacing: 2px; font-size: 0.8rem;">TOTAL REVENUE TODAY</div>
-            <button onclick="toggleRevenueVisibility(event)" style="background: none; border: none; color: var(--muted); cursor: pointer; display: flex; align-items: center; padding: 5px; border-radius: 50%; background: rgba(255,255,255,0.03);">
-              <i id="revEyeIcon" data-lucide="eye-off" style="width: 16px; height: 16px;"></i>
-            </button>
-          </div>
-          <div onclick="showRevenueAnalytics()" class="stat-value" id="revenueToday" data-value="0" style="font-size: 3.5rem; color: var(--primary); text-shadow: 0 0 30px rgba(255,107,0,0.2); margin-top: 5px; cursor: pointer;">₹ ****</div>
-        </div>
-      </div>
+
 
       <div id="ordersSection">
         <div class="section-header">
@@ -826,6 +816,11 @@
               <span class="slider"></span>
             </label>
           </div>
+          <div class="form-group">
+            <label class="form-label">Refreshments Recommendations (Comma-separated Menu Item Names)</label>
+            <input type="text" id="set_refreshment_items" class="auth-input" placeholder="e.g. Cold Coffee, Oreo Shake, Pepsi">
+            <div style="font-size:0.7rem; color:var(--muted); margin-top:4px">These items will appear as recommendations in the customer checkout cart.</div>
+          </div>
         </div>
 
         <!-- TAB 4: Store Hours & Status -->
@@ -1002,13 +997,60 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Sizes & Prices (JSON Format)</label>
-          <textarea id="itemSizes" class="json-area" placeholder='{"Regular": 199, "Large": 399}'></textarea>
+          <label class="form-label">Dietary Preference</label>
+          <div style="display: flex; gap: 15px; margin-top: 5px;">
+            <button type="button" id="btnVeg" class="dietary-btn" onclick="setDietary(true)" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 12px; border: 1px solid rgba(34,197,94,0.3); background: rgba(34,197,94,0.08); color: #22c55e; font-weight: 800; cursor: pointer; transition: 0.2s;">
+              <span style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px #22c55e;"></span> VEG
+            </button>
+            <button type="button" id="btnNonVeg" class="dietary-btn" onclick="setDietary(false)" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--muted); font-weight: 800; cursor: pointer; transition: 0.2s;">
+              <span style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></span> NON-VEG
+            </button>
+          </div>
+          <input type="hidden" id="itemIsVeg" value="true">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Addons Configuration (JSON Array)</label>
-          <textarea id="itemAddons" class="json-area" placeholder='[{"name": "Extra Cheese", "price": 50}]'></textarea>
+          <label class="form-label">Tags</label>
+          <div id="tagsContainer" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
+            <div class="tag-chip" onclick="toggleTagChip(this, 'Spicy')" style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--muted); font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
+              🔥 Spicy
+            </div>
+            <div class="tag-chip" onclick="toggleTagChip(this, 'Best Seller')" style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--muted); font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
+              ⭐ Best Seller
+            </div>
+            <div class="tag-chip" onclick="toggleTagChip(this, 'New')" style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--muted); font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
+              🆕 New
+            </div>
+            <div class="tag-chip" onclick="toggleTagChip(this, 'Popular')" style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--muted); font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
+              🌟 Popular
+            </div>
+            <div class="tag-chip" onclick="toggleTagChip(this, 'Special')" style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--muted); font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
+              🎉 Special
+            </div>
+          </div>
+          <input type="hidden" id="itemTags" value="[]">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Sizes & Prices</span>
+            <button type="button" class="mini-btn primary" onclick="addSizeRow()" style="font-size: 0.7rem; padding: 4px 8px;">+ Add Size</button>
+          </label>
+          <div id="sizesBuilderContainer" style="display: flex; flex-direction: column; gap: 10px; margin-top: 5px;">
+            <!-- Size rows will go here -->
+          </div>
+          <input type="hidden" id="itemSizes">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Addons Configuration</span>
+            <button type="button" class="mini-btn primary" onclick="addAddonRow()" style="font-size: 0.7rem; padding: 4px 8px;">+ Add Addon</button>
+          </label>
+          <div id="addonsBuilderContainer" style="display: flex; flex-direction: column; gap: 10px; margin-top: 5px;">
+            <!-- Addon rows will go here -->
+          </div>
+          <input type="hidden" id="itemAddons">
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
@@ -1150,6 +1192,17 @@
         <div class="form-group">
           <label class="form-label">Collection Name</label>
           <input type="text" id="catNameInput" class="auth-input" placeholder="e.g. Pizza Kingdom" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="catDescInput" class="auth-input" placeholder="e.g. Freshly baked pizzas">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Accent Color</label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="color" id="catColorInput" value="#ff6b00" style="width: 50px; height: 40px; border: none; border-radius: 8px; background: none; cursor: pointer;">
+            <span style="font-size: 0.8rem; color: var(--muted)">Accent theme color for this category</span>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Sort Order</label>
@@ -1824,6 +1877,7 @@
       min_order: { el: 'set_min_order', default: '0' },
       whatsapp_number: { el: 'set_whatsapp_number', default: '' },
       enable_tables: { el: 'set_enable_tables', default: 'false', type: 'checkbox' },
+      refreshment_items: { el: 'set_refreshment_items', default: 'Cold Coffee, Chocolate Shake, Pepsi' },
       // Hours
       store_open: { el: 'set_store_open', default: 'true', type: 'checkbox' },
       open_time: { el: 'set_open_time', default: '10:00' },
@@ -2135,6 +2189,157 @@
       await supabaseClient.from('menu_items').update({ available }).eq('id', id);
     }
 
+    function setDietary(isVeg) {
+      document.getElementById('itemIsVeg').value = isVeg ? 'true' : 'false';
+      const btnVeg = document.getElementById('btnVeg');
+      const btnNonVeg = document.getElementById('btnNonVeg');
+      if (isVeg) {
+        btnVeg.style.background = 'rgba(34,197,94,0.08)';
+        btnVeg.style.borderColor = 'rgba(34,197,94,0.4)';
+        btnVeg.style.color = '#22c55e';
+        btnVeg.querySelector('span').style.boxShadow = '0 0 10px #22c55e';
+        
+        btnNonVeg.style.background = 'rgba(255,255,255,0.02)';
+        btnNonVeg.style.borderColor = 'var(--border)';
+        btnNonVeg.style.color = 'var(--muted)';
+        btnNonVeg.querySelector('span').style.boxShadow = 'none';
+      } else {
+        btnVeg.style.background = 'rgba(255,255,255,0.02)';
+        btnVeg.style.borderColor = 'var(--border)';
+        btnVeg.style.color = 'var(--muted)';
+        btnVeg.querySelector('span').style.boxShadow = 'none';
+        
+        btnNonVeg.style.background = 'rgba(239,68,68,0.08)';
+        btnNonVeg.style.borderColor = 'rgba(239,68,68,0.4)';
+        btnNonVeg.style.color = '#ef4444';
+        btnNonVeg.querySelector('span').style.boxShadow = '0 0 10px #ef4444';
+      }
+    }
+
+    function toggleTagChip(el, tagVal) {
+      let tags = JSON.parse(document.getElementById('itemTags').value || '[]');
+      if (tags.includes(tagVal)) {
+        tags = tags.filter(t => t !== tagVal);
+        el.style.background = 'rgba(255,255,255,0.02)';
+        el.style.borderColor = 'var(--border)';
+        el.style.color = 'var(--muted)';
+      } else {
+        tags.push(tagVal);
+        el.style.background = 'rgba(255,107,0,0.1)';
+        el.style.borderColor = 'rgba(255,107,0,0.3)';
+        el.style.color = 'var(--primary)';
+      }
+      document.getElementById('itemTags').value = JSON.stringify(tags);
+    }
+    
+    function resetTagChips() {
+      document.getElementById('itemTags').value = '[]';
+      document.querySelectorAll('.tag-chip').forEach(el => {
+        el.style.background = 'rgba(255,255,255,0.02)';
+        el.style.borderColor = 'var(--border)';
+        el.style.color = 'var(--muted)';
+      });
+    }
+
+    function setSelectedTags(tagsArr) {
+      resetTagChips();
+      if (!tagsArr || !Array.isArray(tagsArr)) return;
+      document.getElementById('itemTags').value = JSON.stringify(tagsArr);
+      document.querySelectorAll('.tag-chip').forEach(el => {
+        const text = el.innerText.trim();
+        tagsArr.forEach(t => {
+          if (text.includes(t)) {
+            el.style.background = 'rgba(255,107,0,0.1)';
+            el.style.borderColor = 'rgba(255,107,0,0.3)';
+            el.style.color = 'var(--primary)';
+          }
+        });
+      });
+    }
+
+    function addSizeRow(name = '', price = '') {
+      const container = document.getElementById('sizesBuilderContainer');
+      const rowId = `size-row-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+      const rowDiv = document.createElement('div');
+      rowDiv.id = rowId;
+      rowDiv.style.display = 'flex';
+      rowDiv.style.gap = '10px';
+      rowDiv.style.alignItems = 'center';
+      rowDiv.innerHTML = `
+        <input type="text" class="auth-input size-name" value="${name}" placeholder="e.g. Regular" style="margin-bottom:0; flex:2" required>
+        <input type="number" class="auth-input size-price" value="${price}" placeholder="e.g. 199" min="0" style="margin-bottom:0; flex:1" required>
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="action-btn" style="padding: 10px; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #ef4444; height: 42px; width: 42px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+          &times;
+        </button>
+      `;
+      container.appendChild(rowDiv);
+    }
+    
+    function addAddonRow(name = '', price = '') {
+      const container = document.getElementById('addonsBuilderContainer');
+      const rowId = `addon-row-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+      const rowDiv = document.createElement('div');
+      rowDiv.id = rowId;
+      rowDiv.style.display = 'flex';
+      rowDiv.style.gap = '10px';
+      rowDiv.style.alignItems = 'center';
+      rowDiv.innerHTML = `
+        <input type="text" class="auth-input addon-name" value="${name}" placeholder="e.g. Extra Cheese" style="margin-bottom:0; flex:2" required>
+        <input type="number" class="auth-input addon-price" value="${price}" placeholder="e.g. 50" min="0" style="margin-bottom:0; flex:1" required>
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="action-btn" style="padding: 10px; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #ef4444; height: 42px; width: 42px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+          &times;
+        </button>
+      `;
+      container.appendChild(rowDiv);
+    }
+
+    function getSizesFromBuilder() {
+      const rows = document.querySelectorAll('#sizesBuilderContainer > div');
+      const sizes = {};
+      rows.forEach(row => {
+        const name = row.querySelector('.size-name').value.trim();
+        const price = Number(row.querySelector('.size-price').value);
+        if (name) {
+          sizes[name] = price;
+        }
+      });
+      return sizes;
+    }
+    
+    function getAddonsFromBuilder() {
+      const rows = document.querySelectorAll('#addonsBuilderContainer > div');
+      const addons = [];
+      rows.forEach(row => {
+        const name = row.querySelector('.addon-name').value.trim();
+        const price = Number(row.querySelector('.addon-price').value);
+        if (name) {
+          addons.push({ name, price });
+        }
+      });
+      return addons;
+    }
+
+    function populateSizesBuilder(sizesObj) {
+      const container = document.getElementById('sizesBuilderContainer');
+      container.innerHTML = '';
+      if (!sizesObj || typeof sizesObj !== 'object') return;
+      Object.entries(sizesObj).forEach(([name, price]) => {
+        addSizeRow(name, price);
+      });
+      if (container.children.length === 0) {
+        addSizeRow('Regular', '');
+      }
+    }
+    
+    function populateAddonsBuilder(addonsArr) {
+      const container = document.getElementById('addonsBuilderContainer');
+      container.innerHTML = '';
+      if (!addonsArr || !Array.isArray(addonsArr)) return;
+      addonsArr.forEach(addon => {
+        addAddonRow(addon.name, addon.price);
+      });
+    }
+
     function showProductModal() {
       document.getElementById('productForm').reset();
       document.getElementById('itemId').value = '';
@@ -2142,9 +2347,10 @@
       document.getElementById('imagePreview').classList.add('hidden');
       document.getElementById('uploadPlaceholder').classList.remove('hidden');
       
-      // Default templates
-      document.getElementById('itemSizes').value = '{\n  "Regular": 199\n}';
-      document.getElementById('itemAddons').value = '[]';
+      populateSizesBuilder({"Regular": 199});
+      populateAddonsBuilder([]);
+      setDietary(true);
+      resetTagChips();
       
       // Reset category select & hide new category text box
       const select = document.getElementById('itemCat');
@@ -2166,8 +2372,12 @@
       handleCategoryChange(item.category);
       document.getElementById('itemEmoji').value = item.emoji;
       document.getElementById('itemDesc').value = item.description || '';
-      document.getElementById('itemSizes').value = JSON.stringify(item.sizes, null, 2);
-      document.getElementById('itemAddons').value = JSON.stringify(item.addons, null, 2);
+      
+      populateSizesBuilder(item.sizes);
+      populateAddonsBuilder(item.addons);
+      setDietary(item.is_veg !== false);
+      setSelectedTags(item.tags || []);
+      
       document.getElementById('itemSortOrder').value = item.sort_order || 0;
       document.getElementById('itemAvailable').value = item.available ? 'true' : 'false';
       
@@ -2210,7 +2420,11 @@
           <img src="${c.image_url || 'assets/woody_bg.png'}" class="product-img" style="border-radius:12px">
           <div style="flex:1">
             <div style="font-weight:800">${c.name}</div>
-            <div style="font-size:0.7rem;color:var(--muted)">Grid Rank: ${c.sort_order} · Size: ${c.layout_size || 'normal'}</div>
+            <div style="font-size:0.7rem;color:var(--muted); display:flex; align-items:center; gap:5px;">
+              Grid Rank: ${c.sort_order} · Size: ${c.layout_size || 'normal'}
+              <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${c.color || '#ff6b00'}"></span>
+            </div>
+            ${c.description ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:2px">${c.description}</div>` : ''}
           </div>
           <div style="display:flex; gap:8px">
             <button class="mini-btn" onclick="editCollection(${c.id})" style="border-color:var(--primary); color:var(--primary)">EDIT</button>
@@ -2229,6 +2443,8 @@
       document.getElementById('collectionForm').reset();
       document.getElementById('catId').value = '';
       document.getElementById('catNameInput').value = '';
+      document.getElementById('catDescInput').value = '';
+      document.getElementById('catColorInput').value = '#ff6b00';
       
       const maxSort = (window.allCategories || []).reduce((max, c) => Math.max(max, c.sort_order || 0), 0);
       document.getElementById('catSortInput').value = maxSort + 10;
@@ -2246,6 +2462,8 @@
       const cat = window.allCategories.find(c => c.id === id);
       document.getElementById('catId').value = cat.id;
       document.getElementById('catNameInput').value = cat.name;
+      document.getElementById('catDescInput').value = cat.description || '';
+      document.getElementById('catColorInput').value = cat.color || '#ff6b00';
       document.getElementById('catSortInput').value = cat.sort_order;
       document.getElementById('catSizeInput').value = cat.layout_size || 'normal';
       if (cat.image_url) {
@@ -2289,6 +2507,8 @@
       try {
         const id = document.getElementById('catId').value;
         const name = document.getElementById('catNameInput').value.trim();
+        const description = document.getElementById('catDescInput').value.trim();
+        const color = document.getElementById('catColorInput').value;
         const sortOrder = parseInt(document.getElementById('catSortInput').value) || 0;
         const layoutSize = document.getElementById('catSizeInput').value;
         const file = document.getElementById('catImageFile').files[0];
@@ -2306,11 +2526,13 @@
           image_url = existingCat ? existingCat.image_url : null;
         }
 
+        const catData = { name, description, color, sort_order: sortOrder, layout_size: layoutSize, image_url };
+
         if (id) {
-          const { error } = await supabaseClient.from('categories').update({ name, image_url, sort_order: sortOrder, layout_size: layoutSize }).eq('id', id);
+          const { error } = await supabaseClient.from('categories').update(catData).eq('id', id);
           if (error) throw error;
         } else {
-          const { error } = await supabaseClient.from('categories').insert([{ name, image_url, sort_order: sortOrder, layout_size: layoutSize }]);
+          const { error } = await supabaseClient.from('categories').insert([catData]);
           if (error) throw error;
         }
         
@@ -2352,27 +2574,15 @@
           image_url = existing.image_url;
         }
 
-        // 1. JSON validation
-        let sizes, addons;
-        try {
-          sizes = JSON.parse(document.getElementById('itemSizes').value);
-          if (typeof sizes !== 'object' || Array.isArray(sizes) || sizes === null) {
-            throw new Error('Sizes & Prices must be a valid JSON object (e.g. {"Regular": 199})');
-          }
-        } catch (err) {
-          alert('Invalid Sizes JSON: ' + err.message);
+        // 1. Get sizes and addons from builders
+        const sizes = getSizesFromBuilder();
+        if (Object.keys(sizes).length === 0) {
+          alert('Please add at least one Size & Price.');
           return;
         }
-
-        try {
-          addons = JSON.parse(document.getElementById('itemAddons').value);
-          if (!Array.isArray(addons)) {
-            throw new Error('Addons must be a valid JSON array (e.g. [{"name": "Extra Cheese", "price": 50}])');
-          }
-        } catch (err) {
-          alert('Invalid Addons JSON: ' + err.message);
-          return;
-        }
+        const addons = getAddonsFromBuilder();
+        const isVeg = document.getElementById('itemIsVeg').value === 'true';
+        const tags = JSON.parse(document.getElementById('itemTags').value || '[]');
 
         // 2. Handle Inline Category Creation
         let category = document.getElementById('itemCat').value;
@@ -2415,6 +2625,8 @@
           category: category,
           emoji: document.getElementById('itemEmoji').value.trim() || '🍽️',
           description: document.getElementById('itemDesc').value.trim(),
+          is_veg: isVeg,
+          tags: tags,
           sizes: sizes,
           addons: addons,
           image_url: image_url,
@@ -2839,26 +3051,9 @@
     }
 
     async function updateDashboardStats() {
-      const today = new Date().toISOString().split('T')[0];
-      const revEl = document.getElementById('revenueToday');
       const actEl = document.getElementById('activeOrders');
-      if (!revEl || !actEl) return;
+      if (!actEl) return;
       
-      // Revenue Calculation
-      const { data: onlineBills } = await supabaseClient.from('bills').select('total_amount').neq('payment_status', 'voided').gte('created_at', today);
-      const localBills = await db.local_bills.where('created_at').aboveOrEqual(today).toArray();
-      
-      const onlineTotal = onlineBills?.reduce((sum, b) => sum + Number(b.total_amount), 0) || 0;
-      const localTotal = localBills.filter(lb => lb.sync_status === 'pending' && lb.payment_status !== 'voided').reduce((sum, b) => sum + Number(b.total_amount), 0);
-      
-      const total = onlineTotal + localTotal;
-      revEl.dataset.value = total;
-      if (window.revenueVisible) {
-        revEl.innerText = `₹${total}`;
-      } else {
-        revEl.innerText = '₹ ****';
-      }
-
       // Active Orders Count (Excluding cancelled/completed)
       const { data: activeOrders } = await supabaseClient.from('orders').select('id').not('status', 'in', '("completed","cancelled")');
       actEl.innerText = activeOrders?.length || 0;
@@ -2870,19 +3065,22 @@
     }
 
     window.revenueVisible = false;
+    window.revenueVisible = false;
     function toggleRevenueVisibility(e) {
       if (e) e.stopPropagation();
       window.revenueVisible = !window.revenueVisible;
-      const el = document.getElementById('revenueToday');
+      const el = document.getElementById('statRevenue');
       const icon = document.getElementById('revEyeIcon');
-      if (window.revenueVisible) {
-        el.innerText = `₹${el.dataset.value || 0}`;
-        icon.setAttribute('data-lucide', 'eye');
-      } else {
-        el.innerText = '₹ ****';
-        icon.setAttribute('data-lucide', 'eye-off');
+      if (el) {
+        if (window.revenueVisible) {
+          el.innerText = `₹${el.dataset.value || 0}`;
+          if (icon) icon.setAttribute('data-lucide', 'eye');
+        } else {
+          el.innerText = '₹ ****';
+          if (icon) icon.setAttribute('data-lucide', 'eye-off');
+        }
       }
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function showRevenueAnalytics() {
@@ -3171,7 +3369,15 @@
       const avg = count > 0 ? Math.round(rev / count) : 0;
       const vCount = voided.length;
       
-      document.getElementById('statRevenue').innerText = `₹${rev}`;
+      const revEl = document.getElementById('statRevenue');
+      if (revEl) {
+        revEl.dataset.value = rev;
+        if (window.revenueVisible) {
+          revEl.innerText = `₹${rev}`;
+        } else {
+          revEl.innerText = '₹ ****';
+        }
+      }
       document.getElementById('statBillsCount').innerText = count;
       document.getElementById('statAvgBill').innerText = `₹${avg}`;
       document.getElementById('statVoidedCount').innerText = vCount;

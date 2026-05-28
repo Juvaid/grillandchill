@@ -98,6 +98,8 @@ create table if not exists public.categories (
   sort_order    int default 0,
   is_featured   boolean default false,
   layout_size   text default 'normal' check (layout_size in ('normal', 'large', 'wide')),
+  color         text default '#ff6b00',
+  description   text default '',
   created_at    timestamptz default now()
 );
 

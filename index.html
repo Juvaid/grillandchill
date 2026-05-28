@@ -805,13 +805,36 @@ body {
   <div id="cartItems"></div>
   <div id="cartEmpty" style="text-align:center;padding:40px;color:#666;display:none"><div style="font-size:2.5rem">🛒</div><p style="margin-top:8px;font-size:.85rem">Your cart is empty</p></div>
   <div id="cartFooter" style="display:none;border-top:1px solid #2e2e2e">
+    <!-- Refreshment Recommendations -->
+    <div id="refreshmentSection" style="padding: 15px 20px 10px; display: none; border-bottom: 1px solid #2e2e2e;">
+      <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Add Refreshments? 🥤</div>
+      <div id="refreshmentsContainer" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -ms-overflow-style: none;"></div>
+    </div>
+
     <div class="cart-total-row"><span style="color:#777;font-size:.85rem">Subtotal</span><span id="cartSubtotal" style="font-size:1rem"></span></div>
     
     <!-- CUSTOMER DETAILS -->
     <div style="padding:0 20px 12px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <input id="custName" type="text" placeholder="Your Name" style="background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--text);padding:12px;font-size:.85rem;font-family:var(--font);outline:none">
-        <input id="custPhone" type="tel" placeholder="Phone Number" style="background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--text);padding:12px;font-size:.85rem;font-family:var(--font);outline:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;box-sizing:border-box;width:100%">
+        <input id="custName" type="text" placeholder="Your Name" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--text);padding:12px;font-size:.85rem;font-family:var(--font);outline:none">
+        <input id="custPhone" type="tel" placeholder="Phone Number" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--text);padding:12px;font-size:.85rem;font-family:var(--font);outline:none">
+      </div>
+    </div>
+
+    <!-- PAYMENT METHOD SECTION -->
+    <div style="padding:0 20px 16px">
+      <div style="background:var(--s2);padding:12px;border-radius:12px;border:1px dashed var(--b)">
+        <div style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:8px">PAYMENT METHOD</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <label style="background:var(--s3);border:1.5px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.82rem;user-select:none" id="paymentUpiLabel">
+            <input type="radio" name="custPaymentMethod" value="UPI" checked style="accent-color:var(--accent)">
+            <span>📱 Pay via UPI</span>
+          </label>
+          <label style="background:var(--s3);border:1.5px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.82rem;user-select:none" id="paymentCodLabel">
+            <input type="radio" name="custPaymentMethod" value="Cash" style="accent-color:var(--accent)">
+            <span>💵 Cash / COD</span>
+          </label>
+        </div>
       </div>
     </div>
 
@@ -834,24 +857,7 @@ body {
           <p style="font-size:.65rem;color:var(--muted);margin-top:5px;text-align:center">📍 Drag the pin to your exact delivery house</p>
         </div>
 
-        <textarea id="manualAddr" placeholder="House No, Building, Landmark, etc..." style="width:100%;background:var(--s3);border:1px solid var(--b);border-radius:8px;color:var(--text);padding:10px;font-size:.82rem;font-family:var(--font);margin-top:10px;outline:none;resize:none;min-height:60px"></textarea>
-      </div>
-    </div>
-
-    <!-- PAYMENT METHOD SECTION -->
-    <div style="padding:0 20px 16px">
-      <div style="background:var(--s2);padding:12px;border-radius:12px;border:1px dashed var(--b)">
-        <div style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:8px">PAYMENT METHOD</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <label style="background:var(--s3);border:1.5px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.82rem;user-select:none" id="paymentCodLabel">
-            <input type="radio" name="custPaymentMethod" value="Cash" checked style="accent-color:var(--accent)">
-            <span>💵 Cash / COD</span>
-          </label>
-          <label style="background:var(--s3);border:1.5px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.82rem;user-select:none" id="paymentUpiLabel">
-            <input type="radio" name="custPaymentMethod" value="UPI" style="accent-color:var(--accent)">
-            <span>📱 Pay via UPI</span>
-          </label>
-        </div>
+        <textarea id="manualAddr" placeholder="House No, Building, Landmark, etc..." style="width:100%;box-sizing:border-box;background:var(--s3);border:1px solid var(--b);border-radius:8px;color:var(--text);padding:10px;font-size:.82rem;font-family:var(--font);margin-top:10px;outline:none;resize:none;min-height:60px"></textarea>
       </div>
     </div>
 
@@ -1050,10 +1056,10 @@ async function init(){
         if (ticker) ticker.textContent = settings.announcement;
       }
       
-      // Store delivery fee for checkout
       window.STORE_DELIVERY_FEE = parseFloat(settings.delivery_fee) || 0;
       window.STORE_FREE_DELIVERY_ABOVE = parseFloat(settings.free_delivery_above) || 0;
       window.STORE_MIN_ORDER = parseFloat(settings.min_order) || 0;
+      window.REFRESHMENT_ITEMS_CONFIG = settings.refreshment_items || 'Cold Coffee, Chocolate Shake, Pepsi';
     }
   } catch (e) { console.warn("Failed to fetch store settings", e); }
   
@@ -1168,11 +1174,18 @@ function renderCategoryGrid() {
     
     card.innerHTML = `
       <img src="${img}" alt="${cat}" loading="lazy" onerror="this.src='assets/woody_bg.png'">
-      <div class="category-card-count">${count} ITEMS</div>
+      <div class="category-card-count" style="background: ${catData?.color || 'var(--primary)'}; color: white;">${count} ITEMS</div>
       <div class="category-card-content">
         <div class="category-card-name">${cleanName}</div>
+        ${catData?.description ? `<div class="category-card-desc" style="font-size:0.75rem; color:rgba(255,255,255,0.7); margin-top:4px; font-weight:500; text-shadow:0 1px 4px rgba(0,0,0,0.8);">${catData.description}</div>` : ''}
       </div>
     `;
+    
+    // Set dynamic accent hover border if color is custom
+    if (catData?.color) {
+      card.onmouseenter = () => { card.style.borderColor = catData.color; };
+      card.onmouseleave = () => { card.style.borderColor = 'rgba(255,255,255,0.05)'; };
+    }
     
     card.onclick = () => {
       const btns = document.querySelectorAll('.cat-btn');
@@ -1563,7 +1576,14 @@ function renderCartSheet(){
   const items=document.getElementById('cartItems');
   const empty=document.getElementById('cartEmpty');
   const footer=document.getElementById('cartFooter');
-  if(!cart.length){items.innerHTML='';empty.style.display='block';footer.style.display='none';return;}
+  if(!cart.length){
+    items.innerHTML='';
+    empty.style.display='block';
+    footer.style.display='none';
+    const section = document.getElementById('refreshmentSection');
+    if (section) section.style.display = 'none';
+    return;
+  }
   empty.style.display='none';footer.style.display='block';
   
   items.innerHTML=cart.map((it,i)=>{
@@ -1590,6 +1610,74 @@ function renderCartSheet(){
     </div>`;
   }).join('');
   document.getElementById('cartSubtotal').textContent='₹'+cart.reduce((s,i)=>s+i.price,0);
+  renderRefreshmentRecommendations();
+}
+
+function renderRefreshmentRecommendations() {
+  const container = document.getElementById('refreshmentsContainer');
+  const section = document.getElementById('refreshmentSection');
+  if (!container || !section) return;
+  
+  if (!cart.length || !window.REFRESHMENT_ITEMS_CONFIG) {
+    section.style.display = 'none';
+    return;
+  }
+  
+  const configuredNames = window.REFRESHMENT_ITEMS_CONFIG.split(',').map(name => name.trim().toLowerCase());
+  if (!configuredNames.length || (configuredNames.length === 1 && !configuredNames[0])) {
+    section.style.display = 'none';
+    return;
+  }
+  
+  // Find matching items from ALL_ITEMS_FLAT that are NOT already in the cart
+  const cartNames = cart.map(it => it.n.toLowerCase());
+  const matchingItems = ALL_ITEMS_FLAT.filter(item => {
+    return configuredNames.includes(item.n.toLowerCase()) && !cartNames.includes(item.n.toLowerCase());
+  });
+  
+  if (!matchingItems.length) {
+    section.style.display = 'none';
+    return;
+  }
+  
+  section.style.display = 'block';
+  container.innerHTML = matchingItems.map(item => {
+    // Get default size price
+    const defaultSize = Object.keys(item.sz)[0] || 'Regular';
+    const price = item.sz[defaultSize] || 0;
+    
+    return `
+      <div style="flex: 0 0 auto; width: 110px; background: var(--s3); border: 1.5px solid var(--b); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; gap: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15)">
+        <div style="font-size: 1.4rem; height: 30px; display: flex; align-items: center; justify-content: center;">${item.e || '🥤'}</div>
+        <div style="font-size: 0.72rem; font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%;">${item.n}</div>
+        <div style="font-size: 0.7rem; font-weight: 700; color: var(--accent);">₹${price}</div>
+        <button onclick="addRefreshmentToCart(${item.id})" style="width: 100%; background: var(--accent); border: none; border-radius: 6px; color: white; padding: 4px; font-size: 0.65rem; font-weight: 800; cursor: pointer; transition: 0.2s;">+ ADD</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function addRefreshmentToCart(itemId) {
+  const item = ALL_ITEMS_FLAT.find(it => it.id === itemId);
+  if (!item) return;
+  const defaultSize = Object.keys(item.sz)[0] || 'Regular';
+  const price = item.sz[defaultSize] || 0;
+  
+  const cartItem = {
+    id: item.id,
+    n: item.n,
+    e: item.e,
+    cat: item.cat,
+    price: price,
+    chosenSize: defaultSize,
+    chosenAddons: {},
+    qty: 1
+  };
+  
+  cart.push(cartItem);
+  updateCartBar();
+  renderCartSheet();
+  if(navigator.vibrate)navigator.vibrate(15);
 }
 
 function removeItem(i){cart.splice(i,1);updateCartBar();renderCartSheet();}
