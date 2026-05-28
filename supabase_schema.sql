@@ -83,6 +83,10 @@ create table if not exists public.bills (
   payment_method  text default 'Cash' check (payment_method in ('Cash', 'UPI', 'Card')),
   client_uuid     uuid unique,
   customer_phone  text,
+  order_type      text default 'dine-in',
+  notes           text default '',
+  table_number    text default '',
+  discount_amount numeric(10,2) default 0,
   created_at      timestamptz default now()
 );
 

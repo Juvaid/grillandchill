@@ -270,6 +270,277 @@
     #zReportPaper .bold { font-weight: bold !important; }
     #zReportPaper .separator { border: none !important; border-top: 1px dashed #000 !important; margin: 6px 0 !important; }
     #zReportPaper .double-separator { border: none !important; border-top: 2px solid #000 !important; margin: 6px 0 !important; }
+
+    /* ===== DESKTOP SIDEBAR NAVIGATION (≥1024px) ===== */
+    @media (min-width: 1024px) {
+      .bottom-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: auto;
+        width: 220px;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 30px 16px;
+        border-radius: 0;
+        border: none;
+        border-right: 1px solid var(--border);
+        background: rgba(14, 14, 16, 0.95);
+        backdrop-filter: blur(20px);
+        box-shadow: 4px 0 30px rgba(0,0,0,0.3);
+        gap: 6px;
+        z-index: 1000;
+      }
+      .bottom-nav::before {
+        content: '⚡ ADMIN';
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 3px;
+        color: var(--primary);
+        padding: 0 10px 20px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 12px;
+        text-transform: uppercase;
+      }
+      .nav-item {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 12px;
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        transition: all 0.25s;
+      }
+      .nav-item:hover {
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+      }
+      .nav-item.active {
+        background: rgba(255,107,0,0.1);
+        color: var(--primary);
+        border: 1px solid rgba(255,107,0,0.15);
+      }
+      .nav-icon { font-size: 1.1rem; }
+
+      /* Push main content right to make room for sidebar */
+      #dashboard {
+        margin-left: 220px;
+      }
+      header {
+        margin-left: 220px;
+      }
+      .container {
+        padding-bottom: 40px;
+      }
+
+      /* POS Modal: Two-column layout on desktop */
+      #quickBillModal .modal-content {
+        max-width: 900px !important;
+        width: 900px !important;
+        height: auto !important;
+        max-height: 92vh !important;
+        border-radius: 24px !important;
+        margin: auto;
+        border: 1px solid var(--border);
+      }
+    }
+
+    /* Polished transitions and micro-interactions */
+    .order-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .order-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+
+    .product-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .product-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+
+    .stat-card { transition: transform 0.2s, border-color 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); border-color: rgba(255,107,0,0.2); }
+
+    .btn-primary { transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,0,0.3); }
+    .btn-primary:active { transform: translateY(1px); }
+
+    .mini-btn { transition: transform 0.15s, background 0.15s, border-color 0.15s; }
+    .mini-btn:hover { transform: translateY(-1px); }
+    .mini-btn:active { transform: translateY(1px); }
+
+    /* Form group spacing polish */
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Toast animation */
+    @keyframes slideInToast {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Scrollbar styling for dark theme */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* ===== MOBILE-SPECIFIC FIXES (≤480px) ===== */
+    @media (max-width: 480px) {
+      /* Settings tabs: scrollable horizontal, smaller padding */
+      .settings-tabs {
+        gap: 4px !important;
+        padding-bottom: 8px !important;
+      }
+      .settings-tab {
+        padding: 8px 12px !important;
+        font-size: 0.65rem !important;
+      }
+
+      /* Settings form grids: single column on tiny screens */
+      #settingsTab-branding > div[style*="grid-template-columns: 1fr 1fr"],
+      #settingsTab-ordering > div[style*="grid-template-columns: 1fr 1fr"],
+      #settingsTab-hours > div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* POS: Customer name + phone stack vertically */
+      #quickBillModal .modal-content > div:nth-child(2) {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* POS: Discount row wraps */
+      #quickBillModal div[style*="DISCOUNT"] {
+        flex-wrap: wrap !important;
+      }
+
+      /* Smaller action row for order cards */
+      .action-row {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+      }
+      .action-row .mini-btn {
+        font-size: 0.6rem !important;
+        padding: 10px !important;
+      }
+    }
+
+    /* ===== GENERAL MOBILE (≤768px) ===== */
+    @media (max-width: 768px) {
+      /* Ensure container has proper padding for safe areas */
+      .container {
+        padding: 15px;
+        padding-bottom: 100px;
+      }
+
+      /* Settings sections: tighter padding */
+      .settings-tab-content {
+        padding: 15px !important;
+      }
+
+      /* Stats grid: 2 columns on mobile */
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+
+      /* POS modal full-screen on mobile (keep current behavior) */
+      #quickBillModal .modal-content,
+      #productModal .modal-content {
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      /* Order type buttons: slightly smaller */
+      .order-type-btn {
+        font-size: 0.68rem !important;
+        padding: 9px 6px !important;
+      }
+
+      /* Section header: wrap if needed */
+      .section-header {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      /* Bill cards: tighter spacing */
+      .order-card {
+        padding: 15px !important;
+      }
+
+      /* Product modal: scroll fix */
+      .modal-content {
+        padding: 20px !important;
+      }
+
+      /* Auth input touch targets */
+      .auth-input {
+        min-height: 48px;
+        font-size: 16px !important; /* prevents iOS zoom on focus */
+      }
+
+      /* Toggle switches: bigger touch target */
+      .toggle-switch {
+        width: 44px !important;
+        height: 22px !important;
+      }
+      .slider:before {
+        height: 16px !important;
+        width: 16px !important;
+      }
+
+      /* Bottom nav safe area */
+      .bottom-nav {
+        bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+        left: 12px !important;
+        right: 12px !important;
+      }
+    }
+
+    /* ===== TABLET / MEDIUM SCREENS ===== */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .container {
+        max-width: 720px;
+        margin: 0 auto;
+        padding-bottom: 100px;
+      }
+
+      /* POS modal: centered card on tablet */
+      #quickBillModal .modal-content {
+        max-width: 600px !important;
+        width: 600px !important;
+        height: auto !important;
+        max-height: 92vh !important;
+        border-radius: 24px !important;
+        margin: auto;
+        border: 1px solid var(--border);
+      }
+
+      /* Product modal: centered on tablet */
+      #productModal .modal-content {
+        max-width: 550px !important;
+        width: 550px !important;
+        height: auto !important;
+        max-height: 92vh !important;
+        border-radius: 24px !important;
+        margin: auto;
+        border: 1px solid var(--border);
+      }
+
+      /* Stats: 4 columns on tablet */
+      .stats-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -428,20 +699,230 @@
       <div id="settingsSection" class="hidden">
         <div class="section-header">
           <h3 class="section-title">Store Settings</h3>
+          <button type="button" onclick="saveAllSettings()" class="mini-btn primary" style="padding:10px 20px; font-size:0.75rem">💾 SAVE ALL</button>
         </div>
         
-        <form id="settingsForm" onsubmit="saveSettings(event)" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:flex; flex-direction:column; gap:15px">
-          <div class="form-group">
-            <label class="form-label">Store UPI ID (for QR Payments)</label>
-            <input type="text" id="storeUpiId" class="auth-input" placeholder="e.g. storename@okaxis" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Store Merchant Name</label>
-            <input type="text" id="storeMerchantName" class="auth-input" placeholder="e.g. Grill & Chill" required>
-          </div>
-          <button type="submit" class="btn-primary" style="height:50px">SAVE SETTINGS</button>
-        </form>
+        <!-- Settings Tabs Navigation -->
+        <div class="settings-tabs" style="display:flex; gap:6px; margin-bottom:20px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch">
+          <button type="button" class="settings-tab active" onclick="switchSettingsTab('branding')" id="stab-branding" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--primary); color:#fff; font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">🎨 Branding</button>
+          <button type="button" class="settings-tab" onclick="switchSettingsTab('payment')" id="stab-payment" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">💳 Payment</button>
+          <button type="button" class="settings-tab" onclick="switchSettingsTab('ordering')" id="stab-ordering" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">🛵 Ordering</button>
+          <button type="button" class="settings-tab" onclick="switchSettingsTab('hours')" id="stab-hours" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">🕐 Hours</button>
+          <button type="button" class="settings-tab" onclick="switchSettingsTab('receipt')" id="stab-receipt" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">🧾 Receipt</button>
+        </div>
 
+        <!-- TAB 1: Branding & Identity -->
+        <div id="settingsTab-branding" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:flex; flex-direction:column; gap:15px">
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🎨 Branding & Identity</div>
+          <div class="form-group">
+            <label class="form-label">Store Name</label>
+            <input type="text" id="set_store_name" class="auth-input" placeholder="e.g. Grill & Chill">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Store Tagline</label>
+            <input type="text" id="set_store_tagline" class="auth-input" placeholder="e.g. Pizzeria & Bakery">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Store Address</label>
+            <textarea id="set_store_address" class="auth-input" placeholder="e.g. Raikot Road, Sandhaur, Malerkotla" style="height:70px; resize:vertical; font-family:inherit"></textarea>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
+            <div class="form-group">
+              <label class="form-label">Store Phone</label>
+              <input type="tel" id="set_store_phone" class="auth-input" placeholder="e.g. 79019 94174">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Currency Symbol</label>
+              <input type="text" id="set_currency_symbol" class="auth-input" placeholder="₹" maxlength="3" style="text-align:center; font-size:1.2rem">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Store Website URL</label>
+            <input type="url" id="set_store_website" class="auth-input" placeholder="https://yourstore.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Logo URL <span style="color:var(--muted); font-weight:400; font-size:0.7rem">(paste a hosted image link)</span></label>
+            <input type="url" id="set_logo_url" class="auth-input" placeholder="https://..." oninput="previewSettingsLogo(this.value)">
+            <img id="settingsLogoPreview" style="width:60px; height:60px; object-fit:contain; margin-top:10px; border-radius:12px; background:var(--glass); border:1px solid var(--border); display:none">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Brand Primary Color</label>
+            <div style="display:flex; align-items:center; gap:12px">
+              <input type="color" id="set_brand_color" value="#ff6b00" style="width:50px; height:40px; border:none; border-radius:10px; cursor:pointer; background:transparent">
+              <input type="text" id="set_brand_color_hex" class="auth-input" value="#ff6b00" maxlength="7" style="width:100px; margin:0; text-align:center; font-family:monospace" oninput="document.getElementById('set_brand_color').value=this.value">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Payment & Billing -->
+        <div id="settingsTab-payment" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:none; flex-direction:column; gap:15px">
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">💳 Payment & Billing</div>
+          <div class="form-group">
+            <label class="form-label">UPI ID (for QR Payments)</label>
+            <input type="text" id="set_upi_id" class="auth-input" placeholder="e.g. storename@okaxis">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Merchant Name (shown on UPI)</label>
+            <input type="text" id="set_merchant_name" class="auth-input" placeholder="e.g. Grill & Chill">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Default Payment Method</label>
+            <select id="set_default_payment" class="auth-input">
+              <option value="Cash">💵 Cash</option>
+              <option value="UPI">📱 UPI</option>
+              <option value="Card">💳 Card</option>
+            </select>
+          </div>
+          <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border)">
+            <div>
+              <div style="font-weight:700; font-size:0.85rem">Enable Card Payments</div>
+              <div style="font-size:0.7rem; color:var(--muted)">Show Card option in POS billing</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set_enable_card">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- TAB 3: Ordering & Delivery -->
+        <div id="settingsTab-ordering" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:none; flex-direction:column; gap:15px">
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🛵 Ordering & Delivery</div>
+          <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border)">
+            <div>
+              <div style="font-weight:700; font-size:0.85rem">Enable Delivery</div>
+              <div style="font-size:0.7rem; color:var(--muted)">Show delivery option in POS & menu</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set_enable_delivery" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
+            <div class="form-group">
+              <label class="form-label">Delivery Fee</label>
+              <input type="number" id="set_delivery_fee" class="auth-input" value="0" min="0" placeholder="0 = Free">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Free Delivery Above</label>
+              <input type="number" id="set_free_delivery_above" class="auth-input" value="0" min="0" placeholder="0 = Always free">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Minimum Order Amount</label>
+            <input type="number" id="set_min_order" class="auth-input" value="0" min="0" placeholder="0 = No minimum">
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp Number (for order notifications)</label>
+            <input type="tel" id="set_whatsapp_number" class="auth-input" placeholder="e.g. 917901994174">
+          </div>
+          <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border)">
+            <div>
+              <div style="font-weight:700; font-size:0.85rem">Enable Table Numbers</div>
+              <div style="font-size:0.7rem; color:var(--muted)">Show optional table # field in POS for dine-in</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set_enable_tables">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- TAB 4: Store Hours & Status -->
+        <div id="settingsTab-hours" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:none; flex-direction:column; gap:15px">
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🕐 Store Hours & Status</div>
+          <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,255,136,0.03); padding:15px; border-radius:12px; border:1px solid rgba(0,255,136,0.15)">
+            <div>
+              <div style="font-weight:700; font-size:0.85rem">Store is Open</div>
+              <div style="font-size:0.7rem; color:var(--muted)">Toggle to close the store for online orders</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set_store_open" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
+            <div class="form-group">
+              <label class="form-label">Opening Time</label>
+              <input type="time" id="set_open_time" class="auth-input" value="10:00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Closing Time</label>
+              <input type="time" id="set_close_time" class="auth-input" value="22:00">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="margin-bottom:8px">Days Open</label>
+            <div style="display:flex; flex-wrap:wrap; gap:8px" id="daysOpenContainer">
+              <label style="display:flex; align-items:center; gap:6px; background:var(--glass); padding:8px 12px; border-radius:10px; border:1px solid var(--border); cursor:pointer; font-size:0.75rem; font-weight:600; transition:0.3s">
+                <input type="checkbox" class="day-checkbox" value="Mon" checked style="accent-color:var(--primary)"> Mon
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; background:var(--glass); padding:8px 12px; border-radius:10px; border:1px solid var(--border); cursor:pointer; font-size:0.75rem; font-weight:600; transition:0.3s">
+                <input type="checkbox" class="day-checkbox" value="Tue" checked style="accent-color:var(--primary)"> Tue
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; background:var(--glass); padding:8px 12px; border-radius:10px; border:1px solid var(--border); cursor:pointer; font-size:0.75rem; font-weight:600; transition:0.3s">
+                <input type="checkbox" class="day-checkbox" value="Wed" checked style="accent-color:var(--primary)"> Wed
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; background:var(--glass); padding:8px 12px; border-radius:10px; border:1px solid var(--border); cursor:pointer; font-size:0.75rem; font-weight:600; transition:0.3s">
+                <input type="checkbox" class="day-checkbox" value="Thu" checked style="accent-color:var(--primary)"> Thu
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; background:var(--glass); padding:8px 12px; border-radius:10px; border:1px solid var(--border); cursor:pointer; font-size:0.75rem; font-weight:600; transition:0.3s">
+                <input type="checkbox" class="day-checkbox" value="Fri" checked style="accent-color:var(--primary)"> Fri
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; background:var(--glass); padding:8px 12px; border-radius:10px; border:1px solid var(--border); cursor:pointer; font-size:0.75rem; font-weight:600; transition:0.3s">
+                <input type="checkbox" class="day-checkbox" value="Sat" checked style="accent-color:var(--primary)"> Sat
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; background:var(--glass); padding:8px 12px; border-radius:10px; border:1px solid var(--border); cursor:pointer; font-size:0.75rem; font-weight:600; transition:0.3s">
+                <input type="checkbox" class="day-checkbox" value="Sun" checked style="accent-color:var(--primary)"> Sun
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Announcement Bar Text <span style="color:var(--muted); font-weight:400; font-size:0.7rem">(shown as scrolling ticker on menu)</span></label>
+            <textarea id="set_announcement" class="auth-input" placeholder="e.g. 🔥 Free delivery on orders above ₹299! | ⭐ New: Butter Chicken Pizza" style="height:60px; resize:vertical; font-family:inherit"></textarea>
+          </div>
+        </div>
+
+        <!-- TAB 5: Receipt & Social -->
+        <div id="settingsTab-receipt" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:none; flex-direction:column; gap:15px">
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🧾 Receipt & Social</div>
+          <div class="form-group">
+            <label class="form-label">Receipt Footer Message</label>
+            <input type="text" id="set_receipt_footer" class="auth-input" placeholder="e.g. Thank you! Visit again.">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Receipt Footer URL</label>
+            <input type="text" id="set_receipt_url" class="auth-input" placeholder="e.g. yourstore.com">
+          </div>
+          <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border)">
+            <div>
+              <div style="font-weight:700; font-size:0.85rem">Show Logo on Receipt</div>
+              <div style="font-size:0.7rem; color:var(--muted)">Print store logo at the top of thermal receipts</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set_receipt_logo" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:10px; padding-bottom:5px; border-bottom:1px solid var(--border)">Social Links</div>
+          <div class="form-group">
+            <label class="form-label">Instagram URL</label>
+            <input type="url" id="set_instagram" class="auth-input" placeholder="https://instagram.com/yourstore">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Facebook URL</label>
+            <input type="url" id="set_facebook" class="auth-input" placeholder="https://facebook.com/yourstore">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Google Maps URL</label>
+            <input type="url" id="set_google_maps" class="auth-input" placeholder="https://maps.google.com/...">
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <button type="button" onclick="saveAllSettings()" class="btn-primary" style="height:55px; margin-top:15px; font-size:0.95rem; font-weight:900; letter-spacing:1px">💾 SAVE ALL SETTINGS</button>
+
+        <!-- Location Stats (kept from original) -->
         <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px;">
           <div class="section-header">
             <h3 class="section-title">Customer Order Locations (Stats)</h3>
@@ -555,34 +1036,70 @@
   <!-- QUICK BILL MODAL -->
   <div class="modal" id="quickBillModal">
     <div class="modal-content" style="max-width: 100%; width: 100%; height: 100%; border-radius: 0; display: flex; flex-direction: column; padding: 20px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px; padding-top: 10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px; padding-top: 10px">
         <h2 style="margin:0; color:var(--primary)">Quick Bill (POS)</h2>
         <button onclick="closeQuickBill()" style="background:rgba(255,255,255,0.05); border:1px solid var(--b); color:var(--muted); cursor:pointer; width:40px; height:40px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center">&times;</button>
       </div>
-      <div style="margin-bottom:20px">
-        <input type="text" id="posSearch" class="auth-input" placeholder="🔍 Search menu items..." oninput="filterPosItems()" style="margin-bottom:0; height:55px; font-size:1rem; padding-left:20px">
-      </div>
-      <div id="posItems" style="flex:1; overflow-y:auto; margin-bottom:20px; background:rgba(0,0,0,0.2); border-radius:20px; padding:10px;"></div>
-      
-      <div style="font-size:0.8rem; font-weight:800; color:var(--muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:1.5px; padding-left:5px">Current Basket</div>
-      <div id="posBasket" style="max-height:350px; overflow-y:auto; margin-bottom:20px; padding:15px; border:2px dashed var(--b); border-radius:20px; background:rgba(255,255,255,0.02)"></div>
 
-      <div style="padding:15px 20px; background:rgba(255,107,0,0.05); border-radius:20px; margin-bottom:20px; display:flex; flex-direction:column; gap:12px; border:1px solid rgba(255,107,0,0.1)">
+      <!-- Customer Info Bar -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px">
+        <input type="text" id="posCustomerName" class="auth-input" placeholder="👤 Customer Name" style="margin:0; height:45px; font-size:0.85rem">
+        <input type="tel" id="customerPhone" class="auth-input" placeholder="📱 Phone (Optional)" style="margin:0; height:45px; font-size:0.85rem">
+      </div>
+
+      <!-- Order Type & Table -->
+      <div style="display:flex; gap:8px; margin-bottom:12px; align-items:center; flex-wrap:wrap">
+        <div style="display:flex; gap:4px; flex:1; min-width:200px">
+          <button type="button" class="order-type-btn active" data-type="dine-in" onclick="selectOrderType('dine-in')" style="flex:1; padding:10px 8px; border-radius:12px; border:1px solid var(--primary); background:rgba(255,107,0,0.12); color:var(--primary); font-size:0.72rem; font-weight:800; cursor:pointer; transition:0.3s; font-family:inherit">🍽️ Dine-in</button>
+          <button type="button" class="order-type-btn" data-type="takeaway" onclick="selectOrderType('takeaway')" style="flex:1; padding:10px 8px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:800; cursor:pointer; transition:0.3s; font-family:inherit">🥡 Takeaway</button>
+          <button type="button" class="order-type-btn" data-type="delivery" onclick="selectOrderType('delivery')" id="posDeliveryBtn" style="flex:1; padding:10px 8px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:800; cursor:pointer; transition:0.3s; font-family:inherit">🛵 Delivery</button>
+        </div>
+        <input type="text" id="posTableNumber" class="auth-input" placeholder="Table #" style="margin:0; height:42px; width:75px; text-align:center; font-size:0.85rem; font-weight:700; display:none">
+      </div>
+
+      <!-- Menu Search -->
+      <div style="margin-bottom:12px">
+        <input type="text" id="posSearch" class="auth-input" placeholder="🔍 Search menu items..." oninput="filterPosItems()" style="margin-bottom:0; height:50px; font-size:0.95rem; padding-left:20px">
+      </div>
+      <div id="posItems" style="flex:1; overflow-y:auto; margin-bottom:12px; background:rgba(0,0,0,0.2); border-radius:20px; padding:10px;"></div>
+      
+      <!-- Basket Section -->
+      <div style="font-size:0.75rem; font-weight:800; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:1.5px; padding-left:5px; display:flex; justify-content:space-between; align-items:center">
+        <span>Current Basket</span>
+        <button type="button" onclick="clearPosBasket()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.65rem; font-weight:700; padding:4px 8px; border-radius:8px; border:1px solid rgba(239,68,68,0.2); font-family:inherit">✕ CLEAR</button>
+      </div>
+      <div id="posBasket" style="max-height:300px; overflow-y:auto; margin-bottom:12px; padding:12px; border:2px dashed var(--b); border-radius:20px; background:rgba(255,255,255,0.02)"></div>
+
+      <!-- Discount Row -->
+      <div style="display:flex; gap:8px; margin-bottom:12px; align-items:center">
+        <span style="font-size:0.7rem; font-weight:700; color:var(--muted); white-space:nowrap">DISCOUNT:</span>
+        <input type="number" id="posDiscountValue" class="auth-input" placeholder="0" min="0" style="margin:0; height:38px; width:80px; text-align:center; font-size:0.85rem; font-weight:700" oninput="updatePosTotal()">
+        <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border)">
+          <button type="button" class="discount-mode-btn active" data-mode="percent" onclick="setDiscountMode('percent')" style="padding:8px 12px; background:rgba(255,107,0,0.12); border:none; color:var(--primary); font-size:0.8rem; font-weight:800; cursor:pointer; font-family:inherit">%</button>
+          <button type="button" class="discount-mode-btn" data-mode="flat" onclick="setDiscountMode('flat')" style="padding:8px 12px; background:var(--glass); border:none; color:var(--muted); font-size:0.8rem; font-weight:800; cursor:pointer; font-family:inherit">₹</button>
+        </div>
+        <input type="text" id="posOrderNotes" class="auth-input" placeholder="📝 Notes..." style="margin:0; height:38px; flex:1; font-size:0.8rem">
+      </div>
+
+      <!-- Total & Payment -->
+      <div style="padding:15px 20px; background:rgba(255,107,0,0.05); border-radius:20px; margin-bottom:12px; display:flex; flex-direction:column; gap:10px; border:1px solid rgba(255,107,0,0.1)">
         <div style="display:flex; justify-content:space-between; align-items:center">
-          <span style="font-size:0.75rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Order Total</span>
+          <div>
+            <span style="font-size:0.7rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Order Total</span>
+            <div id="posDiscountLine" style="font-size:0.65rem; color:#22c55e; font-weight:600; display:none">Discount: <span id="posDiscountDisplay"></span></div>
+          </div>
           <div id="billTotalBox" style="font-weight:900; font-size:1.5rem; color:var(--primary); letter-spacing:-0.5px">₹0</div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px">
-          <!-- Payment Method Selector -->
           <div style="display:flex; align-items:center; gap:8px">
             <span style="font-size:0.7rem; font-weight:700; color:var(--muted)">METHOD:</span>
-            <select id="billPaymentMethod" class="auth-input" style="margin:0; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); font-size:0.8rem; height:36px; width:90px; border-radius:10px; padding:0 8px; color:var(--text); background:#141416;">
+            <select id="billPaymentMethod" class="auth-input" style="margin:0; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); font-size:0.8rem; height:36px; width:100px; border-radius:10px; padding:0 8px; color:var(--text); background:#141416;">
               <option value="Cash">💵 Cash</option>
               <option value="UPI">📱 UPI</option>
+              <option value="Card" id="posCardOption" style="display:none">💳 Card</option>
             </select>
           </div>
-          <!-- Customer Phone -->
-          <input type="tel" id="customerPhone" class="auth-input" placeholder="📱 Phone (Optional)" style="margin:0; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); font-size:0.85rem; height:36px; width:150px; border-radius:10px; text-align:right; padding-right:10px">
+          <div id="posItemCount" style="font-size:0.7rem; color:var(--muted); font-weight:600">0 items</div>
         </div>
       </div>
       <button class="btn-primary" onclick="saveBill()" style="height:52px; font-size:0.95rem; letter-spacing:1px; font-weight:900; background:var(--primary); box-shadow: 0 8px 20px rgba(255,107,0,0.2)">GENERATE & SAVE BILL</button>
@@ -1034,9 +1551,9 @@
     function shareUpiRequestToWhatsApp() {
       if (!window.upiCurrentPhone) return;
       const storeUpi = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
-      const storeName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
+      const storeName = window.storeSettings?.store_name || localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
       const upiUrl = `upi://pay?pa=${storeUpi}&pn=${encodeURIComponent(storeName)}&am=${window.upiCurrentAmount}&cu=INR`;
-      const message = `Hello! Please click the link below to pay ₹${window.upiCurrentAmount} to Grill & Chill:\n\n${upiUrl}`;
+      const message = `Hello! Please click the link below to pay ₹${window.upiCurrentAmount} to ${storeName}:\n\n${upiUrl}`;
       
       let cleanedPhone = window.upiCurrentPhone.replace(/\D/g, '');
       if (cleanedPhone.length === 10) {
@@ -1254,53 +1771,169 @@
       loadOrders();
     }
 
+    // --- SETTINGS TABS LOGIC ---
+    function switchSettingsTab(tabId) {
+      document.querySelectorAll('.settings-tab-content').forEach(el => {
+        el.style.display = 'none';
+      });
+      document.querySelectorAll('.settings-tab').forEach(btn => {
+        btn.style.background = 'var(--glass)';
+        btn.style.color = 'var(--muted)';
+        btn.classList.remove('active');
+      });
+      const panel = document.getElementById('settingsTab-' + tabId);
+      if (panel) panel.style.display = 'flex';
+      const btn = document.getElementById('stab-' + tabId);
+      if (btn) {
+        btn.style.background = 'var(--primary)';
+        btn.style.color = '#fff';
+        btn.classList.add('active');
+      }
+    }
+
+    function previewSettingsLogo(url) {
+      const img = document.getElementById('settingsLogoPreview');
+      if (url && url.startsWith('http')) {
+        img.src = url;
+        img.style.display = 'block';
+      } else {
+        img.style.display = 'none';
+      }
+    }
+
+    // Settings key-to-element mapping
+    const SETTINGS_MAP = {
+      // Branding
+      store_name: { el: 'set_store_name', default: 'Grill & Chill' },
+      store_tagline: { el: 'set_store_tagline', default: '' },
+      store_address: { el: 'set_store_address', default: '', type: 'textarea' },
+      store_phone: { el: 'set_store_phone', default: '' },
+      currency_symbol: { el: 'set_currency_symbol', default: '₹' },
+      store_website: { el: 'set_store_website', default: '' },
+      logo_url: { el: 'set_logo_url', default: '' },
+      brand_color: { el: 'set_brand_color', default: '#ff6b00', type: 'color' },
+      // Payment
+      upi_id: { el: 'set_upi_id', default: 'juvaidpb13@okaxis' },
+      merchant_name: { el: 'set_merchant_name', default: 'Grill & Chill' },
+      default_payment: { el: 'set_default_payment', default: 'Cash' },
+      enable_card: { el: 'set_enable_card', default: 'false', type: 'checkbox' },
+      // Ordering
+      enable_delivery: { el: 'set_enable_delivery', default: 'true', type: 'checkbox' },
+      delivery_fee: { el: 'set_delivery_fee', default: '0' },
+      free_delivery_above: { el: 'set_free_delivery_above', default: '0' },
+      min_order: { el: 'set_min_order', default: '0' },
+      whatsapp_number: { el: 'set_whatsapp_number', default: '' },
+      enable_tables: { el: 'set_enable_tables', default: 'false', type: 'checkbox' },
+      // Hours
+      store_open: { el: 'set_store_open', default: 'true', type: 'checkbox' },
+      open_time: { el: 'set_open_time', default: '10:00' },
+      close_time: { el: 'set_close_time', default: '22:00' },
+      days_open: { el: null, default: 'Mon,Tue,Wed,Thu,Fri,Sat,Sun', type: 'days' },
+      announcement: { el: 'set_announcement', default: '', type: 'textarea' },
+      // Receipt
+      receipt_footer: { el: 'set_receipt_footer', default: 'Thank you! Visit again.' },
+      receipt_url: { el: 'set_receipt_url', default: '' },
+      receipt_logo: { el: 'set_receipt_logo', default: 'true', type: 'checkbox' },
+      instagram: { el: 'set_instagram', default: '' },
+      facebook: { el: 'set_facebook', default: '' },
+      google_maps: { el: 'set_google_maps', default: '' }
+    };
+
+    // Global store settings cache
+    window.storeSettings = {};
+
     async function loadSettings() {
-      let upiId = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
-      let merchantName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
-      
       try {
         const { data, error } = await supabaseClient
           .from('store_settings')
           .select('*');
+        
+        const settings = {};
         if (data && !error) {
-          const upiRow = data.find(r => r.key === 'upi_id');
-          const merchantRow = data.find(r => r.key === 'merchant_name');
-          if (upiRow) {
-            upiId = upiRow.value;
-            localStorage.setItem('gc_store_upi_id', upiId);
-          }
-          if (merchantRow) {
-            merchantName = merchantRow.value;
-            localStorage.setItem('gc_store_merchant_name', merchantName);
+          data.forEach(row => { settings[row.key] = row.value; });
+        }
+
+        // Also sync legacy localStorage values if DB is empty
+        if (!settings.upi_id) {
+          settings.upi_id = localStorage.getItem('gc_store_upi_id') || SETTINGS_MAP.upi_id.default;
+        }
+        if (!settings.merchant_name) {
+          settings.merchant_name = localStorage.getItem('gc_store_merchant_name') || SETTINGS_MAP.merchant_name.default;
+        }
+
+        // Populate all form fields
+        for (const [key, config] of Object.entries(SETTINGS_MAP)) {
+          const val = settings[key] || config.default;
+          window.storeSettings[key] = val;
+
+          if (config.type === 'checkbox') {
+            const el = document.getElementById(config.el);
+            if (el) el.checked = val === 'true' || val === true;
+          } else if (config.type === 'color') {
+            const el = document.getElementById(config.el);
+            const hexEl = document.getElementById(config.el + '_hex');
+            if (el) el.value = val;
+            if (hexEl) hexEl.value = val;
+          } else if (config.type === 'days') {
+            const days = (val || config.default).split(',');
+            document.querySelectorAll('.day-checkbox').forEach(cb => {
+              cb.checked = days.includes(cb.value);
+            });
+          } else if (config.el) {
+            const el = document.getElementById(config.el);
+            if (el) el.value = val;
           }
         }
+
+        // Preview logo if exists
+        if (settings.logo_url) {
+          previewSettingsLogo(settings.logo_url);
+        }
+
+        // Keep legacy localStorage in sync
+        localStorage.setItem('gc_store_upi_id', window.storeSettings.upi_id);
+        localStorage.setItem('gc_store_merchant_name', window.storeSettings.merchant_name);
+
       } catch (err) {
         console.warn('Failed to load store settings from Supabase:', err);
       }
-
-      document.getElementById('storeUpiId').value = upiId;
-      document.getElementById('storeMerchantName').value = merchantName;
       
       loadLocationStats();
     }
 
-    async function saveSettings(e) {
-      if (e) e.preventDefault();
-      const upiId = document.getElementById('storeUpiId').value.trim();
-      const merchantName = document.getElementById('storeMerchantName').value.trim();
+    async function saveAllSettings() {
+      const rows = [];
       
-      localStorage.setItem('gc_store_upi_id', upiId);
-      localStorage.setItem('gc_store_merchant_name', merchantName);
-      
+      for (const [key, config] of Object.entries(SETTINGS_MAP)) {
+        let val;
+        if (config.type === 'checkbox') {
+          val = document.getElementById(config.el)?.checked ? 'true' : 'false';
+        } else if (config.type === 'color') {
+          val = document.getElementById(config.el)?.value || config.default;
+        } else if (config.type === 'days') {
+          const checked = [...document.querySelectorAll('.day-checkbox:checked')].map(cb => cb.value);
+          val = checked.join(',');
+        } else if (config.el) {
+          val = document.getElementById(config.el)?.value?.trim() || '';
+        }
+        
+        if (val !== undefined) {
+          rows.push({ key, value: val });
+          window.storeSettings[key] = val;
+        }
+      }
+
+      // Keep legacy localStorage in sync
+      localStorage.setItem('gc_store_upi_id', window.storeSettings.upi_id || '');
+      localStorage.setItem('gc_store_merchant_name', window.storeSettings.merchant_name || '');
+
       try {
-        await supabaseClient.from('store_settings').upsert([
-          { key: 'upi_id', value: upiId },
-          { key: 'merchant_name', value: merchantName }
-        ]);
-        showToast('Settings Saved successfully! ⚙️');
+        const { error } = await supabaseClient.from('store_settings').upsert(rows);
+        if (error) throw error;
+        showToast('All settings saved successfully! ⚙️');
       } catch (err) {
         console.error('Failed to save settings to Supabase:', err);
-        showToast('Local settings saved, but failed to sync online.');
+        showToast('Failed to save settings online. Check console.');
       }
     }
 
@@ -1801,12 +2434,65 @@
     // --- POS / BILLING LOGIC ---
     let currentBillItems = [];
     let allMenuItems = [];
+    let posOrderType = 'dine-in';
+    let posDiscountMode = 'percent'; // 'percent' or 'flat'
+
+    function selectOrderType(type) {
+      posOrderType = type;
+      document.querySelectorAll('.order-type-btn').forEach(btn => {
+        const isActive = btn.dataset.type === type;
+        btn.style.background = isActive ? 'rgba(255,107,0,0.12)' : 'var(--glass)';
+        btn.style.color = isActive ? 'var(--primary)' : 'var(--muted)';
+        btn.style.borderColor = isActive ? 'var(--primary)' : 'var(--border)';
+        btn.classList.toggle('active', isActive);
+      });
+      // Show table number only for dine-in AND if enabled in settings
+      const tableInput = document.getElementById('posTableNumber');
+      if (tableInput) {
+        const tablesEnabled = window.storeSettings?.enable_tables === 'true';
+        tableInput.style.display = (type === 'dine-in' && tablesEnabled) ? 'block' : 'none';
+      }
+    }
+
+    function setDiscountMode(mode) {
+      posDiscountMode = mode;
+      document.querySelectorAll('.discount-mode-btn').forEach(btn => {
+        const isActive = btn.dataset.mode === mode;
+        btn.style.background = isActive ? 'rgba(255,107,0,0.12)' : 'var(--glass)';
+        btn.style.color = isActive ? 'var(--primary)' : 'var(--muted)';
+      });
+      updatePosTotal();
+    }
+
+    function clearPosBasket() {
+      currentBillItems = [];
+      renderBasket();
+      updatePosTotal();
+    }
 
     async function showQuickBill() {
       const { data, error } = await supabaseClient.from('menu_items').select('*').eq('available', true).order('category', { ascending: true }).order('sort_order', { ascending: true }).order('name', { ascending: true });
       if (data) {
         allMenuItems = data;
         renderPosItems(data);
+        
+        // Apply settings-driven visibility
+        const cardOption = document.getElementById('posCardOption');
+        if (cardOption) cardOption.style.display = (window.storeSettings?.enable_card === 'true') ? 'block' : 'none';
+        
+        const deliveryBtn = document.getElementById('posDeliveryBtn');
+        if (deliveryBtn) deliveryBtn.style.display = (window.storeSettings?.enable_delivery === 'true') ? 'flex' : 'none';
+        
+        // Set default payment method from settings
+        const defaultPay = window.storeSettings?.default_payment;
+        if (defaultPay) {
+          const select = document.getElementById('billPaymentMethod');
+          if (select) select.value = defaultPay;
+        }
+        
+        // Reset order type
+        selectOrderType('dine-in');
+        
         document.getElementById('quickBillModal').style.display = 'flex';
       }
     }
@@ -1815,8 +2501,18 @@
       document.getElementById('quickBillModal').style.display = 'none';
       const phoneInput = document.getElementById('customerPhone');
       if (phoneInput) phoneInput.value = '';
+      const nameInput = document.getElementById('posCustomerName');
+      if (nameInput) nameInput.value = '';
+      const noteInput = document.getElementById('posOrderNotes');
+      if (noteInput) noteInput.value = '';
+      const discInput = document.getElementById('posDiscountValue');
+      if (discInput) discInput.value = '';
+      const tableInput = document.getElementById('posTableNumber');
+      if (tableInput) tableInput.value = '';
       currentBillItems = [];
-      updateBillTotal();
+      posOrderType = 'dine-in';
+      posDiscountMode = 'percent';
+      updatePosTotal();
     }
 
     function renderPosItems(items) {
@@ -1831,7 +2527,7 @@
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap">
               ${Object.entries(sizes).map(([sz, pr]) => `
-                <button onclick="addToBill('${it.id}', '${it.name}', '${sz}', ${pr})" class="mini-btn" style="padding:12px 15px; font-size:0.85rem; flex:1; background:rgba(255,255,255,0.03); border-color:var(--b)">
+                <button onclick="addToBill('${it.id}', '${it.name.replace(/'/g, "\\'")}', '${sz}', ${pr})" class="mini-btn" style="padding:12px 15px; font-size:0.85rem; flex:1; background:rgba(255,255,255,0.03); border-color:var(--b)">
                   <div style="font-size:0.7rem; color:var(--muted); margin-bottom:2px">${sz}</div>
                   <div style="font-weight:800">₹${pr}</div>
                 </button>
@@ -1849,10 +2545,27 @@
     }
 
     function addToBill(id, name, size, price) {
-      currentBillItems.push({ id, name, size, price });
-      updateBillTotal();
+      // Check if same item+size already in basket, increment qty
+      const existing = currentBillItems.find(i => i.id === id && i.size === size);
+      if (existing) {
+        existing.qty = (existing.qty || 1) + 1;
+      } else {
+        currentBillItems.push({ id, name, size, price, qty: 1 });
+      }
+      updatePosTotal();
       renderBasket();
       showToast(`Added ${name}`);
+    }
+
+    function changeBasketQty(idx, delta) {
+      const item = currentBillItems[idx];
+      if (!item) return;
+      item.qty = (item.qty || 1) + delta;
+      if (item.qty <= 0) {
+        currentBillItems.splice(idx, 1);
+      }
+      updatePosTotal();
+      renderBasket();
     }
 
     function renderBasket() {
@@ -1862,14 +2575,16 @@
         return;
       }
       container.innerHTML = currentBillItems.map((item, idx) => `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:0.85rem">
-          <div style="flex:1">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:0.85rem; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.03)">
+          <div style="flex:1; min-width:0">
             <span style="font-weight:700">${item.name}</span>
             <span style="color:var(--muted); font-size:0.7rem; margin-left:5px">(${item.size})</span>
           </div>
-          <div style="display:flex; align-items:center; gap:10px">
-            <span style="font-weight:800; color:var(--primary)">₹${item.price}</span>
-            <button onclick="removeFromBasket(${idx})" style="background:none; border:none; color:#ef4444; font-size:1rem; cursor:pointer">&times;</button>
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0">
+            <button onclick="changeBasketQty(${idx}, -1)" style="background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); cursor:pointer; width:26px; height:26px; border-radius:8px; font-size:0.9rem; display:flex; align-items:center; justify-content:center; font-weight:800">−</button>
+            <span style="font-weight:800; min-width:18px; text-align:center; font-size:0.8rem">${item.qty || 1}</span>
+            <button onclick="changeBasketQty(${idx}, 1)" style="background:rgba(255,107,0,0.1); border:1px solid rgba(255,107,0,0.2); color:var(--primary); cursor:pointer; width:26px; height:26px; border-radius:8px; font-size:0.9rem; display:flex; align-items:center; justify-content:center; font-weight:800">+</button>
+            <span style="font-weight:800; color:var(--primary); min-width:50px; text-align:right">₹${item.price * (item.qty || 1)}</span>
           </div>
         </div>
       `).join('');
@@ -1877,14 +2592,39 @@
 
     function removeFromBasket(idx) {
       currentBillItems.splice(idx, 1);
-      updateBillTotal();
+      updatePosTotal();
       renderBasket();
     }
 
-    function updateBillTotal() {
-      const total = currentBillItems.reduce((sum, i) => sum + i.price, 0);
-      document.getElementById('billTotalBox').innerText = `Total: ₹${total}`;
+    function updatePosTotal() {
+      const subtotal = currentBillItems.reduce((sum, i) => sum + (i.price * (i.qty || 1)), 0);
+      const discVal = parseFloat(document.getElementById('posDiscountValue')?.value) || 0;
+      let discount = 0;
+      if (discVal > 0) {
+        discount = posDiscountMode === 'percent' ? Math.round(subtotal * discVal / 100) : discVal;
+      }
+      const total = Math.max(0, subtotal - discount);
+      
+      document.getElementById('billTotalBox').innerText = `₹${total}`;
+      
+      const discLine = document.getElementById('posDiscountLine');
+      const discDisp = document.getElementById('posDiscountDisplay');
+      if (discLine && discDisp) {
+        if (discount > 0) {
+          discLine.style.display = 'block';
+          discDisp.innerText = posDiscountMode === 'percent' ? `${discVal}% (−₹${discount})` : `₹${discount}`;
+        } else {
+          discLine.style.display = 'none';
+        }
+      }
+      
+      const itemCount = currentBillItems.reduce((sum, i) => sum + (i.qty || 1), 0);
+      const countEl = document.getElementById('posItemCount');
+      if (countEl) countEl.innerText = `${itemCount} item${itemCount !== 1 ? 's' : ''}`;
     }
+
+    // Keep legacy alias
+    function updateBillTotal() { updatePosTotal(); }
 
     function generateUUID() {
       if (self.crypto && self.crypto.randomUUID) {
@@ -1899,8 +2639,27 @@
     async function saveBill() {
       if (currentBillItems.length === 0) return alert('Bill is empty!');
       const phone = document.getElementById('customerPhone').value || 'N/A';
+      const customerName = document.getElementById('posCustomerName')?.value?.trim() || 'Walk-in';
       const paymentMethod = document.getElementById('billPaymentMethod').value || 'Cash';
-      const total = currentBillItems.reduce((sum, i) => sum + i.price, 0);
+      const notes = document.getElementById('posOrderNotes')?.value?.trim() || '';
+      const tableNumber = document.getElementById('posTableNumber')?.value?.trim() || '';
+      
+      // Calculate total with discount
+      const subtotal = currentBillItems.reduce((sum, i) => sum + (i.price * (i.qty || 1)), 0);
+      const discVal = parseFloat(document.getElementById('posDiscountValue')?.value) || 0;
+      let discount = 0;
+      if (discVal > 0) {
+        discount = posDiscountMode === 'percent' ? Math.round(subtotal * discVal / 100) : discVal;
+      }
+      const total = Math.max(0, subtotal - discount);
+
+      // Expand items for storage (flatten qty)
+      const expandedItems = [];
+      currentBillItems.forEach(item => {
+        for (let q = 0; q < (item.qty || 1); q++) {
+          expandedItems.push({ id: item.id, name: item.name, size: item.size, price: item.price });
+        }
+      });
 
       if (paymentMethod === 'UPI') {
         const storeUpi = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
@@ -1925,25 +2684,29 @@
 
         document.getElementById('upiPaidBtn').onclick = async () => {
           closeModal('upiPayModal');
-          await finalizeBill(phone, paymentMethod, total, currentBillItems);
+          await finalizeBill(customerName, phone, paymentMethod, total, expandedItems, notes, tableNumber, discount);
         };
         document.getElementById('upiPayModal').style.display = 'flex';
       } else {
-        await finalizeBill(phone, paymentMethod, total, currentBillItems);
+        await finalizeBill(customerName, phone, paymentMethod, total, expandedItems, notes, tableNumber, discount);
       }
     }
 
-    async function finalizeBill(phone, paymentMethod, total, items) {
+    async function finalizeBill(customerName, phone, paymentMethod, total, items, notes, tableNumber, discount) {
       const uid = generateUUID();
       const billData = {
         id: uid,
         client_uuid: uid,
-        customer_name: 'Walk-in',
+        customer_name: customerName,
         customer_phone: phone,
         total_amount: total,
         items: JSON.stringify(items),
         payment_status: 'paid',
         payment_method: paymentMethod,
+        order_type: posOrderType,
+        notes: notes || '',
+        table_number: tableNumber || '',
+        discount_amount: discount || 0,
         created_at: new Date().toISOString(),
         sync_status: 'pending'
       };
@@ -1981,10 +2744,14 @@
 
     function renderBilling(bills) {
       const body = document.getElementById('billingBody');
+      const currency = window.storeSettings?.currency_symbol || '₹';
       body.innerHTML = bills.map((b, idx) => {
         const isVoided = b.payment_status === 'voided';
         const methodMap = { Cash: '💵 Cash', UPI: '📱 UPI', Card: '💳 Card' };
         const methodStr = methodMap[b.payment_method || 'Cash'] || '💵 Cash';
+        const orderTypeMap = { 'dine-in': '🍽️', 'takeaway': '🥡', 'delivery': '🛵' };
+        const typeIcon = orderTypeMap[b.order_type] || '🍽️';
+        const custName = b.customer_name || 'Walk-in';
         return `
         <div class="order-card" style="position:relative; overflow:hidden; ${isVoided ? 'opacity:0.6; filter:grayscale(1)' : ''}">
           ${isVoided ? `
@@ -1993,15 +2760,21 @@
             </div>
           ` : ''}
           <div class="order-header">
-            <div class="order-id">₹${b.total_amount} <span style="font-size:0.7rem; font-weight:normal; color:var(--muted); margin-left:6px">${methodStr}</span></div>
+            <div class="order-id">${currency}${b.total_amount} <span style="font-size:0.7rem; font-weight:normal; color:var(--muted); margin-left:6px">${methodStr}</span></div>
             <div class="status-badge ${b.sync_status === 'synced' ? 'badge-completed' : 'badge-warning'}">
               ${b.sync_status === 'synced' ? 'SYNCED' : 'OFFLINE'}
             </div>
           </div>
-          <div style="font-size:0.75rem; color:var(--muted); margin-bottom:10px">
-            ${new Date(b.created_at).toLocaleString()}
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text)">${custName}${b.customer_phone && b.customer_phone !== 'N/A' ? ` · <span style="color:var(--muted); font-weight:400">${b.customer_phone}</span>` : ''}</div>
+            <div style="font-size:0.65rem; font-weight:700; color:var(--muted); background:rgba(255,255,255,0.03); padding:3px 8px; border-radius:6px; border:1px solid var(--border)">${typeIcon} ${(b.order_type || 'dine-in').replace('-',' ')}</div>
           </div>
-          <div style="margin-top:10px; font-size:0.8rem; color:rgba(255,255,255,0.7)">
+          <div style="font-size:0.75rem; color:var(--muted); margin-bottom:6px">
+            ${new Date(b.created_at).toLocaleString()}${b.table_number ? ` · Table ${b.table_number}` : ''}
+          </div>
+          ${b.discount_amount > 0 ? `<div style="font-size:0.7rem; color:#22c55e; font-weight:600; margin-bottom:4px">Discount: −${currency}${b.discount_amount}</div>` : ''}
+          ${b.notes ? `<div style="font-size:0.7rem; color:var(--muted); font-style:italic; margin-bottom:4px">📝 ${b.notes}</div>` : ''}
+          <div style="margin-top:6px; font-size:0.8rem; color:rgba(255,255,255,0.7)">
             ${JSON.parse(b.items || '[]').map(i => `${i.name} (${i.size})`).join(', ')}
           </div>
           <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; ${isVoided ? 'pointer-events:none; opacity:0.3' : ''}">
@@ -2697,10 +3470,15 @@
           const { error } = await supabaseClient.from('bills').upsert([{
             id: bill.id,
             customer_name: bill.customer_name,
+            customer_phone: bill.customer_phone || null,
             total_amount: bill.total_amount,
             items: bill.items,
             payment_status: bill.payment_status,
             payment_method: bill.payment_method || 'Cash',
+            order_type: bill.order_type || 'dine-in',
+            notes: bill.notes || '',
+            table_number: bill.table_number || '',
+            discount_amount: bill.discount_amount || 0,
             created_at: bill.created_at
           }]);
           
@@ -2730,11 +3508,13 @@
 
     async function shareReceipt(bill) {
       const items = JSON.parse(bill.items || '[]');
-      const text = `Grill & Chill Receipt\nTotal: ₹${bill.total_amount}\nItems: ${items.map(i => i.name).join(', ')}`;
+      const storeName = window.storeSettings?.store_name || 'Grill & Chill';
+      const currency = window.storeSettings?.currency_symbol || '₹';
+      const text = `${storeName} Receipt\nTotal: ${currency}${bill.total_amount}\nItems: ${items.map(i => i.name).join(', ')}`;
       
       if (navigator.share) {
         try {
-          await navigator.share({ title: 'Grill & Chill Receipt', text: text });
+          await navigator.share({ title: `${storeName} Receipt`, text: text });
         } catch (err) {}
       } else {
         await navigator.clipboard.writeText(text);
@@ -2773,6 +3553,15 @@
       const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
       const billId = bill.id ? `#${String(bill.id).slice(0, 8).toUpperCase()}` : '#N/A';
 
+      const s = window.storeSettings || {};
+      const storeName = (s.store_name || 'Grill & Chill').toUpperCase();
+      const storeTagline = s.store_tagline || 'Pizzeria & Bakery';
+      const storeAddress = s.store_address || 'Raikot Road, Sandhaur, Malerkotla';
+      const storePhone = s.store_phone || '79019 94174';
+      const currency = s.currency_symbol || '₹';
+      const receiptFooter = s.receipt_footer || 'Thank you! Visit again.';
+      const receiptUrl = s.receipt_url || 'grillandchillpizzeria.juvaid.in';
+
       const grouped = {};
       items.forEach(item => {
         const key = `${item.name}|${item.size || ''}`;
@@ -2784,42 +3573,48 @@
       });
 
       let text = '';
-      text += '      GRILL & CHILL      \n';
-      text += '    Pizzeria & Bakery    \n';
-      text += '  Raikot Road, Sandhaur  \n';
-      text += 'Adj. HDFC Bank, Malerkotla\n';
-      text += '     Ph: 79019 94174     \n';
+      text += `      ${storeName}      \n`;
+      text += `    ${storeTagline}    \n`;
+      text += `  ${storeAddress}  \n`;
+      text += `     Ph: ${storePhone}     \n`;
       text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
       text += padLine(`Bill ${billId}`, timeStr) + '\n';
       text += `Date: ${dateStr}\n`;
+      if (bill.order_type) text += `Type: ${bill.order_type}${bill.table_number ? ` | Table: ${bill.table_number}` : ''}\n`;
       text += '────────────────────────────────\n';
       
       Object.values(grouped).forEach(item => {
         const qty = item.qty;
         const nameWithSize = item.size ? `${item.name} (${item.size})` : item.name;
         const label = `${qty}x ${nameWithSize}`;
-        const priceStr = `Rs.${item.totalPrice}`;
+        const priceStr = `${currency}${item.totalPrice}`;
         text += padLine(label, priceStr) + '\n';
       });
       
       text += '────────────────────────────────\n';
-      text += padLine('TOTAL', `Rs.${bill.total_amount}`) + '\n';
+      if (bill.discount_amount > 0) {
+        text += padLine('Discount', `-${currency}${bill.discount_amount}`) + '\n';
+      }
+      text += padLine('TOTAL', `${currency}${bill.total_amount}`) + '\n';
       text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
       
-      if (bill.customer_phone && bill.customer_phone !== 'N/A') {
-        text += `Customer: ${bill.customer_phone}\n`;
-      }
       if (bill.customer_name && bill.customer_name !== 'Walk-in') {
         text += `Name: ${bill.customer_name}\n`;
+      }
+      if (bill.customer_phone && bill.customer_phone !== 'N/A') {
+        text += `Phone: ${bill.customer_phone}\n`;
       }
       if (bill.payment_method) {
         text += `Payment: ${bill.payment_method}\n`;
       }
+      if (bill.notes) {
+        text += `Note: ${bill.notes}\n`;
+      }
       
       text += 'All prices inclusive of taxes\n';
       text += '────────────────────────────────\n';
-      text += '    Thank you! Visit again.    \n';
-      text += 'grillandchillpizzeria.juvaid.in\n';
+      text += `    ${receiptFooter}    \n`;
+      text += `${receiptUrl}\n`;
       
       return text;
     }
@@ -2951,6 +3746,19 @@
       const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
       const billId = bill.id ? `#${String(bill.id).slice(0, 8).toUpperCase()}` : '#N/A';
 
+      // Pull from settings with fallbacks
+      const s = window.storeSettings || {};
+      const storeName = (s.store_name || 'Grill & Chill').toUpperCase();
+      const storeTagline = s.store_tagline || 'Pizzeria & Bakery';
+      const storeAddress = s.store_address || 'Raikot Rd, Sandhaur | Malerkotla';
+      const storePhone = s.store_phone || '79019 94174';
+      const currency = s.currency_symbol || '₹';
+      const receiptFooter = s.receipt_footer || 'Thank you! Visit again.';
+      const receiptUrl = s.receipt_url || 'grillandchillpizzeria.juvaid.in';
+      const logoUrl = s.logo_url || '';
+      const showLogo = s.receipt_logo !== 'false';
+      const storeWebsite = s.store_website || 'https://grillandchillpizzeria.juvaid.in';
+
       const grouped = {};
       items.forEach(item => {
         const key = `${item.name}|${item.size || ''}`;
@@ -2961,15 +3769,20 @@
         grouped[key].totalPrice += Number(item.price) * (item.quantity || 1);
       });
 
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent('https://grillandchillpizzeria.juvaid.in')}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(storeWebsite)}`;
       
+      const orderTypeMap = { 'dine-in': 'Dine-in', 'takeaway': 'Takeaway', 'delivery': 'Delivery' };
+      const orderTypeStr = orderTypeMap[bill.order_type] || '';
+      const custName = bill.customer_name && bill.customer_name !== 'Walk-in' ? bill.customer_name : '';
+
       const receiptContentHtml = `
         <div class="center">
-          <div class="store-name">GRILL & CHILL</div>
-          <div class="store-tagline">Pizzeria & Bakery</div>
+          ${(showLogo && logoUrl) ? `<img src="${logoUrl}" class="store-logo" alt="Logo" onerror="this.style.display='none'">` : ''}
+          <div class="store-name">${storeName}</div>
+          <div class="store-tagline">${storeTagline}</div>
           <div class="store-address">
-            Raikot Rd, Sandhaur | Malerkotla<br>
-            Ph: 79019 94174
+            ${storeAddress.replace(/\n/g, '<br>')}<br>
+            Ph: ${storePhone}
           </div>
         </div>
 
@@ -2979,6 +3792,8 @@
           <span class="bold">Bill ${billId}</span>
           <span>${dateStr} ${timeStr}</span>
         </div>
+        ${orderTypeStr ? `<div class="bill-info"><span>Type: ${orderTypeStr}</span>${bill.table_number ? `<span>Table: ${bill.table_number}</span>` : ''}</div>` : ''}
+        ${custName ? `<div class="customer-info">Customer: ${custName}</div>` : ''}
 
         <hr class="separator">
 
@@ -2988,7 +3803,7 @@
             return `
               <div class="item-row">
                 <span class="item-name">${item.qty}x ${nameWithSize}</span>
-                <span class="item-price">₹${item.totalPrice}</span>
+                <span class="item-price">${currency}${item.totalPrice}</span>
               </div>
             `;
           }).join('')}
@@ -2996,22 +3811,35 @@
 
         <hr class="separator">
 
+        ${bill.discount_amount > 0 ? `
+          <div class="item-row">
+            <span class="item-name">Subtotal</span>
+            <span class="item-price">${currency}${bill.total_amount + bill.discount_amount}</span>
+          </div>
+          <div class="item-row">
+            <span class="item-name" style="color:#22c55e">Discount</span>
+            <span class="item-price" style="color:#22c55e">-${currency}${bill.discount_amount}</span>
+          </div>
+          <hr class="separator">
+        ` : ''}
+
         <div class="total-row">
           <span>TOTAL</span>
-          <span>₹${bill.total_amount}</span>
+          <span>${currency}${bill.total_amount}</span>
         </div>
 
         <hr class="double-separator">
 
-        ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `<div class="customer-info">Customer: ${bill.customer_phone}</div>` : ''}
+        ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `<div class="customer-info">Phone: ${bill.customer_phone}</div>` : ''}
         ${(bill.payment_method) ? `<div class="customer-info">Payment: ${bill.payment_method}</div>` : ''}
+        ${bill.notes ? `<div class="customer-info">Note: ${bill.notes}</div>` : ''}
 
         <div class="tax-note">Prices inclusive of taxes</div>
 
         <hr class="separator">
 
         <div class="footer">
-          <div class="footer-thanks">Thank you! Visit again.</div>
+          <div class="footer-thanks">${receiptFooter}</div>
           <div class="footer-url" style="margin-top:2px;font-weight:bold">Order Online &bull; Free Delivery</div>
           <div class="qr-container" style="position: relative; display: inline-block; margin: 4px auto;">
             <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'" style="margin: 0 !important;">
@@ -3021,7 +3849,7 @@
               </button>
             ` : ''}
           </div>
-          <div class="footer-url">grillandchillpizzeria.juvaid.in</div>
+          <div class="footer-url">${receiptUrl}</div>
         </div>
       `;
 

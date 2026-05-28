@@ -1006,10 +1006,54 @@ async function init(){
   try {
     const { data } = await supabaseClient.from('store_settings').select('*');
     if (data) {
-      const upiRow = data.find(r => r.key === 'upi_id');
-      const merchantRow = data.find(r => r.key === 'merchant_name');
-      if (upiRow) STORE_UPI = upiRow.value;
-      if (merchantRow) STORE_MERCHANT_NAME = merchantRow.value;
+      const settings = {};
+      data.forEach(r => { settings[r.key] = r.value; });
+      
+      // UPI & Merchant
+      if (settings.upi_id) STORE_UPI = settings.upi_id;
+      if (settings.merchant_name) STORE_MERCHANT_NAME = settings.merchant_name;
+      
+      // Store name & tagline
+      if (settings.store_name) {
+        const heroLogo = document.querySelector('.logo');
+        if (heroLogo) heroLogo.textContent = settings.store_name.toUpperCase();
+        document.title = `${settings.store_name} | Order Online`;
+      }
+      if (settings.store_tagline) {
+        const tagline = document.querySelector('.tagline');
+        if (tagline) tagline.textContent = settings.store_tagline;
+      }
+      
+      // Brand color — apply as CSS variable
+      if (settings.brand_color) {
+        document.documentElement.style.setProperty('--accent', settings.brand_color);
+      }
+      
+      // Open/Closed status
+      if (settings.store_open === 'false') {
+        const openBadge = document.querySelector('.open-badge');
+        if (openBadge) {
+          openBadge.innerHTML = '<span style="width:8px;height:8px;background:#ef4444;border-radius:50%;"></span> CLOSED';
+          openBadge.style.borderColor = 'rgba(239,68,68,0.4)';
+        }
+      }
+      
+      // WhatsApp CTA link
+      if (settings.whatsapp_number) {
+        const mainCta = document.getElementById('mainCta');
+        if (mainCta) mainCta.href = `https://wa.me/${settings.whatsapp_number}`;
+      }
+      
+      // Announcement bar
+      if (settings.announcement) {
+        const ticker = document.querySelector('.announcement-ticker');
+        if (ticker) ticker.textContent = settings.announcement;
+      }
+      
+      // Store delivery fee for checkout
+      window.STORE_DELIVERY_FEE = parseFloat(settings.delivery_fee) || 0;
+      window.STORE_FREE_DELIVERY_ABOVE = parseFloat(settings.free_delivery_above) || 0;
+      window.STORE_MIN_ORDER = parseFloat(settings.min_order) || 0;
     }
   } catch (e) { console.warn("Failed to fetch store settings", e); }
   
