@@ -12,6 +12,10 @@
   <script src="env.js"></script>
   <style>
     .no-print { display: none !important; }
+    /* iOS AirPrint: hide BLE button on iOS, show AirPrint share button */
+    .ios-only { display: none !important; }
+    .ios-device .ios-only { display: flex !important; }
+    .ios-device .hide-on-ios { display: none !important; }
     :root {
       --primary: #ff6b00;
       --secondary: #ff8c00;
@@ -1292,9 +1296,14 @@
       <div style="display:flex; flex-direction:column; gap:10px">
         <!-- Main row for printing -->
         <div style="display:flex; gap:10px">
-          <!-- Web Bluetooth Direct Print -->
-          <button id="btnDirectBtPrint" class="btn-primary" style="flex:1.2; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; font-size:0.75rem; font-weight:800;">
+          <!-- Web Bluetooth Direct Print (hidden on iOS) -->
+          <button id="btnDirectBtPrint" class="btn-primary hide-on-ios" style="flex:1.2; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; font-size:0.75rem; font-weight:800;">
             <i data-lucide="bluetooth" style="width:16px"></i> BLE PRINT
+          </button>
+
+          <!-- AirPrint Share button (iOS only) -->
+          <button id="btnAirPrint" class="btn-primary ios-only" style="flex:1.2; align-items:center; justify-content:center; gap:8px; padding:12px; font-size:0.75rem; font-weight:800; background:linear-gradient(135deg,#555,#333); border-color:#666;">
+            <i data-lucide="share" style="width:16px"></i> AIRPRINT
           </button>
           
           <!-- Standard Print (using browser print) -->
@@ -3734,7 +3743,37 @@
       }
     }
 
+    // Detect iOS/iPadOS
+    const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (isIOS) {
+      document.documentElement.classList.add('ios-device');
+    }
+
     function printElementViaIframe(htmlContent) {
+      // iOS Safari blocks iframe.contentWindow.print() — use a popup window instead
+      if (isIOS) {
+        // On iOS, open the receipt in a new tab so the user can long-press → Print
+        // or use the share sheet. A direct popup window.print() works in Safari.
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        const win = window.open(blobUrl, '_blank');
+        if (win) {
+          win.onload = () => {
+            setTimeout(() => {
+              win.print();
+              URL.revokeObjectURL(blobUrl);
+            }, 600);
+          };
+        } else {
+          // Popup blocked — fall back to share sheet
+          showToast('Pop-up blocked. Use SHARE → Print instead.', true);
+        }
+        return;
+      }
+
+      // Desktop / Android: use hidden iframe
       let iframe = document.getElementById('printIframe');
       if (iframe) iframe.remove();
       
@@ -3756,6 +3795,30 @@
       setTimeout(() => {
         iframe.contentWindow.print();
       }, 500);
+    }
+
+    // AirPrint via Share Sheet (iOS only)
+    async function airPrintViaShare(htmlContent, billId) {
+      try {
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const file = new File([blob], `receipt-${billId}.html`, { type: 'text/html' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: `Receipt ${billId}` });
+        } else if (navigator.share) {
+          // Fallback: share the blob URL as a link
+          const blobUrl = URL.createObjectURL(blob);
+          await navigator.share({ title: `Receipt ${billId}`, url: blobUrl });
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        } else {
+          // Last resort: open in new tab
+          const blobUrl = URL.createObjectURL(blob);
+          window.open(blobUrl, '_blank');
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          showToast('Could not open share sheet: ' + err.message, true);
+        }
+      }
     }
 
     function generateReceiptText(bill) {
@@ -4198,11 +4261,23 @@
       `;
 
       if (btnDirectBLE) {
-        btnDirectBLE.onclick = () => printDirectlyViaBluetooth(bill);
+        if (isIOS) {
+          // Web Bluetooth is not supported on iOS at all
+          btnDirectBLE.onclick = () => showToast('Bluetooth printing is not supported on iPhone/iPad. Use PRINT or AirPrint. 🍎', true);
+        } else {
+          btnDirectBLE.onclick = () => printDirectlyViaBluetooth(bill);
+        }
       }
       if (btnBrowser) {
         btnBrowser.onclick = () => printElementViaIframe(printIframeHtml);
       }
+
+      // iOS AirPrint share button
+      const btnAirPrint = document.getElementById('btnAirPrint');
+      if (btnAirPrint) {
+        btnAirPrint.onclick = () => airPrintViaShare(printIframeHtml, billId);
+      }
+
       if (btnApp) {
         btnApp.onclick = () => printBluetooth(bill);
       }
