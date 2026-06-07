@@ -181,6 +181,189 @@
 
     .hidden { display: none; }
 
+    /* POS Full Screen Overlay & Layout */
+    #quickBillModal {
+      padding: 0 !important;
+      background: #0a0a0c !important;
+      align-items: stretch !important;
+      justify-content: stretch !important;
+      backdrop-filter: none !important;
+    }
+    #quickBillModal .modal-content {
+      width: 100vw !important;
+      max-width: 100vw !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+      margin: 0 !important;
+      padding: 20px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      background: #0a0a0c !important;
+    }
+
+    #posCategories {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    #posCategories::-webkit-scrollbar {
+      display: none;
+    }
+
+    #posItems {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+      grid-auto-rows: max-content !important;
+      gap: 12px !important;
+      align-content: start !important;
+    }
+    @media (max-width: 600px) {
+      #posItems {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+        gap: 8px !important;
+        padding: 8px !important;
+      }
+    }
+
+    .pos-item-card {
+      background: rgba(255, 255, 255, 0.02) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 16px !important;
+      padding: 12px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      transition: all 0.2s ease-in-out !important;
+      cursor: pointer !important;
+      position: relative !important;
+      overflow: hidden !important;
+    }
+    .pos-item-card:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(255, 107, 0, 0.3) !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
+    }
+
+    .pos-size-btn {
+      flex: 1;
+      min-width: calc(33.33% - 4px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 4px;
+      background: rgba(255, 107, 0, 0.06);
+      border: 1px solid rgba(255, 107, 0, 0.15);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      font-family: inherit;
+    }
+    .pos-size-btn:hover {
+      background: var(--primary) !important;
+      color: white !important;
+      border-color: var(--primary) !important;
+    }
+    .pos-size-btn:hover .pos-size-price {
+      color: white !important;
+    }
+    .pos-size-name {
+      font-size: 0.6rem;
+      font-weight: 700;
+      opacity: 0.75;
+      text-transform: uppercase;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      max-width: 100%;
+    }
+    .pos-size-price {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 2px;
+      transition: color 0.15s ease-in-out;
+    }
+
+    /* POS Split Layout Styles */
+    .pos-main-layout {
+      display: flex;
+      flex: 1;
+      gap: 20px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .pos-left-panel {
+      flex: 1.6;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .pos-right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: rgba(255,255,255,0.01);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+    }
+    .pos-cat-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--glass);
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .pos-cat-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(255,107,0,0.15);
+    }
+    .pos-cat-btn:hover:not(.active) {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+    }
+    @media (max-width: 900px) {
+      .pos-main-layout {
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .pos-left-panel, .pos-right-panel {
+        flex: 1 !important;
+        overflow: hidden !important;
+      }
+      .pos-mobile-tabs {
+        display: flex !important;
+      }
+      .pos-left-panel {
+        display: flex !important;
+      }
+      .pos-right-panel {
+        display: none !important;
+        margin-top: 0 !important;
+        background: rgba(0,0,0,0.2) !important;
+        border: none !important;
+      }
+    }
+
     /* Home Buttons */
     .home-link {
       display: inline-block;
@@ -334,22 +517,8 @@
       #dashboard {
         margin-left: 220px;
       }
-      header {
-        margin-left: 220px;
-      }
       .container {
         padding-bottom: 40px;
-      }
-
-      /* POS Modal: Two-column layout on desktop */
-      #quickBillModal .modal-content {
-        max-width: 900px !important;
-        width: 900px !important;
-        height: auto !important;
-        max-height: 92vh !important;
-        border-radius: 24px !important;
-        margin: auto;
-        border: 1px solid var(--border);
       }
     }
 
@@ -455,8 +624,7 @@
         gap: 10px !important;
       }
 
-      /* POS modal full-screen on mobile (keep current behavior) */
-      #quickBillModal .modal-content,
+      /* Product modal full-screen on mobile */
       #productModal .modal-content {
         border-radius: 0 !important;
         max-width: 100% !important;
@@ -516,17 +684,6 @@
         max-width: 720px;
         margin: 0 auto;
         padding-bottom: 100px;
-      }
-
-      /* POS modal: centered card on tablet */
-      #quickBillModal .modal-content {
-        max-width: 600px !important;
-        width: 600px !important;
-        height: auto !important;
-        max-height: 92vh !important;
-        border-radius: 24px !important;
-        margin: auto;
-        border: 1px solid var(--border);
       }
 
       /* Product modal: centered on tablet */
@@ -710,33 +867,33 @@
           <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🎨 Branding & Identity</div>
           <div class="form-group">
             <label class="form-label">Store Name</label>
-            <input type="text" id="set_store_name" class="auth-input" placeholder="e.g. Grill & Chill">
+            <input type="text" id="set_store_name" class="auth-input" placeholder="e.g. Grill & Chill" value="Grill & Chill">
           </div>
           <div class="form-group">
             <label class="form-label">Store Tagline</label>
-            <input type="text" id="set_store_tagline" class="auth-input" placeholder="e.g. Pizzeria & Bakery">
+            <input type="text" id="set_store_tagline" class="auth-input" placeholder="e.g. Pizzeria & Bakery" value="Authentic Wood-Fired Pizzeria & Restaurant">
           </div>
           <div class="form-group">
             <label class="form-label">Store Address</label>
-            <textarea id="set_store_address" class="auth-input" placeholder="e.g. Raikot Road, Sandhaur, Malerkotla" style="height:70px; resize:vertical; font-family:inherit"></textarea>
+            <textarea id="set_store_address" class="auth-input" placeholder="e.g. Raikot Road, Sandhaur, Malerkotla" style="height:70px; resize:vertical; font-family:inherit">Raikot Road, Sandhaur, Malerkotla</textarea>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
             <div class="form-group">
               <label class="form-label">Store Phone</label>
-              <input type="tel" id="set_store_phone" class="auth-input" placeholder="e.g. 79019 94174">
+              <input type="tel" id="set_store_phone" class="auth-input" placeholder="e.g. 79019 94174" value="79019 94174">
             </div>
             <div class="form-group">
               <label class="form-label">Currency Symbol</label>
-              <input type="text" id="set_currency_symbol" class="auth-input" placeholder="₹" maxlength="3" style="text-align:center; font-size:1.2rem">
+              <input type="text" id="set_currency_symbol" class="auth-input" placeholder="₹" value="₹" maxlength="3" style="text-align:center; font-size:1.2rem">
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Store Website URL</label>
-            <input type="url" id="set_store_website" class="auth-input" placeholder="https://yourstore.com">
+            <input type="url" id="set_store_website" class="auth-input" placeholder="https://yourstore.com" value="https://grillandchillpizzeria.juvaid.in">
           </div>
           <div class="form-group">
             <label class="form-label">Logo URL <span style="color:var(--muted); font-weight:400; font-size:0.7rem">(paste a hosted image link)</span></label>
-            <input type="url" id="set_logo_url" class="auth-input" placeholder="https://..." oninput="previewSettingsLogo(this.value)">
+            <input type="url" id="set_logo_url" class="auth-input" placeholder="https://..." value="https://grillandchillpizzeria.juvaid.in/assets/logo-receipt-bw.png" oninput="previewSettingsLogo(this.value)">
             <img id="settingsLogoPreview" style="width:60px; height:60px; object-fit:contain; margin-top:10px; border-radius:12px; background:var(--glass); border:1px solid var(--border); display:none">
           </div>
           <div class="form-group">
@@ -753,17 +910,17 @@
           <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">💳 Payment & Billing</div>
           <div class="form-group">
             <label class="form-label">UPI ID (for QR Payments)</label>
-            <input type="text" id="set_upi_id" class="auth-input" placeholder="e.g. storename@okaxis">
+            <input type="text" id="set_upi_id" class="auth-input" placeholder="e.g. storename@okaxis" value="paytm.slux68h@pty">
           </div>
           <div class="form-group">
             <label class="form-label">Merchant Name (shown on UPI)</label>
-            <input type="text" id="set_merchant_name" class="auth-input" placeholder="e.g. Grill & Chill">
+            <input type="text" id="set_merchant_name" class="auth-input" placeholder="e.g. Grill & Chill" value="Grill & Chill">
           </div>
           <div class="form-group">
             <label class="form-label">Default Payment Method</label>
             <select id="set_default_payment" class="auth-input">
               <option value="Cash">💵 Cash</option>
-              <option value="UPI">📱 UPI</option>
+              <option value="UPI" selected>📱 UPI</option>
               <option value="Card">💳 Card</option>
             </select>
           </div>
@@ -808,7 +965,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">WhatsApp Number (for order notifications)</label>
-            <input type="tel" id="set_whatsapp_number" class="auth-input" placeholder="e.g. 917901994174">
+            <input type="tel" id="set_whatsapp_number" class="auth-input" placeholder="e.g. 917901994174" value="917901994174">
           </div>
           <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border)">
             <div>
@@ -822,8 +979,18 @@
           </div>
           <div class="form-group">
             <label class="form-label">Refreshments Recommendations (Comma-separated Menu Item Names)</label>
-            <input type="text" id="set_refreshment_items" class="auth-input" placeholder="e.g. Cold Coffee, Oreo Shake, Pepsi">
+            <input type="text" id="set_refreshment_items" class="auth-input" placeholder="e.g. Cold Coffee, Oreo Shake, Pepsi" value="Cold Coffee, Chocolate Shake, Pepsi">
             <div style="font-size:0.7rem; color:var(--muted); margin-top:4px">These items will appear as recommendations in the customer checkout cart.</div>
+          </div>
+
+          <!-- Location Stats (moved to Ordering sub-tab) -->
+          <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px;">
+            <div class="section-header">
+              <h3 class="section-title">Customer Order Locations (Stats)</h3>
+            </div>
+            <div id="locationStatsList" style="display: flex; flex-direction: column; gap: 15px;">
+              <!-- Location stats will be rendered here dynamically -->
+            </div>
           </div>
         </div>
 
@@ -878,21 +1045,43 @@
           </div>
           <div class="form-group">
             <label class="form-label">Announcement Bar Text <span style="color:var(--muted); font-weight:400; font-size:0.7rem">(shown as scrolling ticker on menu)</span></label>
-            <textarea id="set_announcement" class="auth-input" placeholder="e.g. 🔥 Free delivery on orders above ₹299! | ⭐ New: Butter Chicken Pizza" style="height:60px; resize:vertical; font-family:inherit"></textarea>
+            <textarea id="set_announcement" class="auth-input" placeholder="e.g. 🔥 Free delivery on orders above ₹299! | ⭐ New: Butter Chicken Pizza" style="height:60px; resize:vertical; font-family:inherit">🛵 FREE HOME DELIVERY ON ALL ORDERS! CALL: 79019 94174 📞</textarea>
           </div>
         </div>
 
         <!-- TAB 5: Receipt & Social -->
         <div id="settingsTab-receipt" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:none; flex-direction:column; gap:15px">
           <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🧾 Receipt & Social</div>
+          
+          <div style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:5px; padding-bottom:5px; border-bottom:1px solid var(--border)">Receipt Header Overrides</div>
+          
           <div class="form-group">
-            <label class="form-label">Receipt Footer Message</label>
-            <input type="text" id="set_receipt_footer" class="auth-input" placeholder="e.g. Thank you! Visit again.">
+            <label class="form-label">Store Name Override <span style="color:var(--muted); font-weight:400; font-size:0.7rem">(leave blank to use main Store Name)</span></label>
+            <input type="text" id="set_receipt_store_name" class="auth-input" placeholder="e.g. GRILL & CHILL (SANDHAUR)" value="GRILL & CHILL (SANDHAUR)">
           </div>
+          
           <div class="form-group">
-            <label class="form-label">Receipt Footer URL</label>
-            <input type="text" id="set_receipt_url" class="auth-input" placeholder="e.g. yourstore.com">
+            <label class="form-label">Store Tagline Override <span style="color:var(--muted); font-weight:400; font-size:0.7rem">(leave blank to use main Store Tagline)</span></label>
+            <input type="text" id="set_receipt_store_tagline" class="auth-input" placeholder="e.g. Premium Pizzas & Fast Food" value="Premium Pizzas & Fast Food">
           </div>
+          
+          <div class="form-group">
+            <label class="form-label">Store Address Override <span style="color:var(--muted); font-weight:400; font-size:0.7rem">(leave blank to use main Store Address)</span></label>
+            <textarea id="set_receipt_store_address" class="auth-input" placeholder="e.g. Raikot Rd, Near Bus Stand, Sandhaur" style="height:60px; resize:vertical; font-family:inherit">Raikot Rd, Near Bus Stand, Sandhaur</textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Store Phone Override <span style="color:var(--muted); font-weight:400; font-size:0.7rem">(leave blank to use main Store Phone)</span></label>
+            <input type="tel" id="set_receipt_store_phone" class="auth-input" placeholder="e.g. 79019 94174" value="79019 94174">
+          </div>
+
+          <div style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:10px; padding-bottom:5px; border-bottom:1px solid var(--border)">Receipt Layout & QR Code</div>
+
+          <div class="form-group">
+            <label class="form-label">QR Code Custom Link <span style="color:var(--muted); font-weight:400; font-size:0.7rem">(defaults to Store Website URL)</span></label>
+            <input type="url" id="set_receipt_qr_url" class="auth-input" placeholder="e.g. Google Review link, Digital Menu URL" value="https://grillandchillpizzeria.juvaid.in">
+          </div>
+          
           <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border)">
             <div>
               <div style="font-weight:700; font-size:0.85rem">Show Logo on Receipt</div>
@@ -903,33 +1092,44 @@
               <span class="slider"></span>
             </label>
           </div>
+
+          <div class="form-group">
+            <label class="form-label">Receipt Tax / Legal Note</label>
+            <input type="text" id="set_receipt_tax_note" class="auth-input" placeholder="e.g. Prices inclusive of taxes" value="Prices inclusive of taxes">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Receipt Footer Message</label>
+            <input type="text" id="set_receipt_footer" class="auth-input" placeholder="e.g. Thank you! Visit again." value="Thank you! Visit again.">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Receipt Footer Subtext / Tagline</label>
+            <input type="text" id="set_receipt_footer_subtext" class="auth-input" placeholder="e.g. Order Online • Free Delivery" value="Order Online • Free Delivery">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Receipt Footer URL Text</label>
+            <input type="text" id="set_receipt_url" class="auth-input" placeholder="e.g. yourstore.com" value="grillandchillpizzeria.juvaid.in">
+          </div>
+
           <div style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:10px; padding-bottom:5px; border-bottom:1px solid var(--border)">Social Links</div>
           <div class="form-group">
             <label class="form-label">Instagram URL</label>
-            <input type="url" id="set_instagram" class="auth-input" placeholder="https://instagram.com/yourstore">
+            <input type="url" id="set_instagram" class="auth-input" placeholder="https://instagram.com/yourstore" value="https://instagram.com/grillandchill">
           </div>
           <div class="form-group">
             <label class="form-label">Facebook URL</label>
-            <input type="url" id="set_facebook" class="auth-input" placeholder="https://facebook.com/yourstore">
+            <input type="url" id="set_facebook" class="auth-input" placeholder="https://facebook.com/yourstore" value="https://facebook.com/grillandchill">
           </div>
           <div class="form-group">
             <label class="form-label">Google Maps URL</label>
-            <input type="url" id="set_google_maps" class="auth-input" placeholder="https://maps.google.com/...">
+            <input type="url" id="set_google_maps" class="auth-input" placeholder="https://maps.google.com/..." value="https://maps.app.goo.gl/HBKW128rAQaijUuM7?g_st=aw">
           </div>
         </div>
 
         <!-- Save Button -->
         <button type="button" onclick="saveAllSettings()" class="btn-primary" style="height:55px; margin-top:15px; font-size:0.95rem; font-weight:900; letter-spacing:1px">💾 SAVE ALL SETTINGS</button>
-
-        <!-- Location Stats (kept from original) -->
-        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px;">
-          <div class="section-header">
-            <h3 class="section-title">Customer Order Locations (Stats)</h3>
-          </div>
-          <div id="locationStatsList" style="display: flex; flex-direction: column; gap: 15px;">
-            <!-- Location stats will be rendered here dynamically -->
-          </div>
-        </div>
       </div>
 
     </div>
@@ -1086,73 +1286,124 @@
   <!-- QUICK BILL MODAL -->
   <div class="modal" id="quickBillModal">
     <div class="modal-content" style="max-width: 100%; width: 100%; height: 100%; border-radius: 0; display: flex; flex-direction: column; padding: 20px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px; padding-top: 10px">
-        <h2 style="margin:0; color:var(--primary)">Quick Bill (POS)</h2>
-        <button onclick="closeQuickBill()" style="background:rgba(255,255,255,0.05); border:1px solid var(--b); color:var(--muted); cursor:pointer; width:40px; height:40px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center">&times;</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px; padding-top: 10px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+        <h2 style="margin:0; color:var(--primary); font-weight:900; letter-spacing:-0.5px; display:flex; align-items:center; gap:8px">⚡ Quick Bill (POS)</h2>
+        <button onclick="closeQuickBill()" style="background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); cursor:pointer; width:40px; height:40px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='var(--muted)';">&times;</button>
       </div>
 
-      <!-- Customer Info Bar -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px">
-        <input type="text" id="posCustomerName" class="auth-input" placeholder="👤 Customer Name" style="margin:0; height:45px; font-size:0.85rem">
-        <input type="tel" id="customerPhone" class="auth-input" placeholder="📱 Phone (Optional)" style="margin:0; height:45px; font-size:0.85rem">
+      <!-- Mobile POS Tabs (visible on mobile only) -->
+      <div class="pos-mobile-tabs" style="display: none; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 10px; width: 100%;">
+        <button type="button" id="posTab-menu-btn" class="pos-mobile-tab active" onclick="switchPosMobileTab('menu')" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--primary); background:rgba(255,107,0,0.12); color:var(--primary); font-size:0.75rem; font-weight:800; cursor:pointer; font-family:inherit;">🍔 Browse Menu</button>
+        <button type="button" id="posTab-cart-btn" class="pos-mobile-tab" onclick="switchPosMobileTab('cart')" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.75rem; font-weight:800; cursor:pointer; font-family:inherit;">🛒 Basket (<span id="posMobileCartCount">0</span>)</button>
       </div>
 
-      <!-- Order Type & Table -->
-      <div style="display:flex; gap:8px; margin-bottom:12px; align-items:center; flex-wrap:wrap">
-        <div style="display:flex; gap:4px; flex:1; min-width:200px">
-          <button type="button" class="order-type-btn active" data-type="dine-in" onclick="selectOrderType('dine-in')" style="flex:1; padding:10px 8px; border-radius:12px; border:1px solid var(--primary); background:rgba(255,107,0,0.12); color:var(--primary); font-size:0.72rem; font-weight:800; cursor:pointer; transition:0.3s; font-family:inherit">🍽️ Dine-in</button>
-          <button type="button" class="order-type-btn" data-type="takeaway" onclick="selectOrderType('takeaway')" style="flex:1; padding:10px 8px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:800; cursor:pointer; transition:0.3s; font-family:inherit">🥡 Takeaway</button>
-          <button type="button" class="order-type-btn" data-type="delivery" onclick="selectOrderType('delivery')" id="posDeliveryBtn" style="flex:1; padding:10px 8px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:800; cursor:pointer; transition:0.3s; font-family:inherit">🛵 Delivery</button>
-        </div>
-        <input type="text" id="posTableNumber" class="auth-input" placeholder="Table #" style="margin:0; height:42px; width:75px; text-align:center; font-size:0.85rem; font-weight:700; display:none">
-      </div>
-
-      <!-- Menu Search -->
-      <div style="margin-bottom:12px">
-        <input type="text" id="posSearch" class="auth-input" placeholder="🔍 Search menu items..." oninput="filterPosItems()" style="margin-bottom:0; height:50px; font-size:0.95rem; padding-left:20px">
-      </div>
-      <div id="posItems" style="flex:1; overflow-y:auto; margin-bottom:12px; background:rgba(0,0,0,0.2); border-radius:20px; padding:10px;"></div>
-      
-      <!-- Basket Section -->
-      <div style="font-size:0.75rem; font-weight:800; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:1.5px; padding-left:5px; display:flex; justify-content:space-between; align-items:center">
-        <span>Current Basket</span>
-        <button type="button" onclick="clearPosBasket()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.65rem; font-weight:700; padding:4px 8px; border-radius:8px; border:1px solid rgba(239,68,68,0.2); font-family:inherit">✕ CLEAR</button>
-      </div>
-      <div id="posBasket" style="max-height:300px; overflow-y:auto; margin-bottom:12px; padding:12px; border:2px dashed var(--b); border-radius:20px; background:rgba(255,255,255,0.02)"></div>
-
-      <!-- Discount Row -->
-      <div style="display:flex; gap:8px; margin-bottom:12px; align-items:center">
-        <span style="font-size:0.7rem; font-weight:700; color:var(--muted); white-space:nowrap">DISCOUNT:</span>
-        <input type="number" id="posDiscountValue" class="auth-input" placeholder="0" min="0" style="margin:0; height:38px; width:80px; text-align:center; font-size:0.85rem; font-weight:700" oninput="updatePosTotal()">
-        <div style="display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border)">
-          <button type="button" class="discount-mode-btn active" data-mode="percent" onclick="setDiscountMode('percent')" style="padding:8px 12px; background:rgba(255,107,0,0.12); border:none; color:var(--primary); font-size:0.8rem; font-weight:800; cursor:pointer; font-family:inherit">%</button>
-          <button type="button" class="discount-mode-btn" data-mode="flat" onclick="setDiscountMode('flat')" style="padding:8px 12px; background:var(--glass); border:none; color:var(--muted); font-size:0.8rem; font-weight:800; cursor:pointer; font-family:inherit">₹</button>
-        </div>
-        <input type="text" id="posOrderNotes" class="auth-input" placeholder="📝 Notes..." style="margin:0; height:38px; flex:1; font-size:0.8rem">
-      </div>
-
-      <!-- Total & Payment -->
-      <div style="padding:15px 20px; background:rgba(255,107,0,0.05); border-radius:20px; margin-bottom:12px; display:flex; flex-direction:column; gap:10px; border:1px solid rgba(255,107,0,0.1)">
-        <div style="display:flex; justify-content:space-between; align-items:center">
-          <div>
-            <span style="font-size:0.7rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Order Total</span>
-            <div id="posDiscountLine" style="font-size:0.65rem; color:#22c55e; font-weight:600; display:none">Discount: <span id="posDiscountDisplay"></span></div>
+      <!-- Main Split Layout -->
+      <div class="pos-main-layout">
+        
+        <!-- LEFT PANEL: Product Explorer (60%) -->
+        <div class="pos-left-panel">
+          <!-- Menu Search -->
+          <div style="margin-bottom: 12px; display: flex; gap: 10px;">
+            <div style="position: relative; flex: 1;">
+              <input type="text" id="posSearch" class="auth-input" placeholder="🔍 Search menu items..." oninput="filterAndSearchPosItems()" style="margin:0; height:46px; font-size:0.9rem; padding-left:15px; border-radius:12px;">
+            </div>
           </div>
-          <div id="billTotalBox" style="font-weight:900; font-size:1.5rem; color:var(--primary); letter-spacing:-0.5px">₹0</div>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px">
-          <div style="display:flex; align-items:center; gap:8px">
-            <span style="font-size:0.7rem; font-weight:700; color:var(--muted)">METHOD:</span>
-            <select id="billPaymentMethod" class="auth-input" style="margin:0; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); font-size:0.8rem; height:36px; width:100px; border-radius:10px; padding:0 8px; color:var(--text); background:#141416;">
-              <option value="Cash">💵 Cash</option>
-              <option value="UPI">📱 UPI</option>
-              <option value="Card" id="posCardOption" style="display:none">💳 Card</option>
-            </select>
+          
+          <!-- Category Tabs -->
+          <div id="posCategories">
+            <!-- Dynamic Category Buttons -->
           </div>
-          <div id="posItemCount" style="font-size:0.7rem; color:var(--muted); font-weight:600">0 items</div>
+          
+          <!-- Items List Container -->
+          <div id="posItems" style="flex: 1; overflow-y: auto; background: rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: 16px; padding: 15px;">
+            <!-- Grid of Cards rendered by renderPosItems() -->
+          </div>
         </div>
+        
+        <!-- RIGHT PANEL: Active Invoice / Cart (40%) -->
+        <div class="pos-right-panel">
+          
+          <!-- Order Type & Customer Details -->
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Customer Details</span>
+              <div id="posItemCount" style="font-size: 0.75rem; color: var(--primary); font-weight: 800; background: rgba(255,107,0,0.1); padding: 2px 8px; border-radius: 6px;">0 items</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <input type="text" id="posCustomerName" class="auth-input" placeholder="👤 Customer Name" style="margin:0; height:38px; font-size:0.8rem; border-radius: 8px;">
+              <input type="tel" id="customerPhone" class="auth-input" placeholder="📱 Phone (Optional)" style="margin:0; height:38px; font-size:0.8rem; border-radius: 8px;">
+            </div>
+            
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <div style="display: flex; gap: 3px; flex: 1;">
+                <button type="button" class="order-type-btn active" data-type="dine-in" onclick="selectOrderType('dine-in')" style="flex: 1; padding: 8px 4px; border-radius: 8px; border: 1px solid var(--primary); background: rgba(255,107,0,0.12); color: var(--primary); font-size: 0.65rem; font-weight: 800; cursor: pointer; font-family: inherit;">🍽️ Dine-in</button>
+                <button type="button" class="order-type-btn" data-type="takeaway" onclick="selectOrderType('takeaway')" style="flex: 1; padding: 8px 4px; border-radius: 8px; border: 1px solid var(--border); background: var(--glass); color: var(--muted); font-size: 0.65rem; font-weight: 800; cursor: pointer; font-family: inherit;">🥡 Takeaway</button>
+                <button type="button" class="order-type-btn" data-type="delivery" onclick="selectOrderType('delivery')" id="posDeliveryBtn" style="flex: 1; padding: 8px 4px; border-radius: 8px; border: 1px solid var(--border); background: var(--glass); color: var(--muted); font-size: 0.65rem; font-weight: 800; cursor: pointer; font-family: inherit;">🛵 Delivery</button>
+              </div>
+              <input type="text" id="posTableNumber" class="auth-input" placeholder="Table #" style="margin:0; height:32px; width:65px; text-align:center; font-size:0.8rem; font-weight:700; display:none; border-radius: 8px;">
+            </div>
+          </div>
+          
+          <!-- Scrollable Itemized Cart -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size:0.75rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Cart Basket</span>
+            <button type="button" onclick="clearPosBasket()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:6px; border:1px solid rgba(239,68,68,0.2); font-family:inherit">✕ CLEAR</button>
+          </div>
+          <div id="posBasket" style="flex: 1; overflow-y: auto; margin-bottom: 12px; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: rgba(0,0,0,0.1);">
+            <div style="text-align:center; color:var(--muted); font-size:0.75rem; padding:20px">Basket is empty</div>
+          </div>
+          
+          <!-- Discount & Notes -->
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; border-top: 1px solid var(--border); padding-top: 12px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span style="font-size:0.7rem; font-weight:700; color:var(--muted); white-space:nowrap">DISCOUNT:</span>
+              <input type="number" id="posDiscountValue" class="auth-input" placeholder="0" min="0" style="margin:0; height:34px; width:70px; text-align:center; font-size:0.8rem; font-weight:700" oninput="updatePosTotal()">
+              <div style="display:flex; border-radius:8px; overflow:hidden; border:1px solid var(--border)">
+                <button type="button" class="discount-mode-btn active" data-mode="percent" onclick="setDiscountMode('percent')" style="padding:6px 10px; background:rgba(255,107,0,0.12); border:none; color:var(--primary); font-size:0.75rem; font-weight:800; cursor:pointer; font-family:inherit">%</button>
+                <button type="button" class="discount-mode-btn" data-mode="flat" onclick="setDiscountMode('flat')" style="padding:6px 10px; background:var(--glass); border:none; color:var(--muted); font-size:0.75rem; font-weight:800; cursor:pointer; font-family:inherit">₹</button>
+              </div>
+            </div>
+            <input type="text" id="posOrderNotes" class="auth-input" placeholder="📝 Order Notes..." style="margin:0; height:34px; font-size:0.75rem; border-radius: 8px;">
+          </div>
+          
+          <!-- Summary Total & Quick Checkout Buttons -->
+          <div style="padding:15px; background:rgba(255,107,0,0.05); border-radius:16px; margin-bottom:12px; display:flex; flex-direction:column; gap:8px; border:1px solid rgba(255,107,0,0.1)">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div>
+                <span style="font-size:0.65rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Order Total</span>
+                <div id="posDiscountLine" style="font-size:0.65rem; color:#22c55e; font-weight:600; display:none">Discount: <span id="posDiscountDisplay"></span></div>
+              </div>
+              <div id="billTotalBox" style="font-weight:900; font-size:1.6rem; color:var(--primary); letter-spacing:-0.5px">₹0</div>
+            </div>
+            <!-- Keep hidden input for compatibility -->
+            <input type="hidden" id="billPaymentMethod" value="Cash">
+          </div>
+          
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <button type="button" class="btn-primary" onclick="saveBillWithPayment('Cash')" style="flex: 1; height: 50px; background: #22c55e; box-shadow: 0 4px 12px rgba(34,197,94,0.2); border-radius: 12px; font-weight: 800; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+              <span style="display: flex; align-items: center; gap: 4px;">💵 CASH</span>
+              <span style="font-size: 0.6rem; opacity: 0.75; font-weight: 600;">[F5]</span>
+            </button>
+            <button type="button" class="btn-primary" onclick="saveBillWithPayment('UPI')" style="flex: 1; height: 50px; background: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.2); border-radius: 12px; font-weight: 800; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+              <span style="display: flex; align-items: center; gap: 4px;">📱 UPI / QR</span>
+              <span style="font-size: 0.6rem; opacity: 0.75; font-weight: 600;">[F6]</span>
+            </button>
+            <button type="button" class="btn-primary" id="posCardBtn" onclick="saveBillWithPayment('Card')" style="display: none; flex: 1; height: 50px; background: #a855f7; box-shadow: 0 4px 12px rgba(168,85,247,0.2); border-radius: 12px; font-weight: 800; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+              <span style="display: flex; align-items: center; gap: 4px;">💳 CARD</span>
+              <span style="font-size: 0.6rem; opacity: 0.75; font-weight: 600;">[F7]</span>
+            </button>
+          </div>
+        </div>
+        
       </div>
-      <button class="btn-primary" onclick="saveBill()" style="height:52px; font-size:0.95rem; letter-spacing:1px; font-weight:900; background:var(--primary); box-shadow: 0 8px 20px rgba(255,107,0,0.2)">GENERATE & SAVE BILL</button>
+
+      <!-- Floating Cart Pill for Mobile only -->
+      <div id="posMobileCartFloatingPill" onclick="switchPosMobileTab('cart')" style="display: none; position: absolute; bottom: 20px; left: 20px; right: 20px; z-index: 2100; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 15px 20px; border-radius: 15px; justify-content: space-between; align-items: center; box-shadow: 0 8px 25px rgba(255,107,0,0.4); cursor: pointer; font-weight: 800; font-size: 0.85rem; transition: 0.2s;">
+        <span>🛒 VIEW BASKET (<span id="posMobileCartCountPill">0</span> items)</span>
+        <span id="posMobileCartTotalPill" style="font-size: 1rem; font-weight: 900;">₹0 ➜</span>
+      </div>
+
     </div>
   </div>
 
@@ -1274,6 +1525,27 @@
         <button id="upiPaidBtn" class="btn-primary" style="flex:1; height: 45px">PAID & COMPLETE</button>
         <button onclick="closeModal('upiPayModal')" class="mini-btn" style="flex:0.6; height: 45px; border-color:var(--border); color:var(--muted)">CANCEL</button>
       </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT METHOD MODAL -->
+  <div class="modal" id="paymentMethodModal" style="z-index: 4500;">
+    <div class="modal-content" style="max-width: 340px; padding: 25px; border-radius: 20px; background: #141416; border: 1px solid var(--border); text-align: center;">
+      <h3 style="margin-top:0; color:var(--primary); font-weight:900; font-size:1.3rem; letter-spacing:-0.5px;">💰 Select Payment</h3>
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom: 20px;" id="payMethodOrderDetails">Billing Order</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <button id="payMethodCashBtn" class="btn-primary" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); color: #22c55e; height: 50px; font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 12px; transition: 0.2s;" onmouseover="this.style.background='rgba(34, 197, 94, 0.15)'" onmouseout="this.style.background='rgba(34, 197, 94, 0.1)'">
+          <span>💵 Cash</span> <kbd style="font-size:0.7rem; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; opacity:0.8; font-family:inherit;">[C]</kbd>
+        </button>
+        <button id="payMethodUpiBtn" class="btn-primary" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #3b82f6; height: 50px; font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 12px; transition: 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.15)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'">
+          <span>📱 UPI / QR</span> <kbd style="font-size:0.7rem; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; opacity:0.8; font-family:inherit;">[U]</kbd>
+        </button>
+      </div>
+      
+      <button id="payMethodCancelBtn" class="mini-btn" style="width: 100%; height: 40px; border-radius: 10px; border-color: var(--border); color: var(--muted); font-weight: 700;">
+        ✕ Cancel <kbd style="font-size:0.65rem; background:rgba(255,255,255,0.05); padding:1px 4px; border-radius:3px; opacity:0.7;">[Esc]</kbd>
+      </button>
     </div>
   </div>
 
@@ -1871,24 +2143,24 @@
     const SETTINGS_MAP = {
       // Branding
       store_name: { el: 'set_store_name', default: 'Grill & Chill' },
-      store_tagline: { el: 'set_store_tagline', default: '' },
-      store_address: { el: 'set_store_address', default: '', type: 'textarea' },
-      store_phone: { el: 'set_store_phone', default: '' },
+      store_tagline: { el: 'set_store_tagline', default: 'Authentic Wood-Fired Pizzeria & Restaurant' },
+      store_address: { el: 'set_store_address', default: 'Raikot Road, Sandhaur, Malerkotla', type: 'textarea' },
+      store_phone: { el: 'set_store_phone', default: '79019 94174' },
       currency_symbol: { el: 'set_currency_symbol', default: '₹' },
-      store_website: { el: 'set_store_website', default: '' },
-      logo_url: { el: 'set_logo_url', default: '' },
+      store_website: { el: 'set_store_website', default: 'https://grillandchillpizzeria.juvaid.in' },
+      logo_url: { el: 'set_logo_url', default: 'https://grillandchillpizzeria.juvaid.in/assets/logo-receipt-bw.png' },
       brand_color: { el: 'set_brand_color', default: '#ff6b00', type: 'color' },
       // Payment
-      upi_id: { el: 'set_upi_id', default: 'juvaidpb13@okaxis' },
+      upi_id: { el: 'set_upi_id', default: 'paytm.slux68h@pty' },
       merchant_name: { el: 'set_merchant_name', default: 'Grill & Chill' },
-      default_payment: { el: 'set_default_payment', default: 'Cash' },
+      default_payment: { el: 'set_default_payment', default: 'UPI' },
       enable_card: { el: 'set_enable_card', default: 'false', type: 'checkbox' },
       // Ordering
       enable_delivery: { el: 'set_enable_delivery', default: 'true', type: 'checkbox' },
       delivery_fee: { el: 'set_delivery_fee', default: '0' },
       free_delivery_above: { el: 'set_free_delivery_above', default: '0' },
       min_order: { el: 'set_min_order', default: '0' },
-      whatsapp_number: { el: 'set_whatsapp_number', default: '' },
+      whatsapp_number: { el: 'set_whatsapp_number', default: '917901994174' },
       enable_tables: { el: 'set_enable_tables', default: 'false', type: 'checkbox' },
       refreshment_items: { el: 'set_refreshment_items', default: 'Cold Coffee, Chocolate Shake, Pepsi' },
       // Hours
@@ -1896,14 +2168,21 @@
       open_time: { el: 'set_open_time', default: '10:00' },
       close_time: { el: 'set_close_time', default: '22:00' },
       days_open: { el: null, default: 'Mon,Tue,Wed,Thu,Fri,Sat,Sun', type: 'days' },
-      announcement: { el: 'set_announcement', default: '', type: 'textarea' },
+      announcement: { el: 'set_announcement', default: '🛵 FREE HOME DELIVERY ON ALL ORDERS! CALL: 79019 94174 📞', type: 'textarea' },
       // Receipt
+      receipt_store_name: { el: 'set_receipt_store_name', default: 'GRILL & CHILL (SANDHAUR)' },
+      receipt_store_tagline: { el: 'set_receipt_store_tagline', default: 'Premium Pizzas & Fast Food' },
+      receipt_store_address: { el: 'set_receipt_store_address', default: 'Raikot Rd, Near Bus Stand, Sandhaur', type: 'textarea' },
+      receipt_store_phone: { el: 'set_receipt_store_phone', default: '79019 94174' },
+      receipt_qr_url: { el: 'set_receipt_qr_url', default: 'https://grillandchillpizzeria.juvaid.in' },
+      receipt_tax_note: { el: 'set_receipt_tax_note', default: 'Prices inclusive of taxes' },
       receipt_footer: { el: 'set_receipt_footer', default: 'Thank you! Visit again.' },
-      receipt_url: { el: 'set_receipt_url', default: '' },
+      receipt_footer_subtext: { el: 'set_receipt_footer_subtext', default: 'Order Online • Free Delivery' },
+      receipt_url: { el: 'set_receipt_url', default: 'grillandchillpizzeria.juvaid.in' },
       receipt_logo: { el: 'set_receipt_logo', default: 'true', type: 'checkbox' },
-      instagram: { el: 'set_instagram', default: '' },
-      facebook: { el: 'set_facebook', default: '' },
-      google_maps: { el: 'set_google_maps', default: '' }
+      instagram: { el: 'set_instagram', default: 'https://instagram.com/grillandchill' },
+      facebook: { el: 'set_facebook', default: 'https://facebook.com/grillandchill' },
+      google_maps: { el: 'set_google_maps', default: 'https://maps.app.goo.gl/HBKW128rAQaijUuM7?g_st=aw' }
     };
 
     // Global store settings cache
@@ -2093,109 +2372,142 @@
       window.open(url, '_blank');
     }
 
+    function selectPaymentMethodForOrder(order, callback, onCancel) {
+      const modal = document.getElementById('paymentMethodModal');
+      const details = document.getElementById('payMethodOrderDetails');
+      const btnCash = document.getElementById('payMethodCashBtn');
+      const btnUpi = document.getElementById('payMethodUpiBtn');
+      const btnCancel = document.getElementById('payMethodCancelBtn');
+      
+      details.innerText = `Order #${order.id.toString().slice(-4)} · Total: ₹${order.total_amount}`;
+      modal.style.display = 'flex';
+      
+      const cleanUp = () => {
+        modal.style.display = 'none';
+        window.removeEventListener('keydown', handleKeydown);
+      };
+      
+      const select = (method) => {
+        cleanUp();
+        callback(method);
+      };
+      
+      const cancel = () => {
+        cleanUp();
+        if (onCancel) onCancel();
+      };
+      
+      btnCash.onclick = () => select('Cash');
+      btnUpi.onclick = () => select('UPI');
+      btnCancel.onclick = () => cancel();
+      
+      function handleKeydown(e) {
+        if (e.key === 'Escape') {
+          cancel();
+        } else if (e.key === 'c' || e.key === 'C') {
+          select('Cash');
+        } else if (e.key === 'u' || e.key === 'U') {
+          select('UPI');
+        }
+      }
+      
+      window.addEventListener('keydown', handleKeydown);
+    }
+
     async function billOrder(orderId) {
       const order = (window.allOrders || []).find(o => o.id === orderId);
       if (!order) return alert('Order not found!');
       
-      let paymentMethod = prompt(`Billing Order #${orderId.toString().slice(-4)} for ₹${order.total_amount}.\nEnter Payment Method (Cash/UPI):`, "Cash");
-      if (paymentMethod === null) return; // Cancelled
-      
-      paymentMethod = paymentMethod.trim();
-      if (paymentMethod.toLowerCase() === 'cash') paymentMethod = 'Cash';
-      else if (paymentMethod.toLowerCase() === 'upi') paymentMethod = 'UPI';
-      else {
-        alert("Invalid payment method! Please choose Cash or UPI.");
-        return;
-      }
+      selectPaymentMethodForOrder(order, async (paymentMethod) => {
+        // Map order_items to flat bill items
+        const billItems = [];
+        order.order_items.forEach(oi => {
+          const qty = oi.quantity || 1;
+          const basePrice = Number(oi.price);
+          
+          let addonPrice = 0;
+          let nameWithAddons = oi.item_name;
+          if (oi.addons && Array.isArray(oi.addons) && oi.addons.length > 0) {
+            const addonNames = oi.addons.map(a => a.name).join(', ');
+            nameWithAddons += ` + ${addonNames}`;
+            addonPrice = oi.addons.reduce((sum, a) => sum + Number(a.price), 0);
+          }
+          
+          for (let q = 0; q < qty; q++) {
+            billItems.push({
+              id: oi.menu_item_id,
+              name: nameWithAddons,
+              size: oi.size,
+              price: basePrice + addonPrice
+            });
+          }
+        });
 
-      // Map order_items to flat bill items
-      const billItems = [];
-      order.order_items.forEach(oi => {
-        const qty = oi.quantity || 1;
-        const basePrice = Number(oi.price);
-        
-        let addonPrice = 0;
-        let nameWithAddons = oi.item_name;
-        if (oi.addons && Array.isArray(oi.addons) && oi.addons.length > 0) {
-          const addonNames = oi.addons.map(a => a.name).join(', ');
-          nameWithAddons += ` + ${addonNames}`;
-          addonPrice = oi.addons.reduce((sum, a) => sum + Number(a.price), 0);
-        }
-        
-        for (let q = 0; q < qty; q++) {
-          billItems.push({
-            id: oi.menu_item_id,
-            name: nameWithAddons,
-            size: oi.size,
-            price: basePrice + addonPrice
-          });
+        const saveAndComplete = async () => {
+          const uid = generateUUID();
+          const billData = {
+            id: uid,
+            client_uuid: uid,
+            customer_name: order.customer_name || 'Online Customer',
+            customer_phone: order.customer_phone || 'N/A',
+            total_amount: order.total_amount,
+            items: JSON.stringify(billItems),
+            payment_status: 'paid',
+            payment_method: paymentMethod,
+            created_at: new Date().toISOString(),
+            sync_status: 'pending'
+          };
+
+          try {
+            await db.local_bills.add(billData);
+            showToast('Bill Created offline! 💾');
+            
+            const { error: orderErr } = await supabaseClient
+              .from('orders')
+              .update({ status: 'completed', payment_status: 'paid' })
+              .eq('id', orderId);
+            
+            if (orderErr) throw orderErr;
+            
+            await loadOrders();
+            syncBills();
+            generateReceipt(billData, false);
+          } catch (err) {
+            console.error('Billing failed:', err);
+            alert('Error billing order: ' + err.message);
+          }
+        };
+
+        if (paymentMethod === 'UPI') {
+          const storeUpi = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
+          const storeName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
+          const upiUrl = `upi://pay?pa=${storeUpi}&pn=${encodeURIComponent(storeName)}&am=${order.total_amount}&cu=INR`;
+          
+          window.upiCurrentPhone = order.customer_phone;
+          window.upiCurrentAmount = order.total_amount;
+          
+          document.getElementById('upiQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+          document.getElementById('upiPayAmount').innerText = `₹${order.total_amount}`;
+          document.getElementById('upiPayDetails').innerText = `To: ${storeUpi}`;
+          
+          const shareBtn = document.getElementById('upiShareWhatsAppBtn');
+          if (shareBtn) {
+            if (window.upiCurrentPhone && window.upiCurrentPhone !== 'N/A' && window.upiCurrentPhone.trim() !== '') {
+              shareBtn.style.display = 'flex';
+            } else {
+              shareBtn.style.display = 'none';
+            }
+          }
+
+          document.getElementById('upiPaidBtn').onclick = async () => {
+            closeModal('upiPayModal');
+            await saveAndComplete();
+          };
+          document.getElementById('upiPayModal').style.display = 'flex';
+        } else {
+          await saveAndComplete();
         }
       });
-
-      const saveAndComplete = async () => {
-        const uid = generateUUID();
-        const billData = {
-          id: uid,
-          client_uuid: uid,
-          customer_name: order.customer_name || 'Online Customer',
-          customer_phone: order.customer_phone || 'N/A',
-          total_amount: order.total_amount,
-          items: JSON.stringify(billItems),
-          payment_status: 'paid',
-          payment_method: paymentMethod,
-          created_at: new Date().toISOString(),
-          sync_status: 'pending'
-        };
-
-        try {
-          await db.local_bills.add(billData);
-          showToast('Bill Created offline! 💾');
-          
-          const { error: orderErr } = await supabaseClient
-            .from('orders')
-            .update({ status: 'completed', payment_status: 'paid' })
-            .eq('id', orderId);
-          
-          if (orderErr) throw orderErr;
-          
-          await loadOrders();
-          syncBills();
-          generateReceipt(billData, false);
-        } catch (err) {
-          console.error('Billing failed:', err);
-          alert('Error billing order: ' + err.message);
-        }
-      };
-
-      if (paymentMethod === 'UPI') {
-        const storeUpi = localStorage.getItem('gc_store_upi_id') || 'juvaidpb13@okaxis';
-        const storeName = localStorage.getItem('gc_store_merchant_name') || 'Grill & Chill';
-        const upiUrl = `upi://pay?pa=${storeUpi}&pn=${encodeURIComponent(storeName)}&am=${order.total_amount}&cu=INR`;
-        
-        window.upiCurrentPhone = order.customer_phone;
-        window.upiCurrentAmount = order.total_amount;
-        
-        document.getElementById('upiQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
-        document.getElementById('upiPayAmount').innerText = `₹${order.total_amount}`;
-        document.getElementById('upiPayDetails').innerText = `To: ${storeUpi}`;
-        
-        const shareBtn = document.getElementById('upiShareWhatsAppBtn');
-        if (shareBtn) {
-          if (window.upiCurrentPhone && window.upiCurrentPhone !== 'N/A' && window.upiCurrentPhone.trim() !== '') {
-            shareBtn.style.display = 'flex';
-          } else {
-            shareBtn.style.display = 'none';
-          }
-        }
-
-        document.getElementById('upiPaidBtn').onclick = async () => {
-          closeModal('upiPayModal');
-          await saveAndComplete();
-        };
-        document.getElementById('upiPayModal').style.display = 'flex';
-      } else {
-        await saveAndComplete();
-      }
     }
 
     async function toggleAvailable(id, available) {
@@ -2697,15 +3009,76 @@
       updatePosTotal();
     }
 
+    let currentPosMobileTab = 'menu';
+
+    function switchPosMobileTab(tab) {
+      currentPosMobileTab = tab;
+      const menuBtn = document.getElementById('posTab-menu-btn');
+      const cartBtn = document.getElementById('posTab-cart-btn');
+      const leftPanel = document.querySelector('.pos-left-panel');
+      const rightPanel = document.querySelector('.pos-right-panel');
+      
+      if (!menuBtn || !cartBtn || !leftPanel || !rightPanel) return;
+      
+      if (tab === 'menu') {
+        menuBtn.style.background = 'rgba(255,107,0,0.12)';
+        menuBtn.style.color = 'var(--primary)';
+        menuBtn.style.borderColor = 'var(--primary)';
+        menuBtn.classList.add('active');
+        
+        cartBtn.style.background = 'var(--glass)';
+        cartBtn.style.color = 'var(--muted)';
+        cartBtn.style.borderColor = 'var(--border)';
+        cartBtn.classList.remove('active');
+        
+        leftPanel.style.setProperty('display', 'flex', 'important');
+        rightPanel.style.setProperty('display', 'none', 'important');
+        
+        updateMobilePillVisibility();
+      } else {
+        cartBtn.style.background = 'rgba(255,107,0,0.12)';
+        cartBtn.style.color = 'var(--primary)';
+        cartBtn.style.borderColor = 'var(--primary)';
+        cartBtn.classList.add('active');
+        
+        menuBtn.style.background = 'var(--glass)';
+        menuBtn.style.color = 'var(--muted)';
+        menuBtn.style.borderColor = 'var(--border)';
+        menuBtn.classList.remove('active');
+        
+        leftPanel.style.setProperty('display', 'none', 'important');
+        rightPanel.style.setProperty('display', 'flex', 'important');
+        
+        const pill = document.getElementById('posMobileCartFloatingPill');
+        if (pill) pill.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    function updateMobilePillVisibility() {
+      const pill = document.getElementById('posMobileCartFloatingPill');
+      if (!pill) return;
+      
+      const isMobile = window.innerWidth <= 900;
+      const hasItems = currentBillItems.length > 0;
+      
+      if (isMobile && hasItems && currentPosMobileTab === 'menu') {
+        pill.style.setProperty('display', 'flex', 'important');
+      } else {
+        pill.style.setProperty('display', 'none', 'important');
+      }
+    }
+
     async function showQuickBill() {
       const { data, error } = await supabaseClient.from('menu_items').select('*').eq('available', true).order('category', { ascending: true }).order('sort_order', { ascending: true }).order('name', { ascending: true });
       if (data) {
         allMenuItems = data;
+        selectedPosCategory = 'all';
+        renderPosCategories();
         renderPosItems(data);
         
         // Apply settings-driven visibility
-        const cardOption = document.getElementById('posCardOption');
-        if (cardOption) cardOption.style.display = (window.storeSettings?.enable_card === 'true') ? 'block' : 'none';
+        const cardBtn = document.getElementById('posCardBtn');
+        if (cardBtn) cardBtn.style.display = (window.storeSettings?.enable_card === 'true') ? 'flex' : 'none';
         
         const deliveryBtn = document.getElementById('posDeliveryBtn');
         if (deliveryBtn) deliveryBtn.style.display = (window.storeSettings?.enable_delivery === 'true') ? 'flex' : 'none';
@@ -2717,10 +3090,20 @@
           if (select) select.value = defaultPay;
         }
         
-        // Reset order type
+        // Reset order type and mobile tabs
         selectOrderType('dine-in');
+        switchPosMobileTab('menu');
         
         document.getElementById('quickBillModal').style.display = 'flex';
+
+        // Auto-focus search input for speed
+        setTimeout(() => {
+          const searchInput = document.getElementById('posSearch');
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          }
+        }, 100);
       }
     }
 
@@ -2739,24 +3122,70 @@
       currentBillItems = [];
       posOrderType = 'dine-in';
       posDiscountMode = 'percent';
+      switchPosMobileTab('menu');
       updatePosTotal();
+    }
+
+    let selectedPosCategory = 'all';
+
+    function selectPosCategory(cat) {
+      selectedPosCategory = cat;
+      document.querySelectorAll('.pos-cat-btn').forEach(btn => {
+        const isActive = btn.dataset.category === cat;
+        btn.classList.toggle('active', isActive);
+      });
+      filterAndSearchPosItems();
+    }
+
+    function filterAndSearchPosItems() {
+      const q = document.getElementById('posSearch').value.toLowerCase();
+      let filtered = allMenuItems;
+      
+      if (selectedPosCategory !== 'all') {
+        filtered = filtered.filter(i => i.category === selectedPosCategory);
+      }
+      
+      if (q) {
+        filtered = filtered.filter(i => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
+      }
+      
+      renderPosItems(filtered);
+    }
+
+    function renderPosCategories() {
+      const container = document.getElementById('posCategories');
+      if (!container) return;
+      
+      const categories = [...new Set(allMenuItems.map(i => i.category))].filter(Boolean);
+      
+      container.innerHTML = `
+        <button type="button" class="pos-cat-btn active" data-category="all" onclick="selectPosCategory('all')">🏷️ All Items</button>
+        ${categories.map(cat => `
+          <button type="button" class="pos-cat-btn" data-category="${cat}" onclick="selectPosCategory('${cat}')">${cat}</button>
+        `).join('')}
+      `;
     }
 
     function renderPosItems(items) {
       const container = document.getElementById('posItems');
+      if (!container) return;
+      if (items.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--muted); font-size:0.85rem">No items found matching the filter</div>';
+        return;
+      }
       container.innerHTML = items.map(it => {
         const sizes = it.sizes || {};
         return `
-          <div style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column; gap:12px">
-            <div style="display:flex; justify-content:space-between; align-items:center">
-              <div style="font-weight:800; font-size:1rem; color:var(--text)">${it.emoji} ${it.name}</div>
-              <div style="font-size:0.75rem; color:var(--primary); font-weight:700; background:rgba(255,107,0,0.1); padding:4px 10px; border-radius:8px">${it.category.split(' ').pop()}</div>
+          <div class="pos-item-card">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="font-size: 1.4rem; line-height: 1.2;">${it.emoji || '🍔'}</div>
+              <div style="font-weight: 800; font-size: 0.85rem; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 34px; line-height: 1.25;" title="${it.name}">${it.name}</div>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; width: 100%;">
               ${Object.entries(sizes).map(([sz, pr]) => `
-                <button onclick="addToBill('${it.id}', '${it.name.replace(/'/g, "\\'")}', '${sz}', ${pr})" class="mini-btn" style="padding:12px 15px; font-size:0.85rem; flex:1; background:rgba(255,255,255,0.03); border-color:var(--b)">
-                  <div style="font-size:0.7rem; color:var(--muted); margin-bottom:2px">${sz}</div>
-                  <div style="font-weight:800">₹${pr}</div>
+                <button type="button" class="pos-size-btn" onclick="addToBill('${it.id}', '${it.name.replace(/'/g, "\\'")}', '${sz}', ${pr})">
+                  <span class="pos-size-name">${sz}</span>
+                  <span class="pos-size-price">₹${pr}</span>
                 </button>
               `).join('')}
             </div>
@@ -2766,9 +3195,7 @@
     }
 
     function filterPosItems() {
-      const q = document.getElementById('posSearch').value.toLowerCase();
-      const filtered = allMenuItems.filter(i => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
-      renderPosItems(filtered);
+      filterAndSearchPosItems();
     }
 
     function addToBill(id, name, size, price) {
@@ -2848,6 +3275,20 @@
       const itemCount = currentBillItems.reduce((sum, i) => sum + (i.qty || 1), 0);
       const countEl = document.getElementById('posItemCount');
       if (countEl) countEl.innerText = `${itemCount} item${itemCount !== 1 ? 's' : ''}`;
+
+      // Update mobile tab and pill counts
+      const mobileCount = document.getElementById('posMobileCartCount');
+      if (mobileCount) mobileCount.innerText = itemCount;
+      
+      const pillCount = document.getElementById('posMobileCartCountPill');
+      if (pillCount) pillCount.innerText = itemCount;
+      
+      const pillTotal = document.getElementById('posMobileCartTotalPill');
+      if (pillTotal) pillTotal.innerText = `₹${total} ➜`;
+      
+      if (typeof updateMobilePillVisibility === 'function') {
+        updateMobilePillVisibility();
+      }
     }
 
     // Keep legacy alias
@@ -2863,11 +3304,10 @@
       });
     }
 
-    async function saveBill() {
+    async function saveBillWithPayment(paymentMethod) {
       if (currentBillItems.length === 0) return alert('Bill is empty!');
       const phone = document.getElementById('customerPhone').value || 'N/A';
       const customerName = document.getElementById('posCustomerName')?.value?.trim() || 'Walk-in';
-      const paymentMethod = document.getElementById('billPaymentMethod').value || 'Cash';
       const notes = document.getElementById('posOrderNotes')?.value?.trim() || '';
       const tableNumber = document.getElementById('posTableNumber')?.value?.trim() || '';
       
@@ -2918,6 +3358,34 @@
         await finalizeBill(customerName, phone, paymentMethod, total, expandedItems, notes, tableNumber, discount);
       }
     }
+
+    // Keep legacy alias for saveBill
+    async function saveBill() {
+      const currentMethod = document.getElementById('billPaymentMethod')?.value || 'Cash';
+      await saveBillWithPayment(currentMethod);
+    }
+
+    // POS global keyboard shortcuts for fast actions
+    window.addEventListener('keydown', (e) => {
+      const posModal = document.getElementById('quickBillModal');
+      if (posModal && posModal.style.display === 'flex') {
+        if (e.key === 'F5') {
+          e.preventDefault();
+          saveBillWithPayment('Cash');
+        } else if (e.key === 'F6') {
+          e.preventDefault();
+          saveBillWithPayment('UPI');
+        } else if (e.key === 'F7') {
+          e.preventDefault();
+          if (window.storeSettings?.enable_card === 'true') {
+            saveBillWithPayment('Card');
+          }
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          closeQuickBill();
+        }
+      }
+    });
 
     async function finalizeBill(customerName, phone, paymentMethod, total, items, notes, tableNumber, discount) {
       const uid = generateUUID();
@@ -3005,13 +3473,13 @@
             ${JSON.parse(b.items || '[]').map(i => `${i.name} (${i.size})`).join(', ')}
           </div>
           <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; ${isVoided ? 'pointer-events:none; opacity:0.3' : ''}">
-            <button onclick="handleBluetoothPrint(${idx})" class="btn-primary" style="flex:1.2; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; font-weight:800; min-width:100px; font-size:0.7rem">
+            <button onclick="handleBluetoothPrint('${b.id}')" class="btn-primary" style="flex:1.2; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; font-weight:800; min-width:100px; font-size:0.7rem">
               <i data-lucide="printer" style="width:16px"></i> PRINT
             </button>
-            <button onclick="handleReceipt(${idx}, false)" class="btn-primary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); font-weight:700; min-width:90px; font-size:0.7rem">
+            <button onclick="handleReceipt('${b.id}', false)" class="btn-primary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); font-weight:700; min-width:90px; font-size:0.7rem">
               <i data-lucide="eye" style="width:16px"></i> PREVIEW
             </button>
-            <button onclick="voidBill(${idx})" class="mini-btn" style="padding:14px; width:50px; background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.2); color:#ef4444; display:flex; align-items:center; justify-content:center">
+            <button onclick="voidBill('${b.id}')" class="mini-btn" style="padding:14px; width:50px; background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.2); color:#ef4444; display:flex; align-items:center; justify-content:center">
               <i data-lucide="trash-2" style="width:18px"></i>
             </button>
           </div>
@@ -3020,9 +3488,10 @@
       lucide.createIcons();
     }
 
-    async function voidBill(idx) {
+    async function voidBill(billId) {
       if (!confirm('Are you sure you want to VOID this bill?')) return;
-      const bill = window.CURRENT_BILLS[idx];
+      const bill = window.CURRENT_BILLS.find(b => b.id === billId);
+      if (!bill) return;
       
       try {
         // 1. Update local DB (Dexie) for immediate feedback
@@ -3315,15 +3784,29 @@
     }
 
     async function writeInChunks(char, data) {
-      const chunkSize = 20;
+      // Negotiate best chunk size: most BLE printers handle 100-512 bytes.
+      // Start with 100; fall back to 20 on error.
+      let chunkSize = 100;
+      const delay = 10;
       for (let i = 0; i < data.length; i += chunkSize) {
         const chunk = data.slice(i, i + chunkSize);
-        if (char.writeValueWithoutResponse) {
-          await char.writeValueWithoutResponse(chunk);
-        } else {
-          await char.writeValue(chunk);
+        try {
+          if (char.writeValueWithoutResponse) {
+            await char.writeValueWithoutResponse(chunk);
+          } else {
+            await char.writeValue(chunk);
+          }
+        } catch (err) {
+          if (chunkSize > 20 && i === 0) {
+            // First chunk failed with large size — retry with safe 20-byte chunks
+            console.warn('Large chunk failed, falling back to 20-byte chunks:', err.message);
+            chunkSize = 20;
+            i = -chunkSize; // restart from 0
+            continue;
+          }
+          throw err;
         }
-        await new Promise(resolve => setTimeout(resolve, 20));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
 
@@ -3335,12 +3818,21 @@
       return leftStr + ' '.repeat(gap) + rightStr;
     }
 
-    function handleReceipt(idx, autoPrint) {
-      generateReceipt(window.CURRENT_BILLS[idx], autoPrint);
+    function handleReceipt(billId, autoPrint) {
+      const bill = window.CURRENT_BILLS.find(b => b.id === billId);
+      if (bill) {
+        generateReceipt(bill, autoPrint);
+      }
     }
 
-    function handleBluetoothPrint(idx) {
-      const bill = window.CURRENT_BILLS[idx];
+    function handleBluetoothPrint(billId) {
+      const bill = window.CURRENT_BILLS.find(b => b.id === billId);
+      if (!bill) return;
+      // On iOS/devices without Web Bluetooth, skip BLE attempt and go straight to receipt preview
+      if (!navigator.bluetooth) {
+        generateReceipt(bill, false);
+        return;
+      }
       if (cachedPrinterChar && cachedPrinterDevice && cachedPrinterDevice.gatt.connected) {
         printDirectlyViaBluetooth(bill);
       } else {
@@ -3348,8 +3840,11 @@
       }
     }
 
-    function handleShare(idx) {
-      shareReceipt(window.CURRENT_BILLS[idx]);
+    function handleShare(billId) {
+      const bill = window.CURRENT_BILLS.find(b => b.id === billId);
+      if (bill) {
+        shareReceipt(bill);
+      }
     }
 
     function printBluetooth(bill) {
@@ -3743,11 +4238,13 @@
       }
     }
 
-    // Detect iOS/iPadOS
+    // Detect iOS/iPadOS (UA sniff + touch check for iPad desktop mode)
     const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    // Feature detection: true if Web Bluetooth is completely absent (iOS, Safari, Firefox)
+    const noBluetooth = !navigator.bluetooth;
 
-    if (isIOS) {
+    if (isIOS || noBluetooth) {
       document.documentElement.classList.add('ios-device');
     }
 
@@ -3829,13 +4326,15 @@
       const billId = bill.id ? `#${String(bill.id).slice(0, 8).toUpperCase()}` : '#N/A';
 
       const s = window.storeSettings || {};
-      const storeName = (s.store_name || 'Grill & Chill').toUpperCase();
-      const storeTagline = s.store_tagline || 'Pizzeria & Bakery';
-      const storeAddress = s.store_address || 'Raikot Road, Sandhaur, Malerkotla';
-      const storePhone = s.store_phone || '79019 94174';
+      const storeName = (s.receipt_store_name || s.store_name || 'Grill & Chill').toUpperCase();
+      const storeTagline = s.receipt_store_tagline || s.store_tagline || 'Pizzeria & Bakery';
+      const storeAddress = s.receipt_store_address || s.store_address || 'Raikot Road, Sandhaur, Malerkotla';
+      const storePhone = s.receipt_store_phone || s.store_phone || '79019 94174';
       const currency = s.currency_symbol || '₹';
       const receiptFooter = s.receipt_footer || 'Thank you! Visit again.';
       const receiptUrl = s.receipt_url || 'grillandchillpizzeria.juvaid.in';
+      const footerSubtext = s.receipt_footer_subtext || 'Order Online • Free Delivery';
+      const taxNote = s.receipt_tax_note || 'All prices inclusive of taxes';
 
       const grouped = {};
       items.forEach(item => {
@@ -3850,7 +4349,12 @@
       let text = '';
       text += `      ${storeName}      \n`;
       text += `    ${storeTagline}    \n`;
-      text += `  ${storeAddress}  \n`;
+      
+      // Split address by newlines and print centered lines
+      storeAddress.split('\n').forEach(line => {
+        if (line.trim()) text += `  ${line.trim()}  \n`;
+      });
+      
       text += `     Ph: ${storePhone}     \n`;
       text += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
       text += padLine(`Bill ${billId}`, timeStr) + '\n';
@@ -3886,9 +4390,10 @@
         text += `Note: ${bill.notes}\n`;
       }
       
-      text += 'All prices inclusive of taxes\n';
+      text += `${taxNote}\n`;
       text += '────────────────────────────────\n';
       text += `    ${receiptFooter}    \n`;
+      if (footerSubtext) text += `    ${footerSubtext}    \n`;
       text += `${receiptUrl}\n`;
       
       return text;
@@ -3897,6 +4402,11 @@
     function generateEscPosBytes(bill) {
       const bytes = [];
       const items = typeof bill.items === 'string' ? JSON.parse(bill.items) : (bill.items || []);
+      const s = window.storeSettings || {};
+      const storeName = (s.receipt_store_name || s.store_name || 'Grill & Chill').toUpperCase();
+      const storeTagline = s.receipt_store_tagline || s.store_tagline || 'Pizzeria & Bakery';
+      const storeAddress = s.receipt_store_address || s.store_address || 'Raikot Rd, Sandhaur | Malerkotla';
+      const storePhone = s.receipt_store_phone || s.store_phone || '79019 94174';
       
       function addText(str) {
         for (let i = 0; i < str.length; i++) {
@@ -3931,12 +4441,16 @@
       bytes.push(0x1B, 0x61, 0x01); // Center
       bytes.push(0x1B, 0x45, 0x01); // Bold on
       bytes.push(0x1D, 0x21, 0x11); // Double height+width
-      addLine('GRILL & CHILL');
+      addLine(storeName);
       bytes.push(0x1D, 0x21, 0x00); // Normal size
       bytes.push(0x1B, 0x45, 0x00); // Bold off
-      addLine('Pizzeria & Bakery');
-      addLine('Raikot Rd, Sandhaur | Malerkotla');
-      addLine('Ph: 79019 94174');
+      if (storeTagline) addLine(storeTagline);
+      if (storeAddress) {
+        storeAddress.split('\n').forEach(line => {
+          if (line.trim()) addLine(line.trim());
+        });
+      }
+      if (storePhone) addLine(`Ph: ${storePhone}`);
       addLine('================================');
 
       // ── Bill Info ──
@@ -3999,12 +4513,12 @@
 
       // ── Footer (compact) ──
       bytes.push(0x1B, 0x61, 0x01); // Center
-      addLine('Prices inclusive of taxes');
+      addLine(s.receipt_tax_note || 'Prices inclusive of taxes');
       addLine('--------------------------------');
-      addLine('Thank you! Visit again.');
-      addLine('Order Online - Free Delivery');
-      addQrCode('https://grillandchillpizzeria.juvaid.in');
-      addLine('grillandchillpizzeria.juvaid.in');
+      addLine(s.receipt_footer || 'Thank you! Visit again.');
+      addLine(s.receipt_footer_subtext || 'Order Online - Free Delivery');
+      addQrCode(s.receipt_qr_url || s.store_website || 'https://grillandchillpizzeria.juvaid.in');
+      addLine(s.receipt_url || 'grillandchillpizzeria.juvaid.in');
 
       // Minimal paper feed + cut
       bytes.push(0x0A, 0x0A);
@@ -4023,16 +4537,18 @@
 
       // Pull from settings with fallbacks
       const s = window.storeSettings || {};
-      const storeName = (s.store_name || 'Grill & Chill').toUpperCase();
-      const storeTagline = s.store_tagline || 'Pizzeria & Bakery';
-      const storeAddress = s.store_address || 'Raikot Rd, Sandhaur | Malerkotla';
-      const storePhone = s.store_phone || '79019 94174';
+      const storeName = (s.receipt_store_name || s.store_name || 'Grill & Chill').toUpperCase();
+      const storeTagline = s.receipt_store_tagline || s.store_tagline || 'Pizzeria & Bakery';
+      const storeAddress = s.receipt_store_address || s.store_address || 'Raikot Rd, Sandhaur | Malerkotla';
+      const storePhone = s.receipt_store_phone || s.store_phone || '79019 94174';
       const currency = s.currency_symbol || '₹';
       const receiptFooter = s.receipt_footer || 'Thank you! Visit again.';
       const receiptUrl = s.receipt_url || 'grillandchillpizzeria.juvaid.in';
+      const footerSubtext = s.receipt_footer_subtext || 'Order Online &bull; Free Delivery';
       const logoUrl = s.logo_url || '';
       const showLogo = s.receipt_logo !== 'false';
-      const storeWebsite = s.store_website || 'https://grillandchillpizzeria.juvaid.in';
+      const storeWebsite = s.receipt_qr_url || s.store_website || 'https://grillandchillpizzeria.juvaid.in';
+      const taxNote = s.receipt_tax_note || 'Prices inclusive of taxes';
 
       const grouped = {};
       items.forEach(item => {
@@ -4109,13 +4625,13 @@
         ${(bill.payment_method) ? `<div class="customer-info">Payment: ${bill.payment_method}</div>` : ''}
         ${bill.notes ? `<div class="customer-info">Note: ${bill.notes}</div>` : ''}
 
-        <div class="tax-note">Prices inclusive of taxes</div>
+        <div class="tax-note">${taxNote}</div>
 
         <hr class="separator">
 
         <div class="footer">
           <div class="footer-thanks">${receiptFooter}</div>
-          <div class="footer-url" style="margin-top:2px;font-weight:bold">Order Online &bull; Free Delivery</div>
+          <div class="footer-url" style="margin-top:2px;font-weight:bold">${footerSubtext}</div>
           <div class="qr-container" style="position: relative; display: inline-block; margin: 4px auto;">
             <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'" style="margin: 0 !important;">
             ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `
@@ -4261,9 +4777,9 @@
       `;
 
       if (btnDirectBLE) {
-        if (isIOS) {
-          // Web Bluetooth is not supported on iOS at all
-          btnDirectBLE.onclick = () => showToast('Bluetooth printing is not supported on iPhone/iPad. Use PRINT or AirPrint. 🍎', true);
+        if (noBluetooth) {
+          // Web Bluetooth is not available (iOS, Safari, Firefox, etc.)
+          btnDirectBLE.onclick = () => showToast('Bluetooth printing is not available in this browser. Use PRINT or SHARE instead. 🖨️', true);
         } else {
           btnDirectBLE.onclick = () => printDirectlyViaBluetooth(bill);
         }
