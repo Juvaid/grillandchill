@@ -1,3 +1,6 @@
+-- Orders
+create policy "Admins manage all orders"
+  on public.orders for all
   using (public.is_admin());
 
 create policy "Public can place orders"

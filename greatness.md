@@ -9,10 +9,10 @@ This document tracks the transition from a premium static PWA to a full-stack dy
 - [x] Migrate static `MENU` data to Supabase Tables
 - [x] Create Product Management Dashboard (admin.html)
 - [x] Refactor `index.html` to fetch dynamic data
-- [ ] Finalize Product CRUD with JSONB support (Sizes/Addons)
-- [ ] Implement Order Management (Real-time updates)
-- [ ] Build Billing & Invoicing Logic
-- [ ] Secure Checkout in `index.html` (Insert into DB)
+- [x] Finalize Product CRUD with JSONB support (Sizes/Addons)
+- [x] Implement Order Management (Real-time updates)
+- [x] Build Billing & Invoicing Logic
+- [x] Secure Checkout in `index.html` (Insert into DB)
 
 
 ## 🛠 Tech Stack
