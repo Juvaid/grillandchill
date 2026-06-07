@@ -487,8 +487,8 @@
                 </div>
                 <div class="product-card-actions">
                   <div style="display:flex; gap:6px; width:100%">
-                    <button class="mini-btn" onclick="editProduct(${i.id})" style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px; padding:8px 0"><i data-lucide="edit-2" style="width:14px; height:14px"></i> EDIT</button>
-                    <button class="mini-btn" onclick="deleteProduct(${i.id}, '${i.name.replace(/'/g, "\\'")}')" style="flex:1; border-color:rgba(239,68,68,0.2); color:#ef4444; background:rgba(239,68,68,0.05); display:flex; align-items:center; justify-content:center; gap:4px; padding:8px 0"><i data-lucide="trash-2" style="width:14px; height:14px"></i> DEL</button>
+                    <button class="mini-btn" onclick="editProduct(${i.id})" style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px; padding:8px 12px"><i data-lucide="edit-2" style="width:14px; height:14px"></i> EDIT</button>
+                    <button class="mini-btn" onclick="deleteProduct(${i.id}, '${i.name.replace(/'/g, "\\'")}')" style="flex:1; border-color:rgba(239,68,68,0.2); color:#ef4444; background:rgba(239,68,68,0.05); display:flex; align-items:center; justify-content:center; gap:4px; padding:8px 12px"><i data-lucide="trash-2" style="width:14px; height:14px"></i> DEL</button>
                   </div>
                   <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:12px">
                     <span style="font-size:0.65rem; color:var(--muted); font-weight:800; letter-spacing:0.5px">${i.available ? 'AVAILABLE' : 'HIDDEN'}</span>
@@ -520,6 +520,11 @@
     }
 
     async function updateStatus(id, status) {
+      if (status === 'cancelled') {
+        if (!confirm('Are you sure you want to completely cancel this order? This action cannot be easily undone.')) {
+          return;
+        }
+      }
       await supabaseClient.from('orders').update({ status }).eq('id', id);
       loadOrders();
     }
@@ -1444,8 +1449,13 @@
       const cartBtn = document.getElementById('posTab-cart-btn');
       const leftPanel = document.querySelector('.pos-left-panel');
       const rightPanel = document.querySelector('.pos-right-panel');
+      const mainLayout = document.querySelector('.pos-main-layout');
       
-      if (!menuBtn || !cartBtn || !leftPanel || !rightPanel) return;
+      if (!menuBtn || !cartBtn || !leftPanel || !rightPanel || !mainLayout) return;
+      
+      // Clean up any lingering inline styles from previous code version
+      leftPanel.style.removeProperty('display');
+      rightPanel.style.removeProperty('display');
       
       if (tab === 'menu') {
         menuBtn.style.background = 'rgba(255,107,0,0.12)';
@@ -1458,8 +1468,7 @@
         cartBtn.style.borderColor = 'var(--border)';
         cartBtn.classList.remove('active');
         
-        leftPanel.style.setProperty('display', 'flex', 'important');
-        rightPanel.style.setProperty('display', 'none', 'important');
+        mainLayout.classList.remove('mobile-cart-active');
         
         updateMobilePillVisibility();
       } else {
@@ -1473,8 +1482,7 @@
         menuBtn.style.borderColor = 'var(--border)';
         menuBtn.classList.remove('active');
         
-        leftPanel.style.setProperty('display', 'none', 'important');
-        rightPanel.style.setProperty('display', 'flex', 'important');
+        mainLayout.classList.add('mobile-cart-active');
         
         const pill = document.getElementById('posMobileCartFloatingPill');
         if (pill) pill.style.setProperty('display', 'none', 'important');
