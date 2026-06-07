@@ -487,13 +487,13 @@
 
         <div class="form-group">
           <label class="form-label">Item Name</label>
-          <input type="text" id="itemName" class="auth-input" placeholder="e.g. Farmhouse Pizza" required>
+          <input type="text" id="itemName" class="auth-input modal-input" placeholder="e.g. Farmhouse Pizza" required>
         </div>
         
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
           <div class="form-group">
             <label class="form-label">Category</label>
-            <select id="itemCat" class="auth-input" required onchange="handleCategoryChange(this.value)">
+            <select id="itemCat" class="auth-input modal-input" required onchange="handleCategoryChange(this.value)">
               <!-- Populated dynamically from DB categories -->
             </select>
             <div id="newCatGroup" class="hidden" style="margin-top: 10px">
@@ -509,7 +509,7 @@
 
         <div class="form-group">
           <label class="form-label">Description</label>
-          <input type="text" id="itemDesc" class="auth-input" placeholder="Ingredients, taste profile...">
+          <input type="text" id="itemDesc" class="auth-input modal-input" placeholder="Ingredients, taste profile...">
         </div>
 
         <div class="form-group">

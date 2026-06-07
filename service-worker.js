@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gc-menu-v4'; // Version bump forces cache refresh
+const CACHE_NAME = 'gc-menu-v5'; // Version bump forces cache refresh
 const ASSETS = [
   './',
   './index.html',
