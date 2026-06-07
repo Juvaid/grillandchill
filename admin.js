@@ -300,42 +300,67 @@
       body.innerHTML = data.map(o => {
         const isCancelled = o.status === 'cancelled';
         return `
-        <div class="order-card" style="position:relative; overflow:hidden; ${isCancelled ? 'opacity:0.6; filter:grayscale(1)' : ''}">
+        <div class="order-card" style="position:relative; overflow:hidden; padding: 15px; ${isCancelled ? 'opacity:0.6; filter:grayscale(1)' : ''}">
           ${isCancelled ? `
             <div style="position:absolute; inset:0; background:rgba(239,68,68,0.1); display:flex; align-items:center; justify-content:center; z-index:2; pointer-events:none">
               <div style="border:3px solid #ef4444; color:#ef4444; padding:5px 15px; border-radius:10px; font-weight:900; font-size:1.5rem; transform:rotate(-15deg); text-transform:uppercase; letter-spacing:2px">CANCELLED</div>
             </div>
           ` : ''}
-          <div class="order-header">
-            <span class="order-id">#${o.id.toString().slice(-4)}</span>
-            <span class="order-time">${new Date(o.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px">
+                <span style="background:rgba(255,107,0,0.15); color:var(--primary); padding:4px 8px; border-radius:6px; font-weight:900; font-size:0.8rem">#${o.id.toString().slice(-4)}</span>
+                <span style="font-size:0.7rem; color:var(--muted); font-weight:700">${new Date(o.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+              </div>
+              <div style="font-weight:900; font-size:1.05rem; letter-spacing:-0.3px">${o.customer_name}</div>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:2px">
+                <span style="font-size:0.75rem; color:var(--muted)">${o.customer_phone}</span>
+                <a href="https://www.google.com/maps/search/?api=1&query=${o.delivery_lat},${o.delivery_lng}" target="_blank" style="color:var(--accent); font-size:0.7rem; text-decoration:none; display:flex; align-items:center; gap:3px;">
+                  <i data-lucide="map-pin" style="width:12px; height:12px;"></i> MAP
+                </a>
+              </div>
+            </div>
+            <button class="mini-btn danger" onclick="updateStatus(${o.id}, 'cancelled')" style="padding:6px; height:32px; width:32px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.2); color:#ef4444; ${isCancelled ? 'display:none;' : ''}">
+              <i data-lucide="x" style="width:16px; height:16px;"></i>
+            </button>
           </div>
-          <div class="customer-info">
-            <div style="font-weight:800">${o.customer_name}</div>
-            <div style="font-size:0.8rem;color:var(--muted)">${o.customer_phone}</div>
-            <a href="https://www.google.com/maps/search/?api=1&query=${o.delivery_lat},${o.delivery_lng}" target="_blank" style="color:var(--accent);font-size:0.7rem;text-decoration:none;margin-top:8px;display:inline-block">📍 OPEN IN MAPS</a>
-          </div>
-          <div class="items-list">
+          
+          <div style="background:rgba(0,0,0,0.2); border-radius:12px; padding:12px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.02)">
             ${o.order_items.map(i => `
-              <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
-                <span>${i.quantity}x ${i.item_name} <small style="color:var(--muted)">(${i.size})</small></span>
-                <span>₹${i.price * i.quantity}</span>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; font-size:0.85rem">
+                <div style="display:flex; gap:8px; flex:1">
+                  <span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-weight:800; font-size:0.75rem; height:fit-content">${i.quantity}x</span>
+                  <div style="line-height:1.2">
+                    <span style="font-weight:700; color:var(--text)">${i.item_name}</span>
+                    <div style="font-size:0.7rem; color:var(--muted); margin-top:2px">${i.size}</div>
+                  </div>
+                </div>
+                <span style="font-weight:800; color:var(--text); padding-left:10px">₹${i.price * i.quantity}</span>
               </div>
             `).join('')}
           </div>
-          <div class="order-footer">
-            <div style="font-weight:800;font-size:1.1rem">₹${o.total_amount}</div>
-            <span class="status-badge badge-${o.status}">${o.status}</span>
-          </div>
-          <div class="action-row" style="${isCancelled ? 'pointer-events:none; opacity:0.3' : ''}">
-            <button class="mini-btn" onclick="updateStatus(${o.id}, 'cooking')">COOK</button>
-            <button class="mini-btn primary" onclick="updateStatus(${o.id}, 'completed')">FINISH</button>
-            <button class="mini-btn" onclick="billOrder(${o.id})" style="background:rgba(0,242,255,0.1); border-color:rgba(0,242,255,0.2); color:var(--accent)">BILL</button>
-            <button class="mini-btn danger" onclick="updateStatus(${o.id}, 'cancelled')">X</button>
+
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:10px; ${isCancelled ? 'pointer-events:none; opacity:0.3' : ''}">
+            <div style="display:flex; flex-direction:column; gap:6px">
+              <span class="status-badge badge-${o.status}" style="width:fit-content; font-size:0.6rem">${o.status}</span>
+              <div style="font-weight:900; font-size:1.3rem; color:var(--primary); line-height:1">₹${o.total_amount}</div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; flex:1; padding-left:10px">
+              <button class="mini-btn" onclick="updateStatus(${o.id}, 'cooking')" style="display:flex; align-items:center; gap:4px; padding:8px 12px; border-radius:10px">
+                <i data-lucide="chef-hat" style="width:14px; height:14px"></i> COOK
+              </button>
+              <button class="mini-btn primary" onclick="updateStatus(${o.id}, 'completed')" style="display:flex; align-items:center; gap:4px; padding:8px 12px; border-radius:10px">
+                <i data-lucide="check-circle" style="width:14px; height:14px"></i> FINISH
+              </button>
+              <button class="mini-btn" onclick="billOrder(${o.id})" style="background:rgba(0,242,255,0.1); border-color:rgba(0,242,255,0.2); color:var(--accent); display:flex; align-items:center; gap:4px; padding:8px 12px; border-radius:10px">
+                <i data-lucide="receipt" style="width:14px; height:14px"></i> BILL
+              </button>
+            </div>
           </div>
         </div>
       `}).join('');
       updateDashboardStats();
+      if (window.lucide) window.lucide.createIcons();
       
       updateStats(data);
     }
@@ -426,31 +451,60 @@
 
     function renderProducts(products) {
       const body = document.getElementById('productsBody');
-      body.innerHTML = products.map(i => `
-        <div class="product-card">
-          ${i.image_url 
-            ? `<img src="${i.image_url}" class="product-img" loading="lazy">`
-            : `<div class="product-emoji">${i.emoji || '🍕'}</div>`
-          }
-          <div style="flex:1">
-            <div style="font-weight:800">${i.name}</div>
-            <div style="font-size:0.7rem;color:var(--muted)">${i.category} · #${i.sort_order || 0}</div>
-            <div style="font-size:0.75rem;color:var(--primary);font-weight:800;margin-top:4px">
-              ${Object.entries(i.sizes || {}).map(([s, p]) => `${s}: ₹${p}`).join(' | ')}
-            </div>
+      if (!products || products.length === 0) {
+        body.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--muted); font-weight:700;">No items found.</div>';
+        return;
+      }
+
+      // Group by category
+      const grouped = {};
+      products.forEach(p => {
+        const cat = p.category || 'Uncategorized';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(p);
+      });
+
+      let html = '';
+      for (const [cat, items] of Object.entries(grouped)) {
+        html += `
+          <div class="category-header">
+            <h3>${cat}</h3>
+            <span class="item-count">${items.length} items</span>
           </div>
-          <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
-            <div style="display:flex; gap:6px">
-              <button class="mini-btn" onclick="editProduct(${i.id})" style="padding:6px 12px">EDIT</button>
-              <button class="mini-btn" onclick="deleteProduct(${i.id}, '${i.name.replace(/'/g, "\\'")}')" style="padding:6px 12px; border-color:#ef4444; color:#ef4444">DELETE</button>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" ${i.available ? 'checked' : ''} onchange="toggleAvailable(${i.id}, this.checked)">
-              <span class="slider"></span>
-            </label>
+          <div class="category-grid">
+            ${items.map(i => `
+              <div class="product-card">
+                ${i.image_url 
+                  ? `<img src="${i.image_url}" class="product-img" loading="lazy">`
+                  : `<div class="product-emoji">${i.emoji || '🍕'}</div>`
+                }
+                <div class="product-card-content">
+                  <div class="product-card-title">${i.name}</div>
+                  <div class="product-card-meta">Sort Order #${i.sort_order || 0}</div>
+                  <div class="product-card-prices">
+                    ${Object.entries(i.sizes || {}).map(([s, p]) => `<span class="price-pill"><b>${s[0]}</b> ₹${p}</span>`).join('')}
+                  </div>
+                </div>
+                <div class="product-card-actions">
+                  <div style="display:flex; gap:6px; width:100%">
+                    <button class="mini-btn" onclick="editProduct(${i.id})" style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px; padding:8px 0"><i data-lucide="edit-2" style="width:14px; height:14px"></i> EDIT</button>
+                    <button class="mini-btn" onclick="deleteProduct(${i.id}, '${i.name.replace(/'/g, "\\'")}')" style="flex:1; border-color:rgba(239,68,68,0.2); color:#ef4444; background:rgba(239,68,68,0.05); display:flex; align-items:center; justify-content:center; gap:4px; padding:8px 0"><i data-lucide="trash-2" style="width:14px; height:14px"></i> DEL</button>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:12px">
+                    <span style="font-size:0.65rem; color:var(--muted); font-weight:800; letter-spacing:0.5px">${i.available ? 'AVAILABLE' : 'HIDDEN'}</span>
+                    <label class="toggle-switch" style="margin:0">
+                      <input type="checkbox" ${i.available ? 'checked' : ''} onchange="toggleAvailable(${i.id}, this.checked)">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
           </div>
-        </div>
-      `).join('');
+        `;
+      }
+      body.innerHTML = html;
+      if (window.lucide) window.lucide.createIcons();
     }
 
     async function deleteProduct(id, name) {
@@ -949,17 +1003,23 @@
       const rowId = `size-row-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
       const rowDiv = document.createElement('div');
       rowDiv.id = rowId;
-      rowDiv.style.display = 'flex';
+      rowDiv.style.display = 'grid';
+      rowDiv.style.gridTemplateColumns = '2fr 1fr 42px';
       rowDiv.style.gap = '10px';
       rowDiv.style.alignItems = 'center';
+      rowDiv.style.animation = 'scaleIn 0.2s ease-out';
       rowDiv.innerHTML = `
-        <input type="text" class="auth-input size-name" value="${name}" placeholder="e.g. Regular" style="margin-bottom:0; flex:2" required>
-        <input type="number" class="auth-input size-price" value="${price}" placeholder="e.g. 199" min="0" style="margin-bottom:0; flex:1" required>
-        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="action-btn" style="padding: 10px; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #ef4444; height: 42px; width: 42px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-          &times;
+        <input type="text" class="auth-input size-name" value="${name}" placeholder="e.g. Regular" style="margin-bottom:0;" required>
+        <div style="position:relative; display:flex; align-items:center;">
+          <span style="position:absolute; left:12px; color:var(--muted); font-size:0.8rem; font-weight:700">₹</span>
+          <input type="number" class="auth-input size-price" value="${price}" placeholder="199" min="0" style="margin-bottom:0; padding-left:25px; width:100%" required>
+        </div>
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="action-btn" style="padding:0; background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.2); color:#ef4444; height:48px; width:42px; display:flex; align-items:center; justify-content:center; border-radius:12px; transition:0.2s">
+          <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
         </button>
       `;
       container.appendChild(rowDiv);
+      if (window.lucide) window.lucide.createIcons();
     }
     
     function addAddonRow(name = '', price = '') {
@@ -967,17 +1027,23 @@
       const rowId = `addon-row-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
       const rowDiv = document.createElement('div');
       rowDiv.id = rowId;
-      rowDiv.style.display = 'flex';
+      rowDiv.style.display = 'grid';
+      rowDiv.style.gridTemplateColumns = '2fr 1fr 42px';
       rowDiv.style.gap = '10px';
       rowDiv.style.alignItems = 'center';
+      rowDiv.style.animation = 'scaleIn 0.2s ease-out';
       rowDiv.innerHTML = `
-        <input type="text" class="auth-input addon-name" value="${name}" placeholder="e.g. Extra Cheese" style="margin-bottom:0; flex:2" required>
-        <input type="number" class="auth-input addon-price" value="${price}" placeholder="e.g. 50" min="0" style="margin-bottom:0; flex:1" required>
-        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="action-btn" style="padding: 10px; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #ef4444; height: 42px; width: 42px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-          &times;
+        <input type="text" class="auth-input addon-name" value="${name}" placeholder="e.g. Extra Cheese" style="margin-bottom:0;" required>
+        <div style="position:relative; display:flex; align-items:center;">
+          <span style="position:absolute; left:12px; color:var(--muted); font-size:0.8rem; font-weight:700">₹</span>
+          <input type="number" class="auth-input addon-price" value="${price}" placeholder="50" min="0" style="margin-bottom:0; padding-left:25px; width:100%" required>
+        </div>
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="action-btn" style="padding:0; background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.2); color:#ef4444; height:48px; width:42px; display:flex; align-items:center; justify-content:center; border-radius:12px; transition:0.2s">
+          <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
         </button>
       `;
       container.appendChild(rowDiv);
+      if (window.lucide) window.lucide.createIcons();
     }
 
     function getSizesFromBuilder() {
@@ -1802,8 +1868,12 @@
       const currency = window.storeSettings?.currency_symbol || '₹';
       body.innerHTML = bills.map((b, idx) => {
         const isVoided = b.payment_status === 'voided';
-        const methodMap = { Cash: '💵 Cash', UPI: '📱 UPI', Card: '💳 Card' };
-        const methodStr = methodMap[b.payment_method || 'Cash'] || '💵 Cash';
+        const methodMap = { 
+          Cash: '<i data-lucide="banknote" style="width:14px; height:14px; display:inline-block; vertical-align:middle; margin-right:4px; opacity:0.8"></i> Cash', 
+          UPI: '<img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" style="height:14px; width:auto; vertical-align:middle; display:inline-block; filter: brightness(0) invert(1); opacity:0.8">', 
+          Card: '<i data-lucide="credit-card" style="width:14px; height:14px; display:inline-block; vertical-align:middle; margin-right:4px; opacity:0.8"></i> Card' 
+        };
+        const methodStr = methodMap[b.payment_method || 'Cash'] || methodMap['Cash'];
         const orderTypeMap = { 'dine-in': '🍽️', 'takeaway': '🥡', 'delivery': '🛵' };
         const typeIcon = orderTypeMap[b.order_type] || '🍽️';
         const custName = b.customer_name || 'Walk-in';
@@ -2479,15 +2549,15 @@
           <hr class="separator">
           <div class="bold" style="font-size: 11px; margin-bottom: 4px;">PAYMENT BREAKDOWN:</div>
           <div style="display:flex; justify-content:space-between; font-size:10px; padding-left: 5px; margin: 2px 0;">
-            <span>💵 Cash:</span>
+            <span>Cash:</span>
             <span>₹${paymentStats.Cash}</span>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:10px; padding-left: 5px; margin: 2px 0;">
-            <span>📱 UPI:</span>
+            <span>UPI:</span>
             <span>₹${paymentStats.UPI}</span>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:10px; padding-left: 5px; margin: 2px 0;">
-            <span>💳 Card:</span>
+            <span>Card:</span>
             <span>₹${paymentStats.Card}</span>
           </div>
           <hr class="separator">
@@ -3212,3 +3282,20 @@
     });
 
     checkAuth();
+
+    // --- MOBILE HEADER HIDE ON SCROLL ---
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      // Only apply on mobile (where header takes up valuable space)
+      if (window.innerWidth <= 1023) {
+        const header = document.querySelector('header');
+        if (header) {
+          if (window.scrollY > lastScrollY && window.scrollY > 80) {
+            header.classList.add('header-hidden');
+          } else {
+            header.classList.remove('header-hidden');
+          }
+        }
+      }
+      lastScrollY = window.scrollY;
+    }, { passive: true });

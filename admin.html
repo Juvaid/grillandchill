@@ -148,8 +148,8 @@
         <div id="syncStatusBox" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background:rgba(255,255,255,0.02); padding:10px 15px; border-radius:12px; border:1px solid var(--border)">
           <div id="syncStatus" style="font-size:0.65rem; color:var(--muted); font-weight:700; text-transform:uppercase">Local DB Active</div>
           <div style="display:flex; gap:8px">
-            <button onclick="printDailyZReport()" class="mini-btn" style="padding:6px 12px; font-size:0.6rem; border-color:var(--primary); color:var(--primary); background:rgba(255,107,0,0.05)">REPORT 📊</button>
-            <button onclick="syncBills()" class="mini-btn primary" style="padding:6px 12px; font-size:0.6rem">FORCE SYNC 🔄</button>
+            <button onclick="printDailyZReport()" class="mini-btn" style="padding:6px 12px; font-size:0.6rem; border-color:var(--primary); color:var(--primary); background:rgba(255,107,0,0.05); display:flex; align-items:center; gap:4px;"><i data-lucide="bar-chart-2" style="width:12px; height:12px;"></i>REPORT</button>
+            <button onclick="syncBills()" class="mini-btn primary" style="padding:6px 12px; font-size:0.6rem; display:flex; align-items:center; gap:4px;"><i data-lucide="refresh-cw" style="width:12px; height:12px;"></i>FORCE SYNC</button>
           </div>
         </div>
         <div class="mobile-list" id="billingBody"></div>
@@ -158,21 +158,21 @@
       <div id="settingsSection" class="hidden">
         <div class="section-header">
           <h3 class="section-title">Store Settings</h3>
-          <button type="button" onclick="saveAllSettings()" class="mini-btn primary" style="padding:10px 20px; font-size:0.75rem">💾 SAVE ALL</button>
+          <button type="button" onclick="saveAllSettings()" class="mini-btn primary" style="padding:10px 20px; font-size:0.75rem; display:flex; align-items:center; gap:6px;"><i data-lucide="save" style="width:14px; height:14px;"></i>SAVE ALL</button>
         </div>
         
         <!-- Settings Tabs Navigation -->
         <div class="settings-tabs" style="display:flex; gap:6px; margin-bottom:20px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch">
-          <button type="button" class="settings-tab active" onclick="switchSettingsTab('branding')" id="stab-branding" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--primary); color:#fff; font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">🎨 Branding</button>
-          <button type="button" class="settings-tab" onclick="switchSettingsTab('payment')" id="stab-payment" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">💳 Payment</button>
-          <button type="button" class="settings-tab" onclick="switchSettingsTab('ordering')" id="stab-ordering" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">🛵 Ordering</button>
-          <button type="button" class="settings-tab" onclick="switchSettingsTab('hours')" id="stab-hours" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">🕐 Hours</button>
-          <button type="button" class="settings-tab" onclick="switchSettingsTab('receipt')" id="stab-receipt" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit">🧾 Receipt</button>
+          <button type="button" class="settings-tab active" onclick="switchSettingsTab('branding')" id="stab-branding" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--primary); color:#fff; font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit; display:flex; align-items:center; gap:6px;"><i data-lucide="palette" style="width:14px; height:14px;"></i>Branding</button>
+          <button type="button" class="settings-tab" onclick="switchSettingsTab('payment')" id="stab-payment" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit; display:flex; align-items:center; gap:6px;"><i data-lucide="credit-card" style="width:14px; height:14px;"></i>Payment</button>
+          <button type="button" class="settings-tab" onclick="switchSettingsTab('ordering')" id="stab-ordering" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit; display:flex; align-items:center; gap:6px;"><i data-lucide="bike" style="width:14px; height:14px;"></i>Ordering</button>
+          <button type="button" class="settings-tab" onclick="switchSettingsTab('hours')" id="stab-hours" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit; display:flex; align-items:center; gap:6px;"><i data-lucide="clock" style="width:14px; height:14px;"></i>Hours</button>
+          <button type="button" class="settings-tab" onclick="switchSettingsTab('receipt')" id="stab-receipt" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border); background:var(--glass); color:var(--muted); font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:0.3s; font-family:inherit; display:flex; align-items:center; gap:6px;"><i data-lucide="receipt" style="width:14px; height:14px;"></i>Receipt</button>
         </div>
 
         <!-- TAB 1: Branding & Identity -->
         <div id="settingsTab-branding" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:flex; flex-direction:column; gap:15px">
-          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🎨 Branding & Identity</div>
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; display:flex; align-items:center; gap:6px;"><i data-lucide="palette" style="width:16px; height:16px;"></i>Branding & Identity</div>
           <div class="form-group">
             <label class="form-label">Store Name</label>
             <input type="text" id="set_store_name" class="auth-input" placeholder="e.g. Grill & Chill" value="Grill & Chill">
@@ -215,7 +215,7 @@
 
         <!-- TAB 2: Payment & Billing -->
         <div id="settingsTab-payment" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:none; flex-direction:column; gap:15px">
-          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">💳 Payment & Billing</div>
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; display:flex; align-items:center; gap:6px;"><i data-lucide="credit-card" style="width:16px; height:16px;"></i>Payment & Billing</div>
           <div class="form-group">
             <label class="form-label">UPI ID (for QR Payments)</label>
             <input type="text" id="set_upi_id" class="auth-input" placeholder="e.g. storename@okaxis" value="paytm.slux68h@pty">
@@ -246,7 +246,7 @@
 
         <!-- TAB 3: Ordering & Delivery -->
         <div id="settingsTab-ordering" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:none; flex-direction:column; gap:15px">
-          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🛵 Ordering & Delivery</div>
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; display:flex; align-items:center; gap:6px;"><i data-lucide="bike" style="width:16px; height:16px;"></i>Ordering & Delivery</div>
           <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border)">
             <div>
               <div style="font-weight:700; font-size:0.85rem">Enable Delivery</div>
@@ -304,7 +304,7 @@
 
         <!-- TAB 4: Store Hours & Status -->
         <div id="settingsTab-hours" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:none; flex-direction:column; gap:15px">
-          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🕐 Store Hours & Status</div>
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; display:flex; align-items:center; gap:6px;"><i data-lucide="clock" style="width:16px; height:16px;"></i>Store Hours & Status</div>
           <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,255,136,0.03); padding:15px; border-radius:12px; border:1px solid rgba(0,255,136,0.15)">
             <div>
               <div style="font-weight:700; font-size:0.85rem">Store is Open</div>
@@ -359,7 +359,7 @@
 
         <!-- TAB 5: Receipt & Social -->
         <div id="settingsTab-receipt" class="settings-tab-content" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:20px; border-radius:15px; display:none; flex-direction:column; gap:15px">
-          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px">🧾 Receipt & Social</div>
+          <div style="font-size:0.8rem; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; display:flex; align-items:center; gap:6px;"><i data-lucide="receipt" style="width:16px; height:16px;"></i>Receipt & Social</div>
           
           <div style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:5px; padding-bottom:5px; border-bottom:1px solid var(--border)">Receipt Header Overrides</div>
           
@@ -437,26 +437,30 @@
         </div>
 
         <!-- Save Button -->
-        <button type="button" onclick="saveAllSettings()" class="btn-primary" style="height:55px; margin-top:15px; font-size:0.95rem; font-weight:900; letter-spacing:1px">💾 SAVE ALL SETTINGS</button>
+        <button type="button" onclick="saveAllSettings()" class="btn-primary" style="height:55px; margin-top:15px; font-size:0.95rem; font-weight:900; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:8px;"><i data-lucide="save" style="width:20px; height:20px;"></i>SAVE ALL SETTINGS</button>
       </div>
 
     </div>
 
     <nav class="bottom-nav">
+      <div class="sidebar-brand">
+        <img src="assets/logo.svg" alt="Logo">
+        <h2>G&C ADMIN</h2>
+      </div>
       <div class="nav-item active" id="nav-orders" onclick="switchTab('orders')">
-        <span class="nav-icon">🔥</span>
+        <i data-lucide="flame" class="nav-icon"></i>
         <span>Orders</span>
       </div>
       <div class="nav-item" id="nav-products" onclick="switchTab('products')">
-        <span class="nav-icon">🍔</span>
+        <i data-lucide="utensils-crossed" class="nav-icon"></i>
         <span>Menu</span>
       </div>
       <div class="nav-item" id="nav-billing" onclick="switchTab('billing')">
-        <span class="nav-icon">💰</span>
+        <i data-lucide="receipt" class="nav-icon"></i>
         <span>Billing</span>
       </div>
       <div class="nav-item" id="nav-settings" onclick="switchTab('settings')">
-        <span class="nav-icon">⚙️</span>
+        <i data-lucide="settings" class="nav-icon"></i>
         <span>Store Settings</span>
       </div>
     </nav>
@@ -464,12 +468,12 @@
 
   <!-- PRODUCT MODAL -->
   <div class="modal" id="productModal">
-    <div class="modal-content" style="max-width: 100%; width: 100%; height: 100%; border-radius: 0; display: flex; flex-direction: column; padding: 25px; overflow-y: auto">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px">
-        <h2 id="modalTitle" style="margin:0; color:var(--primary)">Product Editor</h2>
-        <button onclick="closeModal('productModal')" style="background:rgba(255,255,255,0.05); border:1px solid var(--b); color:var(--muted); cursor:pointer; width:40px; height:40px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center">&times;</button>
+    <div class="modal-content product-modal-content">
+      <div class="product-modal-header">
+        <h2 id="modalTitle" style="margin:0; color:var(--primary); font-size:1.3rem;">Product Editor</h2>
+        <button type="button" onclick="closeModal('productModal')" style="background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); cursor:pointer; width:36px; height:36px; border-radius:50%; font-size:1.2rem; display:flex; align-items:center; justify-content:center">&times;</button>
       </div>
-      <form id="productForm">
+      <form id="productForm" class="product-modal-body">
         <input type="hidden" id="itemId">
         
         <div class="image-upload-box" onclick="document.getElementById('imageFile').click()">
@@ -583,11 +587,11 @@
           </div>
         </div>
 
-        <div style="display:flex;gap:15px;margin-top:40px; margin-bottom: 20px">
-          <button type="submit" class="btn-primary" style="flex:2; height:60px; font-weight:900; letter-spacing:1px">SAVE PRODUCT</button>
-          <button type="button" onclick="closeModal('productModal')" class="action-btn" style="padding:15px; flex:1; height:60px; font-weight:800; background:rgba(255,255,255,0.05); border-color:var(--b); color:var(--muted)">CANCEL</button>
-        </div>
       </form>
+      <div class="product-modal-footer">
+        <button type="button" onclick="document.getElementById('productForm').requestSubmit()" class="btn-primary" style="flex:2; height:50px; font-size:0.9rem; font-weight:900; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:8px;"><i data-lucide="save" style="width:16px; height:16px;"></i> SAVE</button>
+        <button type="button" onclick="closeModal('productModal')" class="action-btn" style="padding:10px; flex:1; height:50px; font-weight:800; background:rgba(255,255,255,0.05); border-color:var(--border); color:var(--muted)">CANCEL</button>
+      </div>
     </div>
   </div>
 
@@ -692,26 +696,16 @@
             <button type="button" class="btn-primary" onclick="saveBillWithPayment('Cash')" style="position: relative; flex: 1; height: 50px; background: #22c55e; box-shadow: 0 4px 12px rgba(34,197,94,0.2); border-radius: 12px; font-weight: 800; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
               <i data-lucide="banknote" style="width: 18px; height: 18px;"></i>
               <span>CASH</span>
-              <span style="position: absolute; right: 8px; bottom: 4px; font-size: 0.55rem; opacity: 0.8; font-weight: 700;">[F5]</span>
+              <span class="shortcut-key" style="position: absolute; right: 8px; bottom: 4px; font-size: 0.55rem; opacity: 0.8; font-weight: 700;">[F5]</span>
             </button>
             <button type="button" class="btn-primary" onclick="saveBillWithPayment('UPI')" style="position: relative; flex: 1; height: 50px; background: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3886.75 897.47" style="height: 18px; width: auto; fill: currentColor; display: block; margin: 0 auto;">
-                <defs>
-                  <linearGradient id="upi-pos-logo-grad" gradientUnits="userSpaceOnUse" x1="739.78" y1="239.98" x2="789.19" y2="827.38">
-                    <stop offset="0" stop-color="#00aae2"/>
-                    <stop offset="1" stop-color="#0096db"/>
-                  </linearGradient>
-                </defs>
-                <path d="M1581.5 438.1v160.23c-32.21 18.17-78.47 26.43-123.89 26.43-54.51 0-109.03-24.78-117.29-72.68-4.13-23.13-5.78-50.38-6.61-77.64V310.9l-96.64-12.39v175.93c0 33.86 4.13 66.9 11.56 94.98 14.87 59.47 112.33 90.03 208.97 90.03 45.43 0 90.85-5.78 128.02-19.82l92.5 12.39V304.29h-96.64V438.1zm287.44-133.81h-111.51l114.81 198.23-105.72 151.15h45.43l80.95-115.63 66.08 115.63h112.33l-117.29-203.19 50.38-72.68 51.21-73.51h-44.6l-77.64 110.68-64.42-110.68zm534.39 90.86l180.89 258.53h67.73c1.65-2.48 2.48-4.95 2.48-7.43l17.35-341.95h-96.64l-13.21 253.57-156.1-223.01-2.48-3.3-157.76 226.31-13.21-253.57h-96.64l17.35 341.95c0 2.48.83 4.95 1.65 7.43h68.55l180.06-258.53zM2851 653.68V310.91l-96.63-13.22v355.99H2851zm7.44-482.36c-8.26-33.04-103.25-33.04-111.5-.83-3.3 15.7-3.3 36.34 0 51.21 8.26 31.39 104.07 32.21 111.5-1.65 4.13-14.04 4.13-33.86 0-48.73zm167.67 341.12V351.38c32.22-17.35 77.64-26.43 123.9-26.43 54.51 0 109.03 25.6 117.28 73.51 4.13 22.3 5.78 49.55 5.78 76.81v178.41h96.64V475.27c0-33.04-3.3-66.9-10.74-94.98-14.87-59.47-112.33-90.03-208.97-90.03-50.38 0-99.94 7.43-138.76 23.95l-81.77-10.74v350.21h96.64V512.44zm860.65 128.85v-168.5c0-32.21-3.3-65.25-9.91-92.5-15.7-61.95-113.15-92.51-210.62-92.51s-194.1 30.56-208.97 90.85c-7.43 28.91-10.74 62.77-10.74 95.81 0 33.86 3.3 66.9 10.74 94.98 15.69 59.47 112.33 90.03 209.79 90.03 42.95 0 86.73-5.78 123.07-18.17 0 23.95-2.48 47.08-5.78 66.9-8.26 49.55-63.6 74.34-118.11 74.34v34.69c97.46 0 194.92-30.56 209.79-90.85 6.61-25.6 9.91-55.34 10.74-85.07zm-96.64-167.67v124.72c-32.21 18.17-77.64 26.43-123.07 26.43-54.51 0-109.85-24.78-118.11-72.68-4.13-23.13-5.78-50.38-5.78-77.64 0-27.26 1.65-54.52 5.78-77.64 8.26-48.73 63.6-73.51 117.29-73.51 54.51 0 109.02 24.78 118.11 74.33 4.13 23.13 5.78 49.56 5.78 75.99z" fill="#fff" fill-rule="nonzero"/>
-                <path d="M532.82 361.09C617.06 244.9 709.68 131.7 692.84 0c192.28 123.92 161.92 310.5-3.75 427.9 72.73.94 143.07-87.94 149.2-151.15 154.34 94.08 21.85 246.62-82.13 300.39 45-5.24 89.38-27.15 130.63-56.8 73.85 111.61-52.24 177.98-117.17 173.94l87.79 15.07c-37.39 116.93-120.83 182.46-253.84 182.97 25.47-17.18 46.64-42 62.29-72.08 25.86-49.71 36.61-114.26 26.15-181.91l-.01-.04c-9.98-64.53-43.9-139.76-91.21-203.17-20.36-27.29-43.29-52.54-67.99-74.02z" fill="url(#upi-pos-logo-grad)"/>
-                <path d="M467.99 496.78c-3.04-28.26-16.93-94.38-33.92-170.9 115.78 45.48 217.78 200.28 235.63 315.85 19.4 125.43-39.39 238.47-131.46 252.7-139.25 21.53-226.1-74.84-287.03-187.99C171.09 571.74 125.61 521.45 0 336.45c107.41-34.4 227.99 42.34 287.54 112.02-6.52-42.17-48.24-84.48-89.45-180.43C313.59 256.57 434.66 396.93 468 496.76z" fill="#83c738" fill-rule="nonzero"/>
-              </svg>
-              <span style="position: absolute; right: 8px; bottom: 4px; font-size: 0.55rem; opacity: 0.8; font-weight: 700;">[F6]</span>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" style="height: 18px; width: auto; margin: 0 auto; display: block; filter: brightness(0) invert(1);">
+              <span class="shortcut-key" style="position: absolute; right: 8px; bottom: 4px; font-size: 0.55rem; opacity: 0.8; font-weight: 700;">[F6]</span>
             </button>
             <button type="button" class="btn-primary" id="posCardBtn" onclick="saveBillWithPayment('Card')" style="display: none; position: relative; flex: 1; height: 50px; background: #a855f7; box-shadow: 0 4px 12px rgba(168,85,247,0.2); border-radius: 12px; font-weight: 800; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
               <i data-lucide="credit-card" style="width: 18px; height: 18px;"></i>
               <span>CARD</span>
-              <span style="position: absolute; right: 8px; bottom: 4px; font-size: 0.55rem; opacity: 0.8; font-weight: 700;">[F7]</span>
+              <span class="shortcut-key" style="position: absolute; right: 8px; bottom: 4px; font-size: 0.55rem; opacity: 0.8; font-weight: 700;">[F7]</span>
             </button>
           </div>
         </div>
@@ -861,17 +855,7 @@
           <kbd style="position: absolute; right: 15px; font-size:0.7rem; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; opacity:0.8; font-family:inherit;">[C]</kbd>
         </button>
         <button id="payMethodUpiBtn" class="btn-primary" style="position: relative; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #3b82f6; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; transition: 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.15)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3886.75 897.47" style="height: 20px; width: auto; fill: currentColor; display: block; margin: 0 auto;">
-            <defs>
-              <linearGradient id="upi-logo-grad" gradientUnits="userSpaceOnUse" x1="739.78" y1="239.98" x2="789.19" y2="827.38">
-                <stop offset="0" stop-color="#00aae2"/>
-                <stop offset="1" stop-color="#0096db"/>
-              </linearGradient>
-            </defs>
-            <path d="M1581.5 438.1v160.23c-32.21 18.17-78.47 26.43-123.89 26.43-54.51 0-109.03-24.78-117.29-72.68-4.13-23.13-5.78-50.38-6.61-77.64V310.9l-96.64-12.39v175.93c0 33.86 4.13 66.9 11.56 94.98 14.87 59.47 112.33 90.03 208.97 90.03 45.43 0 90.85-5.78 128.02-19.82l92.5 12.39V304.29h-96.64V438.1zm287.44-133.81h-111.51l114.81 198.23-105.72 151.15h45.43l80.95-115.63 66.08 115.63h112.33l-117.29-203.19 50.38-72.68 51.21-73.51h-44.6l-77.64 110.68-64.42-110.68zm534.39 90.86l180.89 258.53h67.73c1.65-2.48 2.48-4.95 2.48-7.43l17.35-341.95h-96.64l-13.21 253.57-156.1-223.01-2.48-3.3-157.76 226.31-13.21-253.57h-96.64l17.35 341.95c0 2.48.83 4.95 1.65 7.43h68.55l180.06-258.53zM2851 653.68V310.91l-96.63-13.22v355.99H2851zm7.44-482.36c-8.26-33.04-103.25-33.04-111.5-.83-3.3 15.7-3.3 36.34 0 51.21 8.26 31.39 104.07 32.21 111.5-1.65 4.13-14.04 4.13-33.86 0-48.73zm167.67 341.12V351.38c32.22-17.35 77.64-26.43 123.9-26.43 54.51 0 109.03 25.6 117.28 73.51 4.13 22.3 5.78 49.55 5.78 76.81v178.41h96.64V475.27c0-33.04-3.3-66.9-10.74-94.98-14.87-59.47-112.33-90.03-208.97-90.03-50.38 0-99.94 7.43-138.76 23.95l-81.77-10.74v350.21h96.64V512.44zm860.65 128.85v-168.5c0-32.21-3.3-65.25-9.91-92.5-15.7-61.95-113.15-92.51-210.62-92.51s-194.1 30.56-208.97 90.85c-7.43 28.91-10.74 62.77-10.74 95.81 0 33.86 3.3 66.9 10.74 94.98 15.69 59.47 112.33 90.03 209.79 90.03 42.95 0 86.73-5.78 123.07-18.17 0 23.95-2.48 47.08-5.78 66.9-8.26 49.55-63.6 74.34-118.11 74.34v34.69c97.46 0 194.92-30.56 209.79-90.85 6.61-25.6 9.91-55.34 10.74-85.07zm-96.64-167.67v124.72c-32.21 18.17-77.64 26.43-123.07 26.43-54.51 0-109.85-24.78-118.11-72.68-4.13-23.13-5.78-50.38-5.78-77.64 0-27.26 1.65-54.52 5.78-77.64 8.26-48.73 63.6-73.51 117.29-73.51 54.51 0 109.02 24.78 118.11 74.33 4.13 23.13 5.78 49.56 5.78 75.99z" fill="#fff" fill-rule="nonzero"/>
-            <path d="M532.82 361.09C617.06 244.9 709.68 131.7 692.84 0c192.28 123.92 161.92 310.5-3.75 427.9 72.73.94 143.07-87.94 149.2-151.15 154.34 94.08 21.85 246.62-82.13 300.39 45-5.24 89.38-27.15 130.63-56.8 73.85 111.61-52.24 177.98-117.17 173.94l87.79 15.07c-37.39 116.93-120.83 182.46-253.84 182.97 25.47-17.18 46.64-42 62.29-72.08 25.86-49.71 36.61-114.26 26.15-181.91l-.01-.04c-9.98-64.53-43.9-139.76-91.21-203.17-20.36-27.29-43.29-52.54-67.99-74.02z" fill="url(#upi-logo-grad)"/>
-            <path d="M467.99 496.78c-3.04-28.26-16.93-94.38-33.92-170.9 115.78 45.48 217.78 200.28 235.63 315.85 19.4 125.43-39.39 238.47-131.46 252.7-139.25 21.53-226.1-74.84-287.03-187.99C171.09 571.74 125.61 521.45 0 336.45c107.41-34.4 227.99 42.34 287.54 112.02-6.52-42.17-48.24-84.48-89.45-180.43C313.59 256.57 434.66 396.93 468 496.76z" fill="#83c738" fill-rule="nonzero"/>
-          </svg>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" style="height: 20px; width: auto; margin: 0 auto; display: block; filter: brightness(0) invert(1);">
           <kbd style="position: absolute; right: 15px; font-size:0.7rem; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; opacity:0.8; font-family:inherit;">[U]</kbd>
         </button>
       </div>
