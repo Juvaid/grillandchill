@@ -35,3 +35,8 @@ This document tracks the transition from a premium static PWA to a full-stack dy
 - **2026-05-15**: Initialized Project Greatness.
 - **2026-05-15**: Expanded schema to support Billing & Orders.
 - **2026-05-15**: Created `admin.html` with Auth guard and CRUD foundations.
+
+## 🎨 Design & UX Rules
+1. **No Emojis on Action Buttons**: Avoid generic emojis (e.g. 💵, 📱, 💳, ✕, 💰) for button labels. Use clean, relevant Lucide vector icons instead.
+2. **UPI Button Icon Rule**: For all UPI payment buttons, use the official UPI SVG logo centered on the button, with no text.
+

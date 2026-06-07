@@ -1,89 +1,120 @@
--- Orders
-create policy "Admins manage all orders"
-  on public.orders for all
-  using (public.is_admin());
+-- Supabase Schema Backup for Grill & Chill
+-- Note: This is an inferred schema based on the application's current usage.
 
-create policy "Public can place orders"
-  on public.orders for insert
-  with check (true);
+-- Enable UUID extension if not enabled
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Order Items
-create policy "Admins manage all order items"
-  on public.order_items for all
-  using (public.is_admin());
-
-create policy "Public can add order items"
-  on public.order_items for insert
-  with check (true);
-
--- Bills
-create policy "Admins manage all bills"
-  on public.bills for all
-  using (public.is_admin());
-
--- Categories
-create policy "Public read categories"
-  on public.categories for select
-  using (true);
-
-create policy "Admins manage all categories"
-  on public.categories for all
-  using (public.is_admin())
-  with check (public.is_admin());
-
--- Done! ✅
-
--- 13. Store Settings Table (shared between Admin and Customers)
-create table if not exists public.store_settings (
-  key   text primary key,
-  value text not null
+-- ==========================================
+-- 1. PROFILES
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    role TEXT NOT NULL DEFAULT 'user',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
-alter table public.store_settings enable row level security;
-
-create policy "Public read store settings"
-  on public.store_settings for select
-  using (true);
-
-create policy "Admins manage store settings"
-  on public.store_settings for all
-  using (get_auth_role() = 'admin')
-  with check (get_auth_role() = 'admin');
-
--- 14. Admin Push Subscriptions (For Background Push Notifications)
-create table if not exists public.admin_push_subscriptions (
-  id            uuid primary key default gen_random_uuid(),
-  user_id       uuid references auth.users on delete cascade,
-  subscription  jsonb not null,
-  created_at    timestamptz default now()
+-- ==========================================
+-- 2. CATEGORIES
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    image_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
-alter table public.admin_push_subscriptions enable row level security;
+-- ==========================================
+-- 3. MENU ITEMS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.menu_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    description TEXT,
+    price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    category TEXT NOT NULL,
+    image_url TEXT,
+    available BOOLEAN DEFAULT true,
+    sort_order INTEGER DEFAULT 0,
+    sizes JSONB DEFAULT '[]'::jsonb, -- Array of objects: {name: 'Regular', price: 99}
+    addons JSONB DEFAULT '[]'::jsonb, -- Array of objects: {name: 'Cheese', price: 20}
+    tags JSONB DEFAULT '[]'::jsonb, -- Array of strings e.g. ['veg', 'spicy']
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
-create policy "Admins manage own subscriptions"
-  on public.admin_push_subscriptions for all
-  using (auth.uid() = user_id and get_auth_role() = 'admin')
-  with check (auth.uid() = user_id and get_auth_role() = 'admin');
+-- ==========================================
+-- 4. ORDERS (Live / KDS)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    customer_name TEXT,
+    customer_phone TEXT,
+    items JSONB NOT NULL,
+    total_amount NUMERIC(10, 2) NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'preparing', 'ready', 'completed', 'cancelled'
+    order_type TEXT DEFAULT 'takeaway', -- 'dine-in', 'takeaway', 'delivery'
+    table_number TEXT,
+    notes TEXT,
+    payment_method TEXT,
+    payment_status TEXT DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
--- 15. Push Notification Webhook Trigger on Orders
-create or replace function public.on_order_inserted_push()
-returns trigger as $$
-begin
-  perform net.http_post(
-    url := 'https://grillandchillpizzeria.juvaid.in/api/send-order-push',
-    body := jsonb_build_object(
-      'record', jsonb_build_object(
-        'id', new.id,
-        'customer_name', new.customer_name,
-        'total_amount', new.total_amount
-      )
-    ),
-    headers := '{"Content-Type": "application/json"}'::jsonb
-  );
-  return new;
-end;
-$$ language plpgsql security definer;
+-- ==========================================
+-- 5. BILLS (Invoices / Receipts)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.bills (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_name TEXT,
+    customer_phone TEXT,
+    total_amount NUMERIC(10, 2) NOT NULL,
+    discount_amount NUMERIC(10, 2) DEFAULT 0.00,
+    items JSONB NOT NULL,
+    payment_status TEXT NOT NULL DEFAULT 'paid',
+    payment_method TEXT NOT NULL DEFAULT 'Cash',
+    order_type TEXT DEFAULT 'dine-in',
+    notes TEXT,
+    table_number TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
-create or replace trigger on_order_inserted_push_trigger
-  after insert on public.orders
-  for each row execute procedure public.on_order_inserted_push();
+-- ==========================================
+-- 6. STORE SETTINGS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.store_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- ==========================================
+-- 7. ADMIN PUSH SUBSCRIPTIONS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.admin_push_subscriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    subscription JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- ==========================================
+-- STORAGE BUCKETS
+-- ==========================================
+-- Note: Create these buckets manually in the Supabase Dashboard
+-- Bucket: 'menu-images' (Public)
+
+-- ==========================================
+-- ROW LEVEL SECURITY (RLS)
+-- ==========================================
+-- Enable RLS on all tables
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.bills ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.store_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_push_subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- Note: RLS Policies should be configured via the Supabase Dashboard or migrations. 
+-- Example: Allow public read access to menu_items and categories, but restrict writes to authenticated admins.
