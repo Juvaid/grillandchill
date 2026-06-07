@@ -508,7 +508,8 @@
     }
 
     async function deleteProduct(id, name) {
-      if (!confirm(`Are you sure you want to delete the menu item "${name}"?`)) return;
+      const msg = `Are you sure you want to permanently delete "${name}"?\n\nTIP: If you just want to hide this item from your menu temporarily, click Cancel and toggle the "AVAILABLE" switch instead!`;
+      if (!confirm(msg)) return;
       try {
         const { error } = await supabaseClient.from('menu_items').delete().eq('id', id);
         if (error) throw error;
