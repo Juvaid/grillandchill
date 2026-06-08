@@ -34,7 +34,9 @@
 
     const supabaseClient = supabase.createClient(window.ENV.SUPABASE_URL, window.ENV.SUPABASE_ANON_KEY);
     let currentUser = null;
-    let ordersSubscription = null;
+    let ordersChannel = null;
+    let billsChannel = null;
+    let isDashboardInitialized = false;
 
     // --- AUTH LOGIC ---
     async function checkAuth() {
@@ -166,6 +168,9 @@
     }
 
     async function showDashboard() {
+      if (isDashboardInitialized) return;
+      isDashboardInitialized = true;
+
       document.getElementById('authScreen').classList.add('hidden');
       document.getElementById('dashboard').classList.remove('hidden');
       
@@ -186,6 +191,11 @@
     }
 
     async function setupPushNotifications() {
+      if (location.protocol === 'file:') {
+        console.warn('Push notifications and Service Workers cannot be registered when loading admin.html directly via file:// protocol. Please run a local web server.');
+        return;
+      }
+
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         console.warn('Push notifications or Service Worker is not supported in this browser');
         return;
@@ -251,6 +261,10 @@
     }
 
     function subscribeToOrders() {
+      if (ordersChannel) {
+        console.log('Already subscribed to live orders.');
+        return;
+      }
       console.log('📡 Subscribing to Live Orders...');
       
       // Request permission on first live load/auth
@@ -258,7 +272,7 @@
         Notification.requestPermission();
       }
 
-      supabaseClient
+      ordersChannel = supabaseClient
         .channel('orders-live')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
           console.log('🔥 New Live Order:', payload);
@@ -286,8 +300,9 @@
         })
         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'orders' }, payload => {
           loadOrders();
-        })
-        .subscribe();
+        });
+
+      ordersChannel.subscribe();
     }
 
     function playNotificationSound() {
@@ -329,15 +344,20 @@
     }
 
     function subscribeToBills() {
+      if (billsChannel) {
+        console.log('Already subscribed to live bills.');
+        return;
+      }
       console.log('📡 Subscribing to Live Bills...');
-      supabaseClient
+      billsChannel = supabaseClient
         .channel('bills-live')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'bills' }, payload => {
           console.log('💰 Live Bill Update:', payload);
           loadBilling();
           updateDashboardStats();
-        })
-        .subscribe();
+        });
+
+      billsChannel.subscribe();
     }
 
     // --- TAB LOGIC ---
