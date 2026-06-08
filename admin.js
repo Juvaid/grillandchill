@@ -3960,7 +3960,7 @@
               </div>
             </div>
           `).join('')}
-        </div>
+        </div>`;
     }
 
     function renderCategorySkeletons() {
