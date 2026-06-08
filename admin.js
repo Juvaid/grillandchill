@@ -1156,12 +1156,13 @@
 
     function toggleTagChip(el, tagVal) {
       let tags = JSON.parse(document.getElementById('itemTags').value || '[]');
+      const tagClass = tagVal.toLowerCase().replace(' ', '-');
       if (tags.includes(tagVal)) {
         tags = tags.filter(t => t !== tagVal);
-        el.classList.remove('active');
+        el.classList.remove('active', tagClass);
       } else {
         tags.push(tagVal);
-        el.classList.add('active');
+        el.classList.add('active', tagClass);
       }
       document.getElementById('itemTags').value = JSON.stringify(tags);
     }
@@ -1169,7 +1170,7 @@
     function resetTagChips() {
       document.getElementById('itemTags').value = '[]';
       document.querySelectorAll('.tag-chip').forEach(el => {
-        el.classList.remove('active');
+        el.className = 'tag-chip';
       });
     }
 
@@ -1181,7 +1182,8 @@
         const text = el.innerText.trim();
         tagsArr.forEach(t => {
           if (text.includes(t)) {
-            el.classList.add('active');
+            const tagClass = t.toLowerCase().replace(' ', '-');
+            el.classList.add('active', tagClass);
           }
         });
       });
@@ -1192,19 +1194,21 @@
       const rowId = `size-row-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
       const rowDiv = document.createElement('div');
       rowDiv.id = rowId;
+      rowDiv.className = 'builder-row';
       rowDiv.style.display = 'grid';
-      rowDiv.style.gridTemplateColumns = '2fr 1fr 42px';
+      rowDiv.style.gridTemplateColumns = '2fr 1fr 38px';
       rowDiv.style.gap = '10px';
       rowDiv.style.alignItems = 'center';
+      rowDiv.style.marginTop = '8px';
       rowDiv.style.animation = 'scaleIn 0.2s ease-out';
       rowDiv.innerHTML = `
         <input type="text" class="auth-input size-name" value="${name}" placeholder="e.g. Regular" style="margin-bottom:0;" required>
         <div style="position:relative; display:flex; align-items:center;">
-          <span style="position:absolute; left:12px; color:var(--muted); font-size:0.8rem; font-weight:700">₹</span>
-          <input type="number" class="auth-input size-price" value="${price}" placeholder="199" min="0" style="margin-bottom:0; padding-left:25px; width:100%" required>
+          <span class="price-symbol">₹</span>
+          <input type="number" class="auth-input size-price" value="${price}" placeholder="199" min="0" style="margin-bottom:0; width:100%" required>
         </div>
-        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="action-btn" style="padding:0; background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.2); color:#ef4444; height:48px; width:42px; display:flex; align-items:center; justify-content:center; border-radius:12px; transition:0.2s">
-          <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="trash-btn">
+          <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
         </button>
       `;
       container.appendChild(rowDiv);
@@ -1216,19 +1220,21 @@
       const rowId = `addon-row-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
       const rowDiv = document.createElement('div');
       rowDiv.id = rowId;
+      rowDiv.className = 'builder-row';
       rowDiv.style.display = 'grid';
-      rowDiv.style.gridTemplateColumns = '2fr 1fr 42px';
+      rowDiv.style.gridTemplateColumns = '2fr 1fr 38px';
       rowDiv.style.gap = '10px';
       rowDiv.style.alignItems = 'center';
+      rowDiv.style.marginTop = '8px';
       rowDiv.style.animation = 'scaleIn 0.2s ease-out';
       rowDiv.innerHTML = `
         <input type="text" class="auth-input addon-name" value="${name}" placeholder="e.g. Extra Cheese" style="margin-bottom:0;" required>
         <div style="position:relative; display:flex; align-items:center;">
-          <span style="position:absolute; left:12px; color:var(--muted); font-size:0.8rem; font-weight:700">₹</span>
-          <input type="number" class="auth-input addon-price" value="${price}" placeholder="50" min="0" style="margin-bottom:0; padding-left:25px; width:100%" required>
+          <span class="price-symbol">₹</span>
+          <input type="number" class="auth-input addon-price" value="${price}" placeholder="50" min="0" style="margin-bottom:0; width:100%" required>
         </div>
-        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="action-btn" style="padding:0; background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.2); color:#ef4444; height:48px; width:42px; display:flex; align-items:center; justify-content:center; border-radius:12px; transition:0.2s">
-          <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="trash-btn">
+          <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
         </button>
       `;
       container.appendChild(rowDiv);

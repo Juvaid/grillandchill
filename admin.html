@@ -492,10 +492,15 @@
 
         <div class="form-group">
           <label class="form-label">Item Name</label>
-          <input type="text" id="itemName" class="auth-input modal-input" placeholder="e.g. Farmhouse Pizza" required>
+          <div class="input-group-emoji">
+            <div class="emoji-input-wrapper">
+              <input type="text" id="itemEmoji" class="auth-input emoji-field" value="🍽️" title="Emoji Icon">
+            </div>
+            <input type="text" id="itemName" class="auth-input modal-input name-field" placeholder="e.g. Farmhouse Pizza" required>
+          </div>
         </div>
         
-        <div style="display:grid; grid-template-columns: 3fr 1.2fr; gap: 15px;">
+        <div style="display:grid; grid-template-columns: 1.6fr 1.2fr 1fr; gap: 12px;">
           <div class="form-group">
             <label class="form-label">Category</label>
             <select id="itemCat" class="auth-input modal-input" required onchange="handleCategoryChange(this.value)">
@@ -507,25 +512,32 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label" style="text-align: center;">Emoji Icon</label>
-            <input type="text" id="itemEmoji" class="auth-input modal-input" value="🍽️" style="text-align: center;">
+            <label class="form-label">Status</label>
+            <select id="itemAvailable" class="auth-input modal-input">
+              <option value="true">Visible</option>
+              <option value="false">Hidden</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sort Order</label>
+            <input type="number" id="itemSortOrder" class="auth-input modal-input" value="0" min="0" placeholder="0">
           </div>
         </div>
 
         <div class="form-group">
           <label class="form-label">Description</label>
-          <input type="text" id="itemDesc" class="auth-input modal-input" placeholder="Ingredients, taste profile...">
+          <textarea id="itemDesc" class="auth-input modal-input" placeholder="Ingredients, taste profile..." rows="2" style="resize: none; height: 60px; line-height: 1.4; padding: 10px 12px !important; border-radius: 12px !important;"></textarea>
         </div>
 
         <div class="form-group">
           <label class="form-label">Dietary Preference</label>
-          <div style="display: flex; gap: 15px; margin-top: 5px;">
-            <button type="button" id="btnVeg" class="dietary-btn" onclick="setDietary(true)">
+          <div class="segmented-control">
+            <button type="button" id="btnVeg" class="segmented-btn" onclick="setDietary(true)">
               <span class="outer-diet-icon">
                 <span class="inner-diet-icon"></span>
               </span> VEG
             </button>
-            <button type="button" id="btnNonVeg" class="dietary-btn" onclick="setDietary(false)">
+            <button type="button" id="btnNonVeg" class="segmented-btn" onclick="setDietary(false)">
               <span class="outer-diet-icon">
                 <span class="inner-diet-icon"></span>
               </span> NON-VEG
@@ -547,9 +559,11 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">
             <span>Sizes & Prices</span>
-            <button type="button" class="mini-btn primary" onclick="addSizeRow()" style="font-size: 0.7rem; padding: 4px 8px;">+ Add Size</button>
+            <button type="button" class="action-btn" onclick="addSizeRow()" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 8px; border-color: var(--primary); color: var(--primary); font-weight: 700; background: transparent; display: flex; align-items: center; gap: 4px; transition: 0.2s;" onmouseover="this.style.background='rgba(255,107,0,0.05)'" onmouseout="this.style.background='transparent'">
+              <i data-lucide="plus" style="width: 12px; height: 12px;"></i> Add Size
+            </button>
           </label>
           <div id="sizesBuilderContainer" style="display: flex; flex-direction: column; gap: 10px; margin-top: 5px;">
             <!-- Size rows will go here -->
@@ -558,28 +572,16 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">
             <span>Addons Configuration</span>
-            <button type="button" class="mini-btn primary" onclick="addAddonRow()" style="font-size: 0.7rem; padding: 4px 8px;">+ Add Addon</button>
+            <button type="button" class="action-btn" onclick="addAddonRow()" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 8px; border-color: var(--primary); color: var(--primary); font-weight: 700; background: transparent; display: flex; align-items: center; gap: 4px; transition: 0.2s;" onmouseover="this.style.background='rgba(255,107,0,0.05)'" onmouseout="this.style.background='transparent'">
+              <i data-lucide="plus" style="width: 12px; height: 12px;"></i> Add Addon
+            </button>
           </label>
           <div id="addonsBuilderContainer" style="display: flex; flex-direction: column; gap: 10px; margin-top: 5px;">
             <!-- Addon rows will go here -->
           </div>
           <input type="hidden" id="itemAddons">
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-          <div class="form-group">
-            <label class="form-label">Sort Order</label>
-            <input type="number" id="itemSortOrder" class="auth-input modal-input" value="0" min="0" placeholder="Auto if 0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Available</label>
-            <select id="itemAvailable" class="auth-input modal-input">
-              <option value="true">Yes — Visible</option>
-              <option value="false">No — Hidden</option>
-            </select>
-          </div>
         </div>
 
       </form>

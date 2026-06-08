@@ -304,6 +304,30 @@
       border-radius: 10px !important;
     }
 
+    /* INLINE EMOJI INPUT GROUP */
+    .input-group-emoji {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+    }
+    .emoji-input-wrapper {
+      width: 60px;
+      flex-shrink: 0;
+    }
+    .emoji-field {
+      text-align: center;
+      padding: 12px 0 !important;
+      font-size: 1.35rem !important;
+      margin-bottom: 0 !important;
+      border-radius: 12px !important;
+      cursor: pointer;
+    }
+    .name-field {
+      flex: 1;
+      margin-bottom: 0 !important;
+    }
+
     /* CUSTOM SELECT */
     select.auth-input {
       -webkit-appearance: none;
@@ -321,49 +345,67 @@
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6b00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     }
 
-    /* DIETARY SELECTORS */
-    .dietary-btn {
+    /* DIETARY SEGMENTED CONTROL */
+    .segmented-control {
+      position: relative;
+      display: flex;
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 4px;
+      height: 48px;
+      align-items: stretch;
+      gap: 4px;
+      transition: border-color 0.2s;
+    }
+    .segmented-control:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .segmented-btn {
       flex: 1;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
-      color: var(--muted);
-      font-weight: 800;
-      cursor: pointer;
       transition: all 0.25s var(--ease-spring);
+      border-radius: 10px;
     }
-    .dietary-btn:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.15);
-      transform: translateY(-1px);
+    .segmented-btn:hover {
+      color: var(--text);
     }
-    .dietary-btn:active {
+    .segmented-btn:active {
       transform: scale(0.97);
     }
+    
     #btnVeg.active {
-      border-color: rgba(34,197,94,0.5) !important;
-      background: rgba(34,197,94,0.08) !important;
+      border-color: rgba(34, 197, 94, 0.25) !important;
+      background: rgba(34, 197, 94, 0.08) !important;
       color: #22c55e !important;
-      box-shadow: 0 0 15px rgba(34,197,94,0.12);
+      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.08);
     }
     #btnVeg.active .inner-diet-icon {
-      box-shadow: 0 0 10px #22c55e;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
       animation: pulseVeg 2s infinite alternate;
     }
+    
     #btnNonVeg.active {
-      border-color: rgba(239,68,68,0.5) !important;
-      background: rgba(239,68,68,0.08) !important;
+      border-color: rgba(239, 68, 68, 0.25) !important;
+      background: rgba(239, 68, 68, 0.08) !important;
       color: #ef4444 !important;
-      box-shadow: 0 0 15px rgba(239,68,68,0.12);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.08);
     }
     #btnNonVeg.active .inner-diet-icon {
-      box-shadow: 0 0 10px #ef4444;
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
     }
+    
     .outer-diet-icon {
       display: flex;
       align-items: center;
@@ -374,33 +416,32 @@
       border-radius: 3.5px;
     }
     .inner-diet-icon {
-      transition: all 0.2s;
-    }
-    #btnVeg .inner-diet-icon {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: currentColor;
+      background: var(--muted);
+      transition: all 0.2s;
     }
     #btnNonVeg .inner-diet-icon {
       width: 7px;
       height: 7px;
-      background: currentColor;
       clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      border-radius: 0;
+      background: var(--muted);
     }
     @keyframes pulseVeg {
       0% { transform: scale(0.9); opacity: 0.8; }
       100% { transform: scale(1.1); opacity: 1; }
     }
 
-    /* TAG CHIPS */
+    /* TAG CHIPS INDIVIDUAL COLOR STATE */
     .tag-chip {
-      padding: 8px 16px;
+      padding: 6px 14px;
       border-radius: 20px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
+      background: rgba(255,255,255,0.015);
       color: var(--muted);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
@@ -409,22 +450,47 @@
       transition: all 0.25s var(--ease-spring);
     }
     .tag-chip:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.12);
       color: var(--text);
       transform: translateY(-1px);
     }
     .tag-chip:active {
       transform: scale(0.95);
     }
-    .tag-chip.active {
-      background: rgba(255,107,0,0.1) !important;
-      border-color: rgba(255,107,0,0.4) !important;
-      color: var(--primary) !important;
-      box-shadow: 0 0 10px rgba(255,107,0,0.12);
+    
+    .tag-chip.active.spicy {
+      background: rgba(239, 68, 68, 0.08) !important;
+      border-color: rgba(239, 68, 68, 0.35) !important;
+      color: #ef4444 !important;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08);
+    }
+    .tag-chip.active.best-seller {
+      background: rgba(234, 179, 8, 0.08) !important;
+      border-color: rgba(234, 179, 8, 0.35) !important;
+      color: #eab308 !important;
+      box-shadow: 0 4px 12px rgba(234, 179, 8, 0.08);
+    }
+    .tag-chip.active.new {
+      background: rgba(59, 130, 246, 0.08) !important;
+      border-color: rgba(59, 130, 246, 0.35) !important;
+      color: #3b82f6 !important;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+    }
+    .tag-chip.active.popular {
+      background: rgba(168, 85, 247, 0.08) !important;
+      border-color: rgba(168, 85, 247, 0.35) !important;
+      color: #a855f7 !important;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.08);
+    }
+    .tag-chip.active.special {
+      background: rgba(236, 72, 153, 0.08) !important;
+      border-color: rgba(236, 72, 153, 0.35) !important;
+      color: #ec4899 !important;
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.08);
     }
 
-    /* BUILDER CONTAINER CARDS */
+    /* BUILDER CONTAINER CARDS & Sleek builder row components */
     #sizesBuilderContainer, #addonsBuilderContainer {
       background: rgba(255,255,255,0.015);
       border: 1px solid var(--border);
@@ -433,7 +499,45 @@
       transition: border-color 0.2s;
     }
     #sizesBuilderContainer:hover, #addonsBuilderContainer:hover {
-      border-color: rgba(255,255,255,0.12);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .builder-row input.auth-input {
+      padding: 10px 12px !important;
+      font-size: 0.85rem !important;
+      border-radius: 10px !important;
+    }
+    .builder-row .price-symbol {
+      position: absolute;
+      left: 12px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .builder-row input.size-price, .builder-row input.addon-price {
+      padding-left: 25px !important;
+    }
+    .builder-row .trash-btn {
+      padding: 0;
+      background: rgba(239, 68, 68, 0.05);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      height: 38px;
+      width: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-spring);
+    }
+    .builder-row .trash-btn:hover {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.4);
+      transform: scale(1.05) rotate(5deg);
+    }
+    .builder-row .trash-btn:active {
+      transform: scale(0.95);
     }
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
