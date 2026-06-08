@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build": "echo \"window.ENV = { SUPABASE_URL: '$SUPABASE_URL', SUPABASE_ANON_KEY: '$SUPABASE_ANON_KEY' };\" > env.js"
+    "build": "echo \"window.ENV = { SUPABASE_URL: '$SUPABASE_URL', SUPABASE_ANON_KEY: '$SUPABASE_ANON_KEY' };\" > env.js",
+    "dev": "npx -y http-server . -p 3000"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
