@@ -1125,28 +1125,12 @@
       document.getElementById('itemIsVeg').value = isVeg ? 'true' : 'false';
       const btnVeg = document.getElementById('btnVeg');
       const btnNonVeg = document.getElementById('btnNonVeg');
-      const vegInner = btnVeg.querySelector('.inner-diet-icon');
-      const nonVegInner = btnNonVeg.querySelector('.inner-diet-icon');
       if (isVeg) {
-        btnVeg.style.background = 'rgba(34,197,94,0.08)';
-        btnVeg.style.borderColor = 'rgba(34,197,94,0.4)';
-        btnVeg.style.color = '#22c55e';
-        if (vegInner) vegInner.style.boxShadow = '0 0 10px #22c55e';
-        
-        btnNonVeg.style.background = 'rgba(255,255,255,0.02)';
-        btnNonVeg.style.borderColor = 'var(--border)';
-        btnNonVeg.style.color = 'var(--muted)';
-        if (nonVegInner) nonVegInner.style.boxShadow = 'none';
+        btnVeg.classList.add('active');
+        btnNonVeg.classList.remove('active');
       } else {
-        btnVeg.style.background = 'rgba(255,255,255,0.02)';
-        btnVeg.style.borderColor = 'var(--border)';
-        btnVeg.style.color = 'var(--muted)';
-        if (vegInner) vegInner.style.boxShadow = 'none';
-        
-        btnNonVeg.style.background = 'rgba(239,68,68,0.08)';
-        btnNonVeg.style.borderColor = 'rgba(239,68,68,0.4)';
-        btnNonVeg.style.color = '#ef4444';
-        if (nonVegInner) nonVegInner.style.boxShadow = '0 0 10px #ef4444';
+        btnVeg.classList.remove('active');
+        btnNonVeg.classList.add('active');
       }
     }
 
@@ -1154,14 +1138,10 @@
       let tags = JSON.parse(document.getElementById('itemTags').value || '[]');
       if (tags.includes(tagVal)) {
         tags = tags.filter(t => t !== tagVal);
-        el.style.background = 'rgba(255,255,255,0.02)';
-        el.style.borderColor = 'var(--border)';
-        el.style.color = 'var(--muted)';
+        el.classList.remove('active');
       } else {
         tags.push(tagVal);
-        el.style.background = 'rgba(255,107,0,0.1)';
-        el.style.borderColor = 'rgba(255,107,0,0.3)';
-        el.style.color = 'var(--primary)';
+        el.classList.add('active');
       }
       document.getElementById('itemTags').value = JSON.stringify(tags);
     }
@@ -1169,9 +1149,7 @@
     function resetTagChips() {
       document.getElementById('itemTags').value = '[]';
       document.querySelectorAll('.tag-chip').forEach(el => {
-        el.style.background = 'rgba(255,255,255,0.02)';
-        el.style.borderColor = 'var(--border)';
-        el.style.color = 'var(--muted)';
+        el.classList.remove('active');
       });
     }
 
@@ -1183,9 +1161,7 @@
         const text = el.innerText.trim();
         tagsArr.forEach(t => {
           if (text.includes(t)) {
-            el.style.background = 'rgba(255,107,0,0.1)';
-            el.style.borderColor = 'rgba(255,107,0,0.3)';
-            el.style.color = 'var(--primary)';
+            el.classList.add('active');
           }
         });
       });
