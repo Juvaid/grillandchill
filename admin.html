@@ -36,8 +36,8 @@
         <h2>G&C ADMIN</h2>
       </div>
       <div class="header-btns">
-        <div id="connectionBadges" style="display:flex; align-items:center; gap:8px; margin-right:5px;">
-          <span id="connectionStatusBadge" style="font-size:0.65rem; font-weight:800; padding:6px 10px; border-radius:8px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); color: var(--muted); display: inline-block; white-space: nowrap;">Checking...</span>
+        <div id="connectionBadges" style="display:flex; align-items:center; gap:8px; margin-right:12px;">
+          <div id="connectionStatusBadge" class="connection-status">Checking...</div>
         </div>
         <a href="index.html" class="icon-btn" title="Go to Store Menu">
           <i data-lucide="home"></i>
@@ -526,7 +526,8 @@
           <div class="form-group">
             <label class="form-label">Dietary Preference</label>
             <div class="segmented-control">
-              <button type="button" id="btnVeg" class="segmented-btn" onclick="setDietary(true)" title="Vegetarian">
+              <div class="segmented-slider"></div>
+              <button type="button" id="btnVeg" class="segmented-btn active" onclick="setDietary(true)" title="Vegetarian">
                 <span class="outer-diet-icon">
                   <span class="inner-diet-icon"></span>
                 </span>

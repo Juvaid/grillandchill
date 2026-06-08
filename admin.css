@@ -383,12 +383,28 @@
       padding: 3px;
       height: 48px;
       align-items: stretch;
-      gap: 3px;
+    }
+    .segmented-slider {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: calc(50% - 4.5px);
+      height: calc(100% - 6px);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: transform var(--duration-normal) var(--ease-spring);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .segmented-control.nonveg-active .segmented-slider {
+      transform: translateX(calc(100% + 3px));
     }
     .segmented-btn {
       flex: 1;
-      background: transparent;
-      border: 1px solid transparent;
+      background: transparent !important;
+      border: none !important;
       color: var(--muted);
       font-weight: 700;
       font-size: 0.78rem;
@@ -399,25 +415,25 @@
       gap: 8px;
       transition: all 0.2s var(--ease-out-expo);
       border-radius: 9px;
+      z-index: 2;
+      position: relative;
     }
     .segmented-btn:hover {
       color: var(--text);
     }
+    .segmented-btn:active {
+      transform: scale(0.94);
+      transition: transform 80ms var(--ease-out-expo);
+    }
     #btnVeg.active {
-      background: rgba(255, 255, 255, 0.08) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
       color: #22c55e !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
     }
     #btnVeg.active .inner-diet-icon {
       background: #22c55e;
       box-shadow: none !important;
     }
     #btnNonVeg.active {
-      background: rgba(255, 255, 255, 0.08) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
       color: #ef4444 !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
     }
     #btnNonVeg.active .inner-diet-icon {
       background: #ef4444;
@@ -1294,5 +1310,54 @@
         margin-top: 0 !important;
         flex: 1 !important;
       }
+    }
+
+    /* HEADER CONNECTION STATUS INDICATOR */
+    .connection-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 6px 12px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      height: 36px;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      position: relative;
+    }
+    .status-dot.online {
+      background: #22c55e;
+    }
+    .status-dot.online::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: statusPulse 2s infinite ease-in-out;
+    }
+    .status-dot.offline {
+      background: #ff6b00;
+    }
+    .status-dot.offline::after {
+      display: none;
+    }
+    @keyframes statusPulse {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(2.4); opacity: 0; }
     }
 

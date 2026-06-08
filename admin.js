@@ -151,19 +151,13 @@
       if (!badge) return;
 
       if (navigator.onLine) {
-        badge.innerText = 'Online ✅';
-        badge.style.background = 'rgba(34, 197, 94, 0.1)';
-        badge.style.color = '#22c55e';
-        badge.style.borderColor = 'rgba(34, 197, 94, 0.2)';
+        badge.innerHTML = '<span class="status-dot online"></span> Online';
         
         // Auto-sync pending bills and KDS orders when online
         syncBills();
         syncOrders();
       } else {
-        badge.innerText = 'Offline Mode ⚠️';
-        badge.style.background = 'rgba(255, 107, 0, 0.1)';
-        badge.style.color = '#ff6b00';
-        badge.style.borderColor = 'rgba(255, 107, 0, 0.2)';
+        badge.innerHTML = '<span class="status-dot offline"></span> Offline Mode';
       }
     }
 
@@ -1145,12 +1139,15 @@
       document.getElementById('itemIsVeg').value = isVeg ? 'true' : 'false';
       const btnVeg = document.getElementById('btnVeg');
       const btnNonVeg = document.getElementById('btnNonVeg');
+      const container = btnVeg.closest('.segmented-control');
       if (isVeg) {
         btnVeg.classList.add('active');
         btnNonVeg.classList.remove('active');
+        if (container) container.classList.remove('nonveg-active');
       } else {
         btnVeg.classList.remove('active');
         btnNonVeg.classList.add('active');
+        if (container) container.classList.add('nonveg-active');
       }
     }
 
