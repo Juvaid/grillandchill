@@ -474,7 +474,7 @@
   <div class="modal" id="productModal">
     <div class="modal-content product-modal-content">
       <div class="product-modal-header">
-        <h2 id="modalTitle" style="margin:0; color:var(--primary); font-size:1.3rem;">Product Editor</h2>
+        <h2 id="modalTitle" style="margin:0; color:var(--primary); font-size:1.25rem; font-weight:800; letter-spacing:-0.3px;">Product Editor</h2>
         <button type="button" onclick="closeModal('productModal')" style="background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); cursor:pointer; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:0.2s" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff';" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='var(--muted)';"><i data-lucide="x" style="width:16px; height:16px;"></i></button>
       </div>
       <form id="productForm" class="product-modal-body">
@@ -500,7 +500,7 @@
           </div>
         </div>
         
-        <div style="display:grid; grid-template-columns: 2.5fr 1fr; gap: 15px;">
+        <div style="display:grid; grid-template-columns: 2.2fr 1fr; gap: 15px;">
           <div class="form-group">
             <label class="form-label">Category</label>
             <select id="itemCat" class="auth-input modal-input" required onchange="handleCategoryChange(this.value)">
@@ -560,7 +560,7 @@
           <input type="hidden" id="itemTags" value="[]">
         </div>
 
-        <div class="form-group">
+        <div class="form-group form-section-title">
           <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">
             <span>Sizes & Prices</span>
             <button type="button" class="action-btn add-btn" onclick="addSizeRow()">
@@ -573,7 +573,7 @@
           <input type="hidden" id="itemSizes">
         </div>
 
-        <div class="form-group">
+        <div class="form-group form-section-title">
           <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">
             <span>Addons Configuration</span>
             <button type="button" class="action-btn add-btn" onclick="addAddonRow()">

@@ -79,6 +79,7 @@
       text-transform: uppercase;
       letter-spacing: 1px;
       transition: all var(--duration-normal) var(--ease-out-expo);
+      box-shadow: none !important;
     }
 
     /* --- DASHBOARD LAYOUT --- */
@@ -257,8 +258,8 @@
     .image-upload-box:hover {
       border-color: var(--primary);
       border-style: solid;
-      background: rgba(255,107,0,0.03);
-      box-shadow: 0 0 20px rgba(255,107,0,0.05);
+      background: rgba(255,107,0,0.02);
+      box-shadow: none !important;
     }
     .image-upload-box img {
       width: 100%;
@@ -376,61 +377,51 @@
     .segmented-control {
       position: relative;
       display: flex;
-      background: rgba(255, 255, 255, 0.015);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 4px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 3px;
       height: 48px;
       align-items: stretch;
-      gap: 4px;
-      transition: border-color 0.2s;
-    }
-    .segmented-control:hover {
-      border-color: rgba(255, 255, 255, 0.12);
+      gap: 3px;
     }
     .segmented-btn {
       flex: 1;
       background: transparent;
       border: 1px solid transparent;
       color: var(--muted);
-      font-weight: 800;
-      font-size: 0.82rem;
+      font-weight: 700;
+      font-size: 0.78rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: all 0.25s var(--ease-spring);
-      border-radius: 10px;
+      transition: all 0.2s var(--ease-out-expo);
+      border-radius: 9px;
     }
     .segmented-btn:hover {
       color: var(--text);
     }
-    .segmented-btn:active {
-      transform: scale(0.97);
-    }
-    
     #btnVeg.active {
-      border-color: rgba(34, 197, 94, 0.25) !important;
-      background: rgba(34, 197, 94, 0.08) !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
       color: #22c55e !important;
-      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.08);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
     }
     #btnVeg.active .inner-diet-icon {
       background: #22c55e;
-      box-shadow: 0 0 8px #22c55e;
-      animation: pulseVeg 2s infinite alternate;
+      box-shadow: none !important;
     }
-    
     #btnNonVeg.active {
-      border-color: rgba(239, 68, 68, 0.25) !important;
-      background: rgba(239, 68, 68, 0.08) !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
       color: #ef4444 !important;
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.08);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
     }
     #btnNonVeg.active .inner-diet-icon {
       background: #ef4444;
-      box-shadow: 0 0 8px #ef4444;
+      box-shadow: none !important;
     }
     
     .outer-diet-icon {
@@ -463,21 +454,21 @@
 
     /* TAG CHIPS INDIVIDUAL COLOR STATE */
     .tag-chip {
-      padding: 6px 14px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.015);
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.02);
       color: var(--muted);
-      font-size: 0.72rem;
-      font-weight: 700;
+      font-size: 0.7rem;
+      font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 4px;
-      transition: all 0.25s var(--ease-spring);
+      transition: all 0.2s ease;
     }
     .tag-chip:hover {
-      background: rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.05);
       border-color: rgba(255,255,255,0.12);
       color: var(--text);
       transform: translateY(-1px);
@@ -488,50 +479,58 @@
     
     .tag-chip.active.spicy {
       background: rgba(239, 68, 68, 0.08) !important;
-      border-color: rgba(239, 68, 68, 0.35) !important;
+      border-color: rgba(239, 68, 68, 0.25) !important;
       color: #ef4444 !important;
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08);
+      box-shadow: none !important;
     }
     .tag-chip.active.best-seller {
       background: rgba(234, 179, 8, 0.08) !important;
-      border-color: rgba(234, 179, 8, 0.35) !important;
+      border-color: rgba(234, 179, 8, 0.25) !important;
       color: #eab308 !important;
-      box-shadow: 0 4px 12px rgba(234, 179, 8, 0.08);
+      box-shadow: none !important;
     }
     .tag-chip.active.new {
       background: rgba(59, 130, 246, 0.08) !important;
-      border-color: rgba(59, 130, 246, 0.35) !important;
+      border-color: rgba(59, 130, 246, 0.25) !important;
       color: #3b82f6 !important;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+      box-shadow: none !important;
     }
     .tag-chip.active.popular {
       background: rgba(168, 85, 247, 0.08) !important;
-      border-color: rgba(168, 85, 247, 0.35) !important;
+      border-color: rgba(168, 85, 247, 0.25) !important;
       color: #a855f7 !important;
-      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.08);
+      box-shadow: none !important;
     }
     .tag-chip.active.special {
       background: rgba(236, 72, 153, 0.08) !important;
-      border-color: rgba(236, 72, 153, 0.35) !important;
+      border-color: rgba(236, 72, 153, 0.25) !important;
       color: #ec4899 !important;
-      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.08);
+      box-shadow: none !important;
     }
 
     /* BUILDER CONTAINER CARDS & Sleek builder row components */
     #sizesBuilderContainer, #addonsBuilderContainer {
-      background: rgba(255,255,255,0.015);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
       padding: 12px;
       transition: border-color 0.2s;
     }
     #sizesBuilderContainer:hover, #addonsBuilderContainer:hover {
-      border-color: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.08);
     }
     .builder-row input.auth-input {
-      padding: 10px 12px !important;
-      font-size: 0.85rem !important;
-      border-radius: 10px !important;
+      padding: 8px 12px !important;
+      font-size: 0.82rem !important;
+      border-radius: 8px !important;
+      background: rgba(255, 255, 255, 0.02) !important;
+      border: 1px solid rgba(255, 255, 255, 0.06) !important;
+      color: white;
+    }
+    .builder-row input.auth-input:focus {
+      border-color: var(--primary) !important;
+      background: rgba(255, 107, 0, 0.02) !important;
+      box-shadow: none !important;
     }
     .builder-row .price-symbol {
       position: absolute;
@@ -546,22 +545,22 @@
     }
     .builder-row .trash-btn {
       padding: 0;
-      background: rgba(239, 68, 68, 0.05);
-      border: 1px solid rgba(239, 68, 68, 0.15);
-      color: #ef4444;
-      height: 38px;
-      width: 38px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.3);
+      height: 34px;
+      width: 34px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
+      border-radius: 8px;
       cursor: pointer;
-      transition: all 0.25s var(--ease-spring);
+      transition: all 0.2s ease;
     }
     .builder-row .trash-btn:hover {
-      background: rgba(239, 68, 68, 0.12);
-      border-color: rgba(239, 68, 68, 0.4);
-      transform: scale(1.05) rotate(5deg);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      transform: scale(1.05);
     }
     .builder-row .trash-btn:active {
       transform: scale(0.95);
@@ -582,14 +581,33 @@
       gap: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
+      box-shadow: none !important;
+      text-shadow: none !important;
     }
     .action-btn.add-btn:hover {
       background: rgba(255, 107, 0, 0.1) !important;
       border-color: rgba(255, 107, 0, 0.3) !important;
       transform: translateY(-1px);
+      box-shadow: none !important;
     }
     .action-btn.add-btn:active {
       transform: scale(0.97);
+      box-shadow: none !important;
+    }
+
+    .product-modal-body .form-group {
+      margin-bottom: 15px;
+    }
+    .product-modal-body .auth-input, 
+    .product-modal-body select, 
+    .product-modal-body textarea,
+    .product-modal-body .input-group-emoji {
+      margin-bottom: 0 !important;
+    }
+    .form-section-title {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 20px;
+      margin-top: 10px;
     }
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
@@ -1025,9 +1043,9 @@
     .stat-card { transition: transform 0.2s, border-color 0.2s; }
     .stat-card:hover { transform: translateY(-2px); border-color: rgba(255,107,0,0.2); }
 
-    .btn-primary { transition: transform var(--duration-fast) var(--ease-out-back), box-shadow var(--duration-fast) var(--ease-out-expo), opacity var(--duration-fast) var(--ease-out-expo); }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,0,0.3); }
-    .btn-primary:active { transform: scale(0.95); transition: transform 80ms var(--ease-out-expo); }
+    .btn-primary { transition: transform var(--duration-fast) var(--ease-out-back), filter var(--duration-fast) var(--ease-out-expo), opacity var(--duration-fast) var(--ease-out-expo); box-shadow: none !important; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: none !important; filter: brightness(1.1); }
+    .btn-primary:active { transform: scale(0.97); transition: transform 80ms var(--ease-out-expo); }
 
     .mini-btn { transition: transform var(--duration-fast) var(--ease-out-back), background var(--duration-fast) var(--ease-out-expo), border-color var(--duration-fast) var(--ease-out-expo); }
     .mini-btn:hover { transform: translateY(-1px); }
@@ -1035,7 +1053,7 @@
 
     /* Form group spacing polish */
     .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-label { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-label { font-size: 0.72rem; font-weight: 750; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; margin-bottom: 2px; }
 
     /* Toast animation */
     @keyframes slideInToast {
@@ -1130,7 +1148,7 @@
         border-radius: 24px 24px 0 0 !important;
         max-width: 100% !important;
         width: 100% !important;
-        height: 92vh !important;
+        height: 90dvh !important;
         border: none;
         border-top: 1px solid var(--border);
       }
@@ -1147,10 +1165,14 @@
       }
       #productModal .product-modal-header {
         position: relative;
-        padding-top: 25px;
+        padding: 16px 20px !important;
+        padding-top: 25px !important;
+      }
+      #productModal .product-modal-body {
+        padding: 20px 20px !important;
       }
       #productModal .product-modal-footer {
-        padding-bottom: max(20px, env(safe-area-inset-bottom, 20px)) !important;
+        padding: 15px 20px max(15px, env(safe-area-inset-bottom, 15px)) !important;
       }
       /* Order type buttons: slightly smaller */
       .order-type-btn {
