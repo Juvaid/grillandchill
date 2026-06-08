@@ -522,19 +522,19 @@
           <textarea id="itemDesc" class="auth-input modal-input" placeholder="Ingredients, taste profile..." rows="2" style="resize: none; height: 60px; line-height: 1.4; padding: 10px 12px !important; border-radius: 12px !important;"></textarea>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap: 15px;">
+        <div style="display:grid; grid-template-columns: 1fr 1.3fr; gap: 15px;">
           <div class="form-group">
             <label class="form-label">Dietary Preference</label>
             <div class="segmented-control">
-              <button type="button" id="btnVeg" class="segmented-btn" onclick="setDietary(true)">
+              <button type="button" id="btnVeg" class="segmented-btn" onclick="setDietary(true)" title="Vegetarian">
                 <span class="outer-diet-icon">
                   <span class="inner-diet-icon"></span>
-                </span> VEG
+                </span>
               </button>
-              <button type="button" id="btnNonVeg" class="segmented-btn" onclick="setDietary(false)">
+              <button type="button" id="btnNonVeg" class="segmented-btn" onclick="setDietary(false)" title="Non-Vegetarian">
                 <span class="outer-diet-icon">
                   <span class="inner-diet-icon"></span>
-                </span> NON-VEG
+                </span>
               </button>
             </div>
             <input type="hidden" id="itemIsVeg" value="true">
@@ -550,12 +550,16 @@
 
         <div class="form-group">
           <label class="form-label">Tags</label>
-          <div id="tagsContainer" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
-            <div class="tag-chip" onclick="toggleTagChip(this, 'Spicy')">🔥 Spicy</div>
-            <div class="tag-chip" onclick="toggleTagChip(this, 'Best Seller')">⭐ Best Seller</div>
-            <div class="tag-chip" onclick="toggleTagChip(this, 'New')">🆕 New</div>
-            <div class="tag-chip" onclick="toggleTagChip(this, 'Popular')">🌟 Popular</div>
-            <div class="tag-chip" onclick="toggleTagChip(this, 'Special')">🎉 Special</div>
+          <select id="tagDropdown" class="auth-input modal-input" onchange="handleTagSelect(this.value)">
+            <option value="">+ Add Attribute Tag...</option>
+            <option value="Spicy">🔥 Spicy</option>
+            <option value="Best Seller">⭐ Best Seller</option>
+            <option value="New">🆕 New</option>
+            <option value="Popular">🌟 Popular</option>
+            <option value="Special">🎉 Special</option>
+          </select>
+          <div id="activeTagsList" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px;">
+            <!-- Selected tags will appear here as tiny chips -->
           </div>
           <input type="hidden" id="itemTags" value="[]">
         </div>

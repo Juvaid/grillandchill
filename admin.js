@@ -1154,39 +1154,71 @@
       }
     }
 
-    function toggleTagChip(el, tagVal) {
-      let tags = JSON.parse(document.getElementById('itemTags').value || '[]');
-      const tagClass = tagVal.toLowerCase().replace(' ', '-');
-      if (tags.includes(tagVal)) {
-        tags = tags.filter(t => t !== tagVal);
-        el.classList.remove('active', tagClass);
-      } else {
-        tags.push(tagVal);
-        el.classList.add('active', tagClass);
-      }
-      document.getElementById('itemTags').value = JSON.stringify(tags);
-    }
-    
     function resetTagChips() {
       document.getElementById('itemTags').value = '[]';
-      document.querySelectorAll('.tag-chip').forEach(el => {
-        el.className = 'tag-chip';
-      });
+      const activeList = document.getElementById('activeTagsList');
+      if (activeList) activeList.innerHTML = '';
+      const dropdown = document.getElementById('tagDropdown');
+      if (dropdown) dropdown.value = '';
     }
 
     function setSelectedTags(tagsArr) {
       resetTagChips();
       if (!tagsArr || !Array.isArray(tagsArr)) return;
       document.getElementById('itemTags').value = JSON.stringify(tagsArr);
-      document.querySelectorAll('.tag-chip').forEach(el => {
-        const text = el.innerText.trim();
-        tagsArr.forEach(t => {
-          if (text.includes(t)) {
-            const tagClass = t.toLowerCase().replace(' ', '-');
-            el.classList.add('active', tagClass);
-          }
-        });
+      tagsArr.forEach(t => {
+        renderActiveTag(t);
       });
+    }
+
+    function handleTagSelect(tagVal) {
+      if (!tagVal) return;
+      let tags = JSON.parse(document.getElementById('itemTags').value || '[]');
+      if (!tags.includes(tagVal)) {
+        tags.push(tagVal);
+        document.getElementById('itemTags').value = JSON.stringify(tags);
+        renderActiveTag(tagVal);
+      }
+      document.getElementById('tagDropdown').value = '';
+    }
+
+    function renderActiveTag(tagVal) {
+      const list = document.getElementById('activeTagsList');
+      if (!list) return;
+      const emojis = {
+        'Spicy': '🔥',
+        'Best Seller': '⭐',
+        'New': '🆕',
+        'Popular': '🌟',
+        'Special': '🎉'
+      };
+      const emoji = emojis[tagVal] || '';
+      const tagClass = tagVal.toLowerCase().replace(' ', '-');
+      
+      const chip = document.createElement('div');
+      chip.className = `tag-chip active ${tagClass}`;
+      chip.style.margin = '0';
+      chip.style.padding = '4px 10px';
+      chip.style.fontSize = '0.68rem';
+      chip.style.display = 'inline-flex';
+      chip.style.alignItems = 'center';
+      chip.style.gap = '4px';
+      chip.style.borderRadius = '6px';
+      chip.style.cursor = 'pointer';
+      chip.innerHTML = `${emoji} ${tagVal} <i data-lucide="x" style="width:10px; height:10px; margin-left: 2px; opacity: 0.7;"></i>`;
+      
+      chip.onclick = () => {
+        removeActiveTag(tagVal, chip);
+      };
+      list.appendChild(chip);
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function removeActiveTag(tagVal, chipEl) {
+      let tags = JSON.parse(document.getElementById('itemTags').value || '[]');
+      tags = tags.filter(t => t !== tagVal);
+      document.getElementById('itemTags').value = JSON.stringify(tags);
+      chipEl.remove();
     }
 
     function addSizeRow(name = '', price = '') {
