@@ -500,7 +500,7 @@
           </div>
         </div>
         
-        <div style="display:grid; grid-template-columns: 1.6fr 1.2fr 1fr; gap: 12px;">
+        <div style="display:grid; grid-template-columns: 2.5fr 1fr; gap: 15px;">
           <div class="form-group">
             <label class="form-label">Category</label>
             <select id="itemCat" class="auth-input modal-input" required onchange="handleCategoryChange(this.value)">
@@ -510,13 +510,6 @@
               <label class="form-label" style="font-size: 0.75rem; color: var(--primary)">New Category Name (e.g. 🍨 Desserts)</label>
               <input type="text" id="itemCatNew" class="auth-input" placeholder="Enter new category name">
             </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Status</label>
-            <select id="itemAvailable" class="auth-input modal-input">
-              <option value="true">Visible</option>
-              <option value="false">Hidden</option>
-            </select>
           </div>
           <div class="form-group">
             <label class="form-label">Sort Order</label>
@@ -529,21 +522,30 @@
           <textarea id="itemDesc" class="auth-input modal-input" placeholder="Ingredients, taste profile..." rows="2" style="resize: none; height: 60px; line-height: 1.4; padding: 10px 12px !important; border-radius: 12px !important;"></textarea>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Dietary Preference</label>
-          <div class="segmented-control">
-            <button type="button" id="btnVeg" class="segmented-btn" onclick="setDietary(true)">
-              <span class="outer-diet-icon">
-                <span class="inner-diet-icon"></span>
-              </span> VEG
-            </button>
-            <button type="button" id="btnNonVeg" class="segmented-btn" onclick="setDietary(false)">
-              <span class="outer-diet-icon">
-                <span class="inner-diet-icon"></span>
-              </span> NON-VEG
-            </button>
+        <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label class="form-label">Dietary Preference</label>
+            <div class="segmented-control">
+              <button type="button" id="btnVeg" class="segmented-btn" onclick="setDietary(true)">
+                <span class="outer-diet-icon">
+                  <span class="inner-diet-icon"></span>
+                </span> VEG
+              </button>
+              <button type="button" id="btnNonVeg" class="segmented-btn" onclick="setDietary(false)">
+                <span class="outer-diet-icon">
+                  <span class="inner-diet-icon"></span>
+                </span> NON-VEG
+              </button>
+            </div>
+            <input type="hidden" id="itemIsVeg" value="true">
           </div>
-          <input type="hidden" id="itemIsVeg" value="true">
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="itemAvailable" class="auth-input modal-input">
+              <option value="true">Visible</option>
+              <option value="false">Hidden</option>
+            </select>
+          </div>
         </div>
 
         <div class="form-group">
@@ -561,7 +563,7 @@
         <div class="form-group">
           <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">
             <span>Sizes & Prices</span>
-            <button type="button" class="action-btn" onclick="addSizeRow()" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 8px; border-color: var(--primary); color: var(--primary); font-weight: 700; background: transparent; display: flex; align-items: center; gap: 4px; transition: 0.2s;" onmouseover="this.style.background='rgba(255,107,0,0.05)'" onmouseout="this.style.background='transparent'">
+            <button type="button" class="action-btn add-btn" onclick="addSizeRow()">
               <i data-lucide="plus" style="width: 12px; height: 12px;"></i> Add Size
             </button>
           </label>
@@ -574,7 +576,7 @@
         <div class="form-group">
           <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">
             <span>Addons Configuration</span>
-            <button type="button" class="action-btn" onclick="addAddonRow()" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 8px; border-color: var(--primary); color: var(--primary); font-weight: 700; background: transparent; display: flex; align-items: center; gap: 4px; transition: 0.2s;" onmouseover="this.style.background='rgba(255,107,0,0.05)'" onmouseout="this.style.background='transparent'">
+            <button type="button" class="action-btn add-btn" onclick="addAddonRow()">
               <i data-lucide="plus" style="width: 12px; height: 12px;"></i> Add Addon
             </button>
           </label>

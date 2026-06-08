@@ -307,25 +307,52 @@
     /* INLINE EMOJI INPUT GROUP */
     .input-group-emoji {
       display: flex;
-      gap: 12px;
-      align-items: center;
+      align-items: stretch;
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: all var(--duration-normal) var(--ease-out-expo);
       width: 100%;
+      overflow: hidden;
+      height: 48px;
+    }
+    .input-group-emoji:focus-within {
+      border-color: var(--primary);
+      background: rgba(255, 107, 0, 0.03);
+      box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
     }
     .emoji-input-wrapper {
-      width: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      background: rgba(255, 255, 255, 0.015);
+      border-right: 1px solid var(--border);
       flex-shrink: 0;
     }
     .emoji-field {
+      width: 100% !important;
+      height: 100% !important;
       text-align: center;
-      padding: 12px 0 !important;
-      font-size: 1.35rem !important;
+      background: transparent !important;
+      border: none !important;
+      font-size: 1.3rem !important;
+      padding: 0 !important;
       margin-bottom: 0 !important;
-      border-radius: 12px !important;
       cursor: pointer;
     }
     .name-field {
       flex: 1;
+      background: transparent !important;
+      border: none !important;
       margin-bottom: 0 !important;
+      padding: 12px 15px !important;
+      color: white;
+    }
+    .name-field:focus {
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
     }
 
     /* CUSTOM SELECT */
@@ -539,9 +566,44 @@
     .builder-row .trash-btn:active {
       transform: scale(0.95);
     }
+    
+    .action-btn.add-btn {
+      background: rgba(255, 107, 0, 0.05) !important;
+      border: 1px solid rgba(255, 107, 0, 0.15) !important;
+      color: var(--primary) !important;
+      font-size: 0.72rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.5px;
+      padding: 6px 12px !important;
+      border-radius: 20px !important;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .action-btn.add-btn:hover {
+      background: rgba(255, 107, 0, 0.1) !important;
+      border-color: rgba(255, 107, 0, 0.3) !important;
+      transform: translateY(-1px);
+    }
+    .action-btn.add-btn:active {
+      transform: scale(0.97);
+    }
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-content { background: #121214; padding: 30px; border-radius: 28px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); }
+    .modal-content {
+      background: radial-gradient(circle at top left, #1d1d22, #0d0d0f);
+      padding: 30px;
+      border-radius: 28px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
     
     /* Product Modal Specifics */
     .product-modal-content {
@@ -551,7 +613,9 @@
       flex-direction: column;
       max-width: 600px;
       height: 85vh;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      background: radial-gradient(circle at top left, #1d1d22, #0d0d0f) !important;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid var(--border);
     }
     .product-modal-header {
       padding: 22px 28px 18px;
