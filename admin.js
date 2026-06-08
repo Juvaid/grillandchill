@@ -9,6 +9,36 @@
       local_orders: 'id, status, created_at, sync_status'
     });
     
+    // --- HELPER FUNCTIONS FOR SECURITY AND ROBUSTNESS ---
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>'"]/g, 
+        tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag)
+      );
+    }
+
+    function getBillItems(bill) {
+      if (!bill || !bill.items) return [];
+      if (typeof bill.items === 'string') {
+        try {
+          return JSON.parse(bill.items);
+        } catch (e) {
+          console.warn("Failed to parse bill items:", e);
+          return [];
+        }
+      }
+      if (Array.isArray(bill.items)) {
+        return bill.items;
+      }
+      return [];
+    }
+
     // Migration helper for stuck bills
     async function migrateOldBills() {
       try {
@@ -174,11 +204,14 @@
       updateConnectionStatus();
 
       await migrateOldBills();
-      loadOrders();
-      loadBilling();
-      await loadCategories();
-      await loadProducts();
+      
+      // Eager-load store settings (instant cached load, non-blocking network fetch) as details like currency and default payment are needed globally
       loadSettings();
+
+      // Load active tab (Live Orders)
+      loadOrders();
+
+      // Realtime subscriptions & notifications setup (non-blocking)
       subscribeToOrders();
       subscribeToBills();
       setupPushNotifications();
@@ -356,6 +389,7 @@
 
     // --- TAB LOGIC ---
     function switchTab(tabId) {
+      window.currentTab = tabId;
       ['orders', 'products', 'billing', 'settings'].forEach(t => {
         const section = document.getElementById(t + 'Section');
         const navItem = document.getElementById('nav-' + t);
@@ -384,35 +418,14 @@
       }
     }
 
-    async function loadOrders() {
-      let data = null;
-      try {
-        await syncOrders();
-        const res = await supabaseClient
-          .from('orders')
-          .select('*, order_items(*)')
-          .order('created_at', { ascending: false });
-        data = res.data;
-        if (data && data.length > 0) {
-          await db.local_orders.clear();
-          await db.local_orders.bulkPut(data.map(o => ({ ...o, sync_status: 'synced' })));
-        }
-      } catch (err) {
-        console.warn('Failed to load orders from Supabase, checking local cache:', err);
-      }
-
-      if (!data) {
-        try {
-          data = await db.local_orders.orderBy('created_at').reverse().toArray();
-        } catch (e) {
-          console.warn('Failed to load orders from Dexie:', e);
-        }
-      }
-
+    function renderOrders(data) {
       const body = document.getElementById('ordersBody');
-      if (!data) return;
-      window.allOrders = data;
-
+      if (!body) return;
+      if (!data || data.length === 0) {
+        body.innerHTML = '<div class="empty-state">No orders found</div>';
+        return;
+      }
+      
       body.innerHTML = data.map(o => {
         const isCancelled = o.status === 'cancelled';
         return `
@@ -428,9 +441,9 @@
                 <span style="background:rgba(255,107,0,0.15); color:var(--primary); padding:4px 8px; border-radius:6px; font-weight:900; font-size:0.8rem">#${o.id.toString().slice(-4)}</span>
                 <span style="font-size:0.7rem; color:var(--muted); font-weight:700">${new Date(o.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
               </div>
-              <div style="font-weight:900; font-size:1.05rem; letter-spacing:-0.3px">${o.customer_name}</div>
+              <div style="font-weight:900; font-size:1.05rem; letter-spacing:-0.3px">${escapeHTML(o.customer_name || 'Walk-in')}</div>
               <div style="display:flex; align-items:center; gap:8px; margin-top:2px">
-                <span style="font-size:0.75rem; color:var(--muted)">${o.customer_phone}</span>
+                <span style="font-size:0.75rem; color:var(--muted)">${escapeHTML(o.customer_phone || 'N/A')}</span>
                 <a href="https://www.google.com/maps/search/?api=1&query=${o.delivery_lat},${o.delivery_lng}" target="_blank" style="color:var(--accent); font-size:0.7rem; text-decoration:none; display:flex; align-items:center; gap:3px;">
                   <i data-lucide="map-pin" style="width:12px; height:12px;"></i> MAP
                 </a>
@@ -447,8 +460,8 @@
                 <div style="display:flex; gap:8px; flex:1">
                   <span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-weight:800; font-size:0.75rem; height:fit-content">${i.quantity}x</span>
                   <div style="line-height:1.2">
-                    <span style="font-weight:700; color:var(--text)">${i.item_name}</span>
-                    <div style="font-size:0.7rem; color:var(--muted); margin-top:2px">${i.size}</div>
+                    <span style="font-weight:700; color:var(--text)">${escapeHTML(i.item_name)}</span>
+                    <div style="font-size:0.7rem; color:var(--muted); margin-top:2px">${escapeHTML(i.size)}</div>
                   </div>
                 </div>
                 <span style="font-weight:800; color:var(--text); padding-left:10px">₹${i.price * i.quantity}</span>
@@ -475,11 +488,71 @@
           </div>
         </div>
       `}).join('');
+      
       updateDashboardStats();
       if (window.lucide) window.lucide.createIcons();
-      
       updateStats(data);
     }
+
+    async function loadOrders() {
+      // 1. Render order skeletons immediately
+      renderOrderSkeletons();
+
+      let localData = [];
+      
+      // 2. Load cached orders immediately
+      try {
+        localData = await db.local_orders.orderBy('created_at').reverse().toArray();
+        if (localData && localData.length > 0) {
+          window.allOrders = localData;
+          renderOrders(localData);
+        }
+      } catch (e) {
+        console.warn('Failed to load orders from Dexie:', e);
+      }
+
+      // 3. Sync pending orders in background asynchronously (non-blocking)
+      if (navigator.onLine) {
+        syncOrders().catch(err => console.warn('Background syncOrders failed:', err));
+      }
+
+      // 4. Load fresh data from Supabase if online
+      if (navigator.onLine) {
+        try {
+          const fetchPromise = supabaseClient
+            .from('orders')
+            .select('*, order_items(*)')
+            .order('created_at', { ascending: false });
+
+          const res = await Promise.race([
+            fetchPromise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase orders fetch timeout')), 4000))
+          ]);
+
+          const freshData = res.data;
+          if (freshData && freshData.length > 0) {
+            window.allOrders = freshData;
+            renderOrders(freshData);
+
+            // Update cache in the background
+            await db.local_orders.clear();
+            await db.local_orders.bulkPut(freshData.map(o => ({ ...o, sync_status: 'synced' })));
+          }
+        } catch (err) {
+          console.warn('Failed to load orders from Supabase:', err);
+          // If network fetch fails and cache was empty, render empty state
+          if (!localData || localData.length === 0) {
+            renderOrders([]);
+          }
+        }
+      } else {
+        // If offline and cache was empty, render empty state
+        if (!localData || localData.length === 0) {
+          renderOrders([]);
+        }
+      }
+    }
+
 
     async function updateStats(data) {
       if (!data) return;
@@ -499,43 +572,86 @@
     }
 
     async function loadProducts() {
-      let data = null;
+      // 1. Show product skeletons immediately
+      renderProductSkeletons();
+
+      // 2. Load categories dependency if missing
+      if (!window.allCategories) {
+        await loadCategories();
+      }
+
+      let localData = [];
+      
+      // 2. Load cached products from Dexie cache first (instant render)
       try {
-        const res = await supabaseClient.from('menu_items').select('*');
-        data = res.data;
-        if (data && data.length > 0) {
-          await db.menu_items.clear();
-          await db.menu_items.bulkPut(data);
+        localData = await db.menu_items.toArray();
+        if (localData && localData.length > 0) {
+          localData.sort((a, b) => {
+            const catIdxA = getCategorySortIndex(a.category);
+            const catIdxB = getCategorySortIndex(b.category);
+            if (catIdxA !== catIdxB) return catIdxA - catIdxB;
+            if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0);
+            return a.name.localeCompare(b.name);
+          });
+          window.allProducts = localData;
+          const statTotalItemsEl = document.getElementById('statTotalItems');
+          if (statTotalItemsEl) statTotalItemsEl.innerText = localData.length;
+          renderProducts(localData);
+          populateCategoryDropdown();
         }
-      } catch (err) {
-        console.warn('Failed to load products from Supabase, checking local cache:', err);
+      } catch (e) {
+        console.warn('Failed to load products from Dexie:', e);
       }
 
-      if (!data) {
+      // 3. Load fresh data from Supabase if online (non-blocking if we have localData)
+      const fetchPromise = (async () => {
+        if (!navigator.onLine) return;
         try {
-          data = await db.menu_items.toArray();
-        } catch (e) {
-          console.warn('Failed to load products from Dexie:', e);
+          const fetchQuery = supabaseClient.from('menu_items').select('*');
+          const res = await Promise.race([
+            fetchQuery,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase products fetch timeout')), 4000))
+          ]);
+          
+          const freshData = res.data;
+          if (freshData && freshData.length > 0) {
+            freshData.sort((a, b) => {
+              const catIdxA = getCategorySortIndex(a.category);
+              const catIdxB = getCategorySortIndex(b.category);
+              if (catIdxA !== catIdxB) return catIdxA - catIdxB;
+              if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0);
+              return a.name.localeCompare(b.name);
+            });
+            window.allProducts = freshData;
+            const statTotalItemsEl = document.getElementById('statTotalItems');
+            if (statTotalItemsEl) statTotalItemsEl.innerText = freshData.length;
+            renderProducts(freshData);
+            populateCategoryDropdown();
+
+            // Update local cache in background
+            await db.menu_items.clear();
+            await db.menu_items.bulkPut(freshData);
+          }
+        } catch (err) {
+          console.warn('Failed to load products from Supabase:', err);
+          // If supabase load fails and cache is empty, clear skeletons
+          if (!localData || localData.length === 0) {
+            renderProducts([]);
+          }
         }
+      })();
+
+      // If offline and cache is empty, clear skeletons
+      if (!navigator.onLine && (!localData || localData.length === 0)) {
+        renderProducts([]);
       }
 
-      if (!data) return;
-      
-      // Sort data: category's sort_order first, then item's sort_order, then name
-      data.sort((a, b) => {
-        const catIdxA = getCategorySortIndex(a.category);
-        const catIdxB = getCategorySortIndex(b.category);
-        if (catIdxA !== catIdxB) return catIdxA - catIdxB;
-        if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0);
-        return a.name.localeCompare(b.name);
-      });
-      
-      window.allProducts = data;
-      const statTotalItemsEl = document.getElementById('statTotalItems');
-      if (statTotalItemsEl) statTotalItemsEl.innerText = data.length;
-      renderProducts(data);
-      populateCategoryDropdown();
+      // If we don't have local cache, we MUST block and await the online fetch
+      if (!localData || localData.length === 0) {
+        await fetchPromise;
+      }
     }
+
 
     function populateCategoryDropdown() {
       const select = document.getElementById('itemCat');
@@ -765,33 +881,17 @@
     window.storeSettings = {};
 
     async function loadSettings() {
-      let data = null;
-      let error = null;
+      // 1. Try to load cached settings immediately to keep startup fast
+      let cachedData = null;
       try {
-        const res = await supabaseClient
-          .from('store_settings')
-          .select('*');
-        data = res.data;
-        error = res.error;
-        if (data && !error && data.length > 0) {
-          await db.store_settings.clear();
-          await db.store_settings.bulkPut(data);
-        }
-      } catch (err) {
-        console.warn('Failed to load store settings from Supabase, checking local cache:', err);
-      }
-
-      if (!data || error) {
-        try {
-          data = await db.store_settings.toArray();
-        } catch (e) {
-          console.warn('Failed to load store settings from Dexie:', e);
-        }
+        cachedData = await db.store_settings.toArray();
+      } catch (e) {
+        console.warn('Failed to load store settings from Dexie:', e);
       }
 
       const settings = {};
-      if (data && data.length > 0) {
-        data.forEach(row => { settings[row.key] = row.value; });
+      if (cachedData && cachedData.length > 0) {
+        cachedData.forEach(row => { settings[row.key] = row.value; });
         localStorage.setItem('gc_store_settings', JSON.stringify(settings));
       } else {
         try {
@@ -802,7 +902,7 @@
         } catch (e) {}
       }
 
-      // Also sync legacy localStorage values if DB is empty
+      // Sync legacy localStorage values if DB is empty
       if (!settings.upi_id) {
         settings.upi_id = localStorage.getItem('gc_store_upi_id') || SETTINGS_MAP.upi_id.default;
       }
@@ -810,7 +910,7 @@
         settings.merchant_name = localStorage.getItem('gc_store_merchant_name') || SETTINGS_MAP.merchant_name.default;
       }
 
-      // Populate all form fields
+      // Populate window.storeSettings and form fields immediately
       for (const [key, config] of Object.entries(SETTINGS_MAP)) {
         const val = settings[key] || config.default;
         window.storeSettings[key] = val;
@@ -835,15 +935,68 @@
       }
 
       // Preview logo if exists
-      if (settings.logo_url) {
-        previewSettingsLogo(settings.logo_url);
+      if (window.storeSettings.logo_url) {
+        previewSettingsLogo(window.storeSettings.logo_url);
       }
 
       // Keep legacy localStorage in sync
-      localStorage.setItem('gc_store_upi_id', window.storeSettings.upi_id);
-      localStorage.setItem('gc_store_merchant_name', window.storeSettings.merchant_name);
+      localStorage.setItem('gc_store_upi_id', window.storeSettings.upi_id || '');
+      localStorage.setItem('gc_store_merchant_name', window.storeSettings.merchant_name || '');
 
       loadLocationStats();
+
+      // 2. Fetch fresh settings from Supabase in the background if online
+      if (navigator.onLine) {
+        try {
+          const fetchPromise = supabaseClient.from('store_settings').select('*');
+          const res = await Promise.race([
+            fetchPromise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase settings fetch timeout')), 4000))
+          ]);
+          
+          const freshData = res.data;
+          if (freshData && freshData.length > 0) {
+            await db.store_settings.clear();
+            await db.store_settings.bulkPut(freshData);
+
+            // Re-populate settings
+            const newSettings = {};
+            freshData.forEach(row => { newSettings[row.key] = row.value; });
+            localStorage.setItem('gc_store_settings', JSON.stringify(newSettings));
+            
+            for (const [key, config] of Object.entries(SETTINGS_MAP)) {
+              const val = newSettings[key] || config.default;
+              window.storeSettings[key] = val;
+              
+              if (config.type === 'checkbox') {
+                const el = document.getElementById(config.el);
+                if (el) el.checked = val === 'true' || val === true;
+              } else if (config.type === 'color') {
+                const el = document.getElementById(config.el);
+                const hexEl = document.getElementById(config.el + '_hex');
+                if (el) el.value = val;
+                if (hexEl) hexEl.value = val;
+              } else if (config.type === 'days') {
+                const days = (val || config.default).split(',');
+                document.querySelectorAll('.day-checkbox').forEach(cb => {
+                  cb.checked = days.includes(cb.value);
+                });
+              } else if (config.el) {
+                const el = document.getElementById(config.el);
+                if (el) el.value = val;
+              }
+            }
+
+            if (window.storeSettings.logo_url) {
+              previewSettingsLogo(window.storeSettings.logo_url);
+            }
+            localStorage.setItem('gc_store_upi_id', window.storeSettings.upi_id || '');
+            localStorage.setItem('gc_store_merchant_name', window.storeSettings.merchant_name || '');
+          }
+        } catch (err) {
+          console.warn('Failed to refresh settings from Supabase:', err);
+        }
+      }
     }
 
     async function saveAllSettings() {
@@ -1384,34 +1537,59 @@
     }
 
     async function loadCategories() {
-      let data = null;
-      try {
-        const res = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true }).order('name', { ascending: true });
-        data = res.data;
-        if (data && data.length > 0) {
-          await db.categories.clear();
-          await db.categories.bulkPut(data);
-        }
-      } catch (err) {
-        console.warn('Failed to load categories from Supabase, checking local cache:', err);
-      }
+      // 1. Render category skeletons immediately
+      renderCategorySkeletons();
 
-      if (!data) {
-        try {
-          data = await db.categories.toArray();
-          data.sort((a, b) => {
+      let localData = [];
+      
+      // 2. Load cached categories from Dexie cache first (instant render)
+      try {
+        localData = await db.categories.toArray();
+        if (localData && localData.length > 0) {
+          localData.sort((a, b) => {
             if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0);
             return a.name.localeCompare(b.name);
           });
-        } catch (e) {
-          console.warn('Failed to load categories from Dexie:', e);
+          window.allCategories = localData;
+          renderCategories(localData);
         }
+      } catch (e) {
+        console.warn('Failed to load categories from Dexie:', e);
       }
 
-      if (!data) return;
-      window.allCategories = data;
-      renderCategories(data);
+      // 3. Load fresh data from Supabase if online
+      const fetchPromise = (async () => {
+        if (!navigator.onLine) return;
+        try {
+          const fetchQuery = supabaseClient.from('categories').select('*').order('sort_order', { ascending: true }).order('name', { ascending: true });
+          const res = await Promise.race([
+            fetchQuery,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase categories fetch timeout')), 4000))
+          ]);
+          
+          const freshData = res.data;
+          if (freshData && freshData.length > 0) {
+            window.allCategories = freshData;
+            renderCategories(freshData);
+
+            // Update cache in the background
+            await db.categories.clear();
+            await db.categories.bulkPut(freshData);
+          }
+        } catch (err) {
+          console.warn('Failed to load categories from Supabase:', err);
+          if (!localData || localData.length === 0) {
+            renderCategories([]);
+          }
+        }
+      })();
+
+      // If we don't have local cache, we MUST block and await the online fetch so window.allCategories is populated
+      if (!localData || localData.length === 0) {
+        await fetchPromise;
+      }
     }
+
 
     function renderCategories(cats) {
       const body = document.getElementById('collectionsBody');
@@ -1745,14 +1923,56 @@
     }
 
     async function showQuickBill() {
-      let data = null;
-      try {
-        const res = await supabaseClient.from('menu_items').select('*').eq('available', true).order('category', { ascending: true }).order('sort_order', { ascending: true }).order('name', { ascending: true });
-        data = res.data;
-      } catch (err) {
-        console.warn('Failed to load menu items for POS from Supabase, checking local cache:', err);
+      // 1. Open modal immediately
+      document.getElementById('quickBillModal').style.display = 'flex';
+      
+      // 2. Render skeletons immediately while we fetch data
+      renderPosItemSkeletons();
+      
+      // 3. Reset order type and mobile tabs
+      selectOrderType('dine-in');
+      switchPosMobileTab('menu');
+
+      // 4. Apply settings-driven visibility immediately
+      const cardBtn = document.getElementById('posCardBtn');
+      if (cardBtn) cardBtn.style.display = (window.storeSettings?.enable_card === 'true') ? 'flex' : 'none';
+      
+      const deliveryBtn = document.getElementById('posDeliveryBtn');
+      if (deliveryBtn) deliveryBtn.style.display = (window.storeSettings?.enable_delivery === 'true') ? 'flex' : 'none';
+      
+      // Set default payment method from settings
+      const defaultPay = window.storeSettings?.default_payment;
+      if (defaultPay) {
+        const select = document.getElementById('billPaymentMethod');
+        if (select) select.value = defaultPay;
       }
 
+      let data = null;
+      
+      // 5. Fetch logic: If online, fetch from Supabase with 3s timeout. If offline, bypass network call.
+      if (navigator.onLine) {
+        try {
+          const fetchPromise = supabaseClient.from('menu_items')
+            .select('*')
+            .eq('available', true)
+            .order('category', { ascending: true })
+            .order('sort_order', { ascending: true })
+            .order('name', { ascending: true });
+          
+          const res = await Promise.race([
+            fetchPromise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase network timeout')), 3000))
+          ]);
+          
+          data = res.data;
+        } catch (err) {
+          console.warn('Failed to load menu items for POS from Supabase, checking local cache:', err);
+        }
+      } else {
+        console.log('Browser is offline, loading menu items directly from Dexie cache');
+      }
+
+      // 6. Fallback to Dexie cache if online fetch failed/timed out, or if offline
       if (!data) {
         try {
           data = await db.menu_items.toArray();
@@ -1770,32 +1990,13 @@
         }
       }
 
+      // 7. Render data if available, otherwise close modal and show error
       if (data && data.length > 0) {
         allMenuItems = data;
         selectedPosCategory = 'all';
         renderPosCategories();
         renderPosItems(data);
         
-        // Apply settings-driven visibility
-        const cardBtn = document.getElementById('posCardBtn');
-        if (cardBtn) cardBtn.style.display = (window.storeSettings?.enable_card === 'true') ? 'flex' : 'none';
-        
-        const deliveryBtn = document.getElementById('posDeliveryBtn');
-        if (deliveryBtn) deliveryBtn.style.display = (window.storeSettings?.enable_delivery === 'true') ? 'flex' : 'none';
-        
-        // Set default payment method from settings
-        const defaultPay = window.storeSettings?.default_payment;
-        if (defaultPay) {
-          const select = document.getElementById('billPaymentMethod');
-          if (select) select.value = defaultPay;
-        }
-        
-        // Reset order type and mobile tabs
-        selectOrderType('dine-in');
-        switchPosMobileTab('menu');
-        
-        document.getElementById('quickBillModal').style.display = 'flex';
-
         // Auto-focus search input for speed
         setTimeout(() => {
           const searchInput = document.getElementById('posSearch');
@@ -1805,9 +2006,11 @@
           }
         }, 100);
       } else {
+        document.getElementById('quickBillModal').style.display = 'none';
         alert('No menu items available! Please load the admin page while online at least once to cache the menu.');
       }
     }
+
 
     function closeQuickBill() {
       document.getElementById('quickBillModal').style.display = 'none';
@@ -2125,28 +2328,66 @@
     }
 
     async function loadBilling() {
-      const localBills = await db.local_bills.orderBy('created_at').reverse().toArray();
-      let onlineBills = [];
-      try {
-        const { data } = await supabaseClient.from('bills').select('*').order('created_at', { ascending: false });
-        if (data) onlineBills = data;
-      } catch (e) {}
+      // 1. Show billing skeletons immediately
+      renderBillingSkeletons();
 
-      const allBills = [...localBills];
-      onlineBills.forEach(ob => {
-        const exists = allBills.find(lb => lb.id === ob.id);
-        if (!exists) allBills.push(ob);
-      });
-      allBills.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      let localBills = [];
       
-      window.CURRENT_BILLS = allBills;
-      filterBills();
+      // 2. Load cached bills from Dexie first (instant render)
+      try {
+        localBills = await db.local_bills.orderBy('created_at').reverse().toArray();
+        if (localBills && localBills.length > 0) {
+          window.CURRENT_BILLS = localBills;
+          filterBills();
+        }
+      } catch (e) {
+        console.warn('Failed to load bills from Dexie cache:', e);
+      }
+
+      // 3. If online, fetch from Supabase and merge
+      if (navigator.onLine) {
+        try {
+          const fetchPromise = supabaseClient.from('bills').select('*').order('created_at', { ascending: false });
+          const res = await Promise.race([
+            fetchPromise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase bills fetch timeout')), 4000))
+          ]);
+          
+          const onlineBills = res.data || [];
+          
+          const allBills = [...localBills];
+          onlineBills.forEach(ob => {
+            const exists = allBills.find(lb => lb.id === ob.id);
+            if (!exists) allBills.push(ob);
+          });
+          allBills.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          
+          window.CURRENT_BILLS = allBills;
+          filterBills();
+        } catch (err) {
+          console.warn('Failed to load bills from Supabase:', err);
+          // Ensure we render cache if we haven't already
+          if (!window.CURRENT_BILLS) {
+            window.CURRENT_BILLS = localBills;
+            filterBills();
+          }
+        }
+      } else {
+        // Browser is offline. If we have no bills rendered yet, render the local cache (which might be empty)
+        if (!window.CURRENT_BILLS) {
+          window.CURRENT_BILLS = localBills;
+          filterBills();
+        }
+      }
     }
 
-    function renderBilling(bills) {
+
+    function renderBilling(bills, append = false) {
       const body = document.getElementById('billingBody');
+      if (!body) return;
       const currency = window.storeSettings?.currency_symbol || '₹';
-      body.innerHTML = bills.map((b, idx) => {
+      
+      const newHtml = bills.map((b, idx) => {
         const isVoided = b.payment_status === 'voided';
         const methodMap = { 
           Cash: '<i data-lucide="banknote" style="width:14px; height:14px; display:inline-block; vertical-align:middle; margin-right:4px; opacity:0.8"></i> Cash', 
@@ -2171,16 +2412,16 @@
             </div>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
-            <div style="font-size:0.8rem; font-weight:700; color:var(--text)">${custName}${b.customer_phone && b.customer_phone !== 'N/A' ? ` · <span style="color:var(--muted); font-weight:400">${b.customer_phone}</span>` : ''}</div>
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text)">${escapeHTML(custName)}${b.customer_phone && b.customer_phone !== 'N/A' ? ` · <span style="color:var(--muted); font-weight:400">${escapeHTML(b.customer_phone)}</span>` : ''}</div>
             <div style="font-size:0.65rem; font-weight:700; color:var(--muted); background:rgba(255,255,255,0.03); padding:3px 8px; border-radius:6px; border:1px solid var(--border)">${typeIcon} ${(b.order_type || 'dine-in').replace('-',' ')}</div>
           </div>
           <div style="font-size:0.75rem; color:var(--muted); margin-bottom:6px">
-            ${new Date(b.created_at).toLocaleString()}${b.table_number ? ` · Table ${b.table_number}` : ''}
+            ${new Date(b.created_at).toLocaleString()}${b.table_number ? ` · Table ${escapeHTML(b.table_number)}` : ''}
           </div>
           ${b.discount_amount > 0 ? `<div style="font-size:0.7rem; color:#22c55e; font-weight:600; margin-bottom:4px">Discount: −${currency}${b.discount_amount}</div>` : ''}
-          ${b.notes ? `<div style="font-size:0.7rem; color:var(--muted); font-style:italic; margin-bottom:4px">📝 ${b.notes}</div>` : ''}
+          ${b.notes ? `<div style="font-size:0.7rem; color:var(--muted); font-style:italic; margin-bottom:4px">📝 ${escapeHTML(b.notes)}</div>` : ''}
           <div style="margin-top:6px; font-size:0.8rem; color:rgba(255,255,255,0.7)">
-            ${JSON.parse(b.items || '[]').map(i => `${i.name} (${i.size})`).join(', ')}
+            ${getBillItems(b).map(i => `${escapeHTML(i.name)} (${escapeHTML(i.size)})`).join(', ')}
           </div>
           <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; ${isVoided ? 'pointer-events:none; opacity:0.3' : ''}">
             <button onclick="handleBluetoothPrint('${b.id}')" class="btn-primary" style="flex:1.2; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; font-weight:800; min-width:100px; font-size:0.7rem">
@@ -2194,8 +2435,16 @@
             </button>
           </div>
         </div>
-      `}).join('') || '<div class="empty-state">No bills found</div>';
-      lucide.createIcons();
+      `;
+      }).join('');
+
+      if (append) {
+        body.insertAdjacentHTML('beforeend', newHtml);
+      } else {
+        body.innerHTML = newHtml || '<div class="empty-state">No bills found</div>';
+      }
+      
+      if (window.lucide) window.lucide.createIcons();
     }
 
     async function voidBill(billId) {
@@ -2627,11 +2876,12 @@
       const yesterdayStr = yesterday.toISOString().split('T')[0];
       
       const filtered = window.CURRENT_BILLS.filter(b => {
+        const itemsStr = typeof b.items === 'string' ? b.items : JSON.stringify(b.items || []);
         const matchesSearch = !q || 
           (b.customer_phone && b.customer_phone.toLowerCase().includes(q)) || 
           (b.customer_name && b.customer_name.toLowerCase().includes(q)) ||
           (b.id && b.id.toLowerCase().includes(q)) ||
-          (b.items && b.items.toLowerCase().includes(q));
+          (itemsStr && itemsStr.toLowerCase().includes(q));
           
         const matchesMethod = method === 'all' || b.payment_method === method || (!b.payment_method && method === 'Cash');
         const matchesStatus = status === 'all' || b.payment_status === status || (!b.payment_status && status === 'paid');
@@ -2667,7 +2917,7 @@
 
       let csv = 'Bill ID,Date,Customer Name,Customer Phone,Payment Method,Status,Sync,Items,Total Amount\n';
       filtered.forEach(b => {
-        const items = JSON.parse(b.items || '[]').map(i => `${i.name} (x${i.quantity || 1} ${i.size || ''})`).join(' | ');
+        const items = getBillItems(b).map(i => `${i.name} (x${i.quantity || 1} ${i.size || ''})`).join(' | ');
         const id = b.id ? String(b.id).toUpperCase() : '';
         const date = new Date(b.created_at).toLocaleString();
         const name = (b.customer_name || 'Walk-in').replace(/"/g, '""');
@@ -2692,9 +2942,12 @@
     }
 
     function filterBills() {
+      if (!window.CURRENT_BILLS) return;
+      
       const q = document.getElementById('billingSearch').value.toLowerCase().trim();
       const method = document.getElementById('billingMethodFilter').value;
       const status = document.getElementById('billingStatusFilter').value;
+
       const sync = document.getElementById('billingSyncFilter').value;
       const dateFilter = document.getElementById('billingDateFilter').value;
       
@@ -2704,15 +2957,17 @@
       const yesterdayStr = yesterday.toISOString().split('T')[0];
       
       const filtered = window.CURRENT_BILLS.filter(b => {
+        const itemsStr = typeof b.items === 'string' ? b.items : JSON.stringify(b.items || []);
         const matchesSearch = !q || 
           (b.customer_phone && b.customer_phone.toLowerCase().includes(q)) || 
           (b.customer_name && b.customer_name.toLowerCase().includes(q)) ||
           (b.id && b.id.toLowerCase().includes(q)) ||
-          (b.items && b.items.toLowerCase().includes(q));
+          (itemsStr && itemsStr.toLowerCase().includes(q));
           
         const matchesMethod = method === 'all' || b.payment_method === method || (!b.payment_method && method === 'Cash');
         const matchesStatus = status === 'all' || b.payment_status === status || (!b.payment_status && status === 'paid');
         const matchesSync = sync === 'all' || b.sync_status === sync || (sync === 'synced' && (!b.sync_status || b.sync_status === 'synced'));
+
         
         let matchesDate = true;
         if (dateFilter === 'today') {
@@ -2738,7 +2993,9 @@
       });
       
       updateBillingStats(filtered);
-      renderBilling(filtered);
+      window.FILTERED_BILLS = filtered;
+      billsDisplayedCount = 15;
+      renderBilling(filtered.slice(0, 15));
     }
 
     async function printDailyZReport() {
@@ -2765,7 +3022,7 @@
         
         const itemStats = {};
         todayBills.forEach(b => {
-          const items = JSON.parse(b.items || '[]');
+          const items = getBillItems(b);
           items.forEach(item => {
             const name = item.name + (item.size ? ` (${item.size})` : '');
             itemStats[name] = (itemStats[name] || 0) + (item.quantity || 1);
@@ -2931,6 +3188,7 @@
     }
 
     setInterval(syncBills, 30000);
+    setInterval(syncOrders, 30000);
 
     function showToast(msg) {
       const t = document.createElement('div');
@@ -2941,7 +3199,7 @@
     }
 
     async function shareReceipt(bill) {
-      const items = JSON.parse(bill.items || '[]');
+      const items = getBillItems(bill);
       const storeName = window.storeSettings?.store_name || 'Grill & Chill';
       const currency = window.storeSettings?.currency_symbol || '₹';
       const text = `${storeName} Receipt\nTotal: ${currency}${bill.total_amount}\nItems: ${items.map(i => i.name).join(', ')}`;
@@ -3596,3 +3854,155 @@
       }
       lastScrollY = window.scrollY;
     }, { passive: true });
+
+    // ===== SKELETON LOADING RENDERERS =====
+    function renderOrderSkeletons() {
+      const body = document.getElementById('ordersBody');
+      if (!body) return;
+      body.innerHTML = Array(3).fill(0).map(() => `
+        <div class="skeleton-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div class="skeleton-line heading skeleton-shimmer w-30"></div>
+            <div class="skeleton-line skeleton-shimmer w-20" style="height:24px; border-radius:12px;"></div>
+          </div>
+          <div class="skeleton-line skeleton-shimmer w-50" style="margin-bottom:8px;"></div>
+          <div class="skeleton-line skeleton-shimmer w-40" style="margin-bottom:8px;"></div>
+          <div style="display:flex; gap:10px; margin-top:20px;">
+            <div class="skeleton-line skeleton-shimmer w-30" style="height:36px; border-radius:8px;"></div>
+            <div class="skeleton-line skeleton-shimmer w-30" style="height:36px; border-radius:8px;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderBillingSkeletons() {
+      const rev = document.getElementById('statRevenue');
+      const count = document.getElementById('statBillsCount');
+      const avg = document.getElementById('statAvgBill');
+      const voided = document.getElementById('statVoidedCount');
+      const body = document.getElementById('billingBody');
+
+      const shimmerHtml = '<span class="skeleton-shimmer" style="display:inline-block; width:50px; height:18px; border-radius:4px;"></span>';
+      if (rev) rev.innerHTML = shimmerHtml;
+      if (count) count.innerHTML = shimmerHtml;
+      if (avg) avg.innerHTML = shimmerHtml;
+      if (voided) voided.innerHTML = shimmerHtml;
+
+      if (body) {
+        body.innerHTML = Array(3).fill(0).map(() => `
+          <div class="skeleton-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div class="skeleton-line heading skeleton-shimmer w-30"></div>
+              <div class="skeleton-line skeleton-shimmer w-20" style="height:24px; border-radius:12px;"></div>
+            </div>
+            <div class="skeleton-line skeleton-shimmer w-50" style="margin-bottom:8px;"></div>
+            <div class="skeleton-line skeleton-shimmer w-40" style="margin-bottom:8px;"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+              <div class="skeleton-line skeleton-shimmer w-35" style="height:36px; border-radius:8px;"></div>
+              <div class="skeleton-line skeleton-shimmer w-35" style="height:36px; border-radius:8px;"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function renderPosItemSkeletons() {
+      const cats = document.getElementById('posCategories');
+      const items = document.getElementById('posItems');
+      if (cats) {
+        cats.innerHTML = `
+          <div class="pos-cat-btn active skeleton-shimmer" style="width: 60px; height: 32px; border: none;"></div>
+          <div class="pos-cat-btn skeleton-shimmer" style="width: 80px; height: 32px; border: none; opacity: 0.6;"></div>
+          <div class="pos-cat-btn skeleton-shimmer" style="width: 70px; height: 32px; border: none; opacity: 0.6;"></div>
+          <div class="pos-cat-btn skeleton-shimmer" style="width: 90px; height: 32px; border: none; opacity: 0.6;"></div>
+        `;
+      }
+      if (items) {
+        items.innerHTML = Array(6).fill(0).map(() => `
+          <div class="skeleton-pos-item">
+            <div class="skeleton-line heading skeleton-shimmer w-70" style="margin-bottom:8px;"></div>
+            <div class="skeleton-line skeleton-shimmer w-40" style="margin-bottom:8px;"></div>
+            <div style="display:flex; gap:6px; margin-top:12px;">
+              <div class="skeleton-line skeleton-shimmer w-50" style="height:28px; border-radius:8px;"></div>
+              <div class="skeleton-line skeleton-shimmer w-50" style="height:28px; border-radius:8px;"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function renderProductSkeletons() {
+      const body = document.getElementById('productsBody');
+      if (!body) return;
+      body.innerHTML = `
+        <div class="category-header">
+          <div class="skeleton-line heading skeleton-shimmer w-20" style="height:22px;"></div>
+          <div class="skeleton-line skeleton-shimmer w-10"></div>
+        </div>
+        <div class="category-grid">
+          ${Array(4).fill(0).map(() => `
+            <div class="product-card">
+              <div class="skeleton-circle skeleton-shimmer" style="width:70px; height:70px;"></div>
+              <div class="product-card-content" style="flex:1;">
+                <div class="skeleton-line heading skeleton-shimmer w-70" style="margin-bottom:8px;"></div>
+                <div class="skeleton-line skeleton-shimmer w-40" style="margin-bottom:8px;"></div>
+                <div class="skeleton-line skeleton-shimmer w-50"></div>
+              </div>
+              <div class="product-card-actions" style="min-width:140px;">
+                <div style="display:flex; gap:6px; width:100%">
+                  <div class="skeleton-line skeleton-shimmer w-50" style="height:32px; border-radius:8px;"></div>
+                  <div class="skeleton-line skeleton-shimmer w-50" style="height:32px; border-radius:8px;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:12px">
+                  <div class="skeleton-line skeleton-shimmer w-40"></div>
+                  <div class="skeleton-line skeleton-shimmer w-30" style="height:20px; border-radius:10px;"></div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+    }
+
+    function renderCategorySkeletons() {
+      const body = document.getElementById('collectionsBody');
+      if (!body) return;
+      body.innerHTML = Array(3).fill(0).map(() => `
+        <div class="product-card" style="margin-bottom:15px; display:flex; align-items:center; gap:15px;">
+          <div class="skeleton-circle skeleton-shimmer" style="width:60px; height:60px; border-radius:12px;"></div>
+          <div style="flex:1;">
+            <div class="skeleton-line heading skeleton-shimmer w-40" style="margin-bottom:8px;"></div>
+            <div class="skeleton-line skeleton-shimmer w-30"></div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <div class="skeleton-line skeleton-shimmer w-10" style="height:32px; width:45px; border-radius:8px;"></div>
+            <div class="skeleton-line skeleton-shimmer w-10" style="height:32px; width:45px; border-radius:8px;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ===== SCROLL LOGIC & LAZY RENDER FOR BILLING HISTORY =====
+    let billsDisplayedCount = 15;
+    window.currentTab = 'orders';
+
+    window.addEventListener('scroll', () => {
+      if (window.currentTab !== 'billing') return;
+      
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const clientHeight = window.innerHeight;
+      
+      if (scrollTop + clientHeight >= scrollHeight - 200) {
+        const sourceList = window.FILTERED_BILLS || window.CURRENT_BILLS;
+        if (!sourceList || billsDisplayedCount >= sourceList.length) return;
+        
+        const nextChunk = sourceList.slice(billsDisplayedCount, billsDisplayedCount + 15);
+        if (nextChunk.length === 0) return;
+        
+        renderBilling(nextChunk, true); // Append mode
+        billsDisplayedCount += 15;
+      }
+    });
+
+
+
