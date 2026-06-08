@@ -1,8 +1,12 @@
     // --- OFFLINE DB SETUP ---
     const db = new Dexie("grill_chill_db");
-    db.version(4).stores({
+    db.version(6).stores({
       local_bills: 'id, customer_name, customer_phone, total_amount, payment_status, created_at, sync_status, client_uuid',
-      pending_orders: '++id, status'
+      pending_orders: '++id, status',
+      categories: 'id, name, sort_order',
+      menu_items: 'id, name, price, category, available',
+      store_settings: 'key',
+      local_orders: 'id, status, created_at, sync_status'
     });
     
     // Migration helper for stuck bills
@@ -39,24 +43,51 @@
         console.log('Session check:', session);
         
         if (sessionError) {
+          const lastUserId = localStorage.getItem('gc_last_user_id');
+          if (lastUserId && localStorage.getItem('gc_user_profile_' + lastUserId)) {
+            const cachedProfile = JSON.parse(localStorage.getItem('gc_user_profile_' + lastUserId));
+            if (cachedProfile?.role === 'admin') {
+              console.log('Offline: Session error but cached admin profile found. Granting access.');
+              currentUser = { id: lastUserId, email: localStorage.getItem('gc_last_user_email') || 'admin@local' };
+              showDashboard();
+              return;
+            }
+          }
           document.getElementById('authMsg').textContent = 'Session error: ' + sessionError.message;
           return;
         }
 
         if (session) {
-          const { data: profile, error } = await supabaseClient.from('profiles')
-            .select('role, full_name')
-            .eq('id', session.user.id)
-            .single();
-
-          console.log('Profile fetch result:', { profile, error });
-
-          if (error) {
-            document.getElementById('authMsg').textContent = 'Profile fetch error: ' + error.message;
-            // If it's a persistent error, let the user logout to try fresh
-            if (error.code !== 'PGRST116') { // PGRST116 is "no rows found"
-               console.error('Database error:', error);
+          localStorage.setItem('gc_last_user_id', session.user.id);
+          localStorage.setItem('gc_last_user_email', session.user.email || '');
+          
+          let profile = null;
+          let profileError = null;
+          
+          try {
+            const { data, error } = await supabaseClient.from('profiles')
+              .select('role, full_name')
+              .eq('id', session.user.id)
+              .single();
+            profile = data;
+            profileError = error;
+            if (profile) {
+              localStorage.setItem('gc_user_profile_' + session.user.id, JSON.stringify(profile));
             }
+          } catch (err) {
+            console.warn('Profile fetch failed, trying local cache...', err);
+          }
+
+          if (!profile) {
+            const cached = localStorage.getItem('gc_user_profile_' + session.user.id);
+            if (cached) {
+              profile = JSON.parse(cached);
+              profileError = null;
+            }
+          }
+
+          if (profileError) {
+            document.getElementById('authMsg').textContent = 'Profile fetch error: ' + profileError.message;
             return;
           }
 
@@ -71,6 +102,16 @@
         }
       } catch (err) {
         console.error('Unexpected auth error:', err);
+        const lastUserId = localStorage.getItem('gc_last_user_id');
+        if (lastUserId && localStorage.getItem('gc_user_profile_' + lastUserId)) {
+          const cachedProfile = JSON.parse(localStorage.getItem('gc_user_profile_' + lastUserId));
+          if (cachedProfile?.role === 'admin') {
+            console.log('Offline: Unexpected error but cached admin profile found. Granting access.');
+            currentUser = { id: lastUserId, email: localStorage.getItem('gc_last_user_email') || 'admin@local' };
+            showDashboard();
+            return;
+          }
+        }
         document.getElementById('authMsg').textContent = 'Auth system error. Please refresh.';
       }
     }
@@ -103,9 +144,36 @@
       location.reload();
     }
 
+    function updateConnectionStatus() {
+      const badge = document.getElementById('connectionStatusBadge');
+      if (!badge) return;
+
+      if (navigator.onLine) {
+        badge.innerText = 'Online ✅';
+        badge.style.background = 'rgba(34, 197, 94, 0.1)';
+        badge.style.color = '#22c55e';
+        badge.style.borderColor = 'rgba(34, 197, 94, 0.2)';
+        
+        // Auto-sync pending bills and KDS orders when online
+        syncBills();
+        syncOrders();
+      } else {
+        badge.innerText = 'Offline Mode ⚠️';
+        badge.style.background = 'rgba(255, 107, 0, 0.1)';
+        badge.style.color = '#ff6b00';
+        badge.style.borderColor = 'rgba(255, 107, 0, 0.2)';
+      }
+    }
+
     async function showDashboard() {
       document.getElementById('authScreen').classList.add('hidden');
       document.getElementById('dashboard').classList.remove('hidden');
+      
+      // Setup online/offline connection listeners
+      window.addEventListener('online', updateConnectionStatus);
+      window.addEventListener('offline', updateConnectionStatus);
+      updateConnectionStatus();
+
       await migrateOldBills();
       loadOrders();
       loadBilling();
@@ -287,12 +355,46 @@
       if (tabId === 'settings') loadSettings();
     }
 
+    async function syncOrders() {
+      if (!navigator.onLine) return;
+      try {
+        const pending = await db.local_orders.where('sync_status').equals('pending').toArray();
+        for (const ord of pending) {
+          const { error } = await supabaseClient.from('orders').update({ status: ord.status }).eq('id', ord.id);
+          if (!error) {
+            await db.local_orders.update(ord.id, { sync_status: 'synced' });
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to sync orders:', e);
+      }
+    }
+
     async function loadOrders() {
-      const { data, error } = await supabaseClient
-        .from('orders')
-        .select('*, order_items(*)')
-        .order('created_at', { ascending: false });
-      
+      let data = null;
+      try {
+        await syncOrders();
+        const res = await supabaseClient
+          .from('orders')
+          .select('*, order_items(*)')
+          .order('created_at', { ascending: false });
+        data = res.data;
+        if (data && data.length > 0) {
+          await db.local_orders.clear();
+          await db.local_orders.bulkPut(data.map(o => ({ ...o, sync_status: 'synced' })));
+        }
+      } catch (err) {
+        console.warn('Failed to load orders from Supabase, checking local cache:', err);
+      }
+
+      if (!data) {
+        try {
+          data = await db.local_orders.orderBy('created_at').reverse().toArray();
+        } catch (e) {
+          console.warn('Failed to load orders from Dexie:', e);
+        }
+      }
+
       const body = document.getElementById('ordersBody');
       if (!data) return;
       window.allOrders = data;
@@ -383,7 +485,26 @@
     }
 
     async function loadProducts() {
-      const { data } = await supabaseClient.from('menu_items').select('*');
+      let data = null;
+      try {
+        const res = await supabaseClient.from('menu_items').select('*');
+        data = res.data;
+        if (data && data.length > 0) {
+          await db.menu_items.clear();
+          await db.menu_items.bulkPut(data);
+        }
+      } catch (err) {
+        console.warn('Failed to load products from Supabase, checking local cache:', err);
+      }
+
+      if (!data) {
+        try {
+          data = await db.menu_items.toArray();
+        } catch (e) {
+          console.warn('Failed to load products from Dexie:', e);
+        }
+      }
+
       if (!data) return;
       
       // Sort data: category's sort_order first, then item's sort_order, then name
@@ -396,7 +517,8 @@
       });
       
       window.allProducts = data;
-      document.getElementById('statTotalItems').innerText = data.length;
+      const statTotalItemsEl = document.getElementById('statTotalItems');
+      if (statTotalItemsEl) statTotalItemsEl.innerText = data.length;
       renderProducts(data);
       populateCategoryDropdown();
     }
@@ -525,8 +647,28 @@
           return;
         }
       }
-      await supabaseClient.from('orders').update({ status }).eq('id', id);
-      loadOrders();
+
+      try {
+        const localOrd = await db.local_orders.get(id);
+        if (localOrd) {
+          await db.local_orders.update(id, { status, sync_status: 'pending' });
+        }
+      } catch (e) {
+        console.warn('Failed to update local order cache:', e);
+      }
+
+      try {
+        const { error } = await supabaseClient.from('orders').update({ status }).eq('id', id);
+        if (error) throw error;
+        await db.local_orders.update(id, { sync_status: 'synced' });
+      } catch (err) {
+        console.warn('Failed to update order status on Supabase, will retry:', err);
+        if (!navigator.onLine) {
+          showToast('KDS updated offline. Will sync later. 💾');
+        }
+      }
+
+      await loadOrders();
     }
 
     // --- SETTINGS TABS LOGIC ---
@@ -609,61 +751,84 @@
     window.storeSettings = {};
 
     async function loadSettings() {
+      let data = null;
+      let error = null;
       try {
-        const { data, error } = await supabaseClient
+        const res = await supabaseClient
           .from('store_settings')
           .select('*');
-        
-        const settings = {};
-        if (data && !error) {
-          data.forEach(row => { settings[row.key] = row.value; });
+        data = res.data;
+        error = res.error;
+        if (data && !error && data.length > 0) {
+          await db.store_settings.clear();
+          await db.store_settings.bulkPut(data);
         }
-
-        // Also sync legacy localStorage values if DB is empty
-        if (!settings.upi_id) {
-          settings.upi_id = localStorage.getItem('gc_store_upi_id') || SETTINGS_MAP.upi_id.default;
-        }
-        if (!settings.merchant_name) {
-          settings.merchant_name = localStorage.getItem('gc_store_merchant_name') || SETTINGS_MAP.merchant_name.default;
-        }
-
-        // Populate all form fields
-        for (const [key, config] of Object.entries(SETTINGS_MAP)) {
-          const val = settings[key] || config.default;
-          window.storeSettings[key] = val;
-
-          if (config.type === 'checkbox') {
-            const el = document.getElementById(config.el);
-            if (el) el.checked = val === 'true' || val === true;
-          } else if (config.type === 'color') {
-            const el = document.getElementById(config.el);
-            const hexEl = document.getElementById(config.el + '_hex');
-            if (el) el.value = val;
-            if (hexEl) hexEl.value = val;
-          } else if (config.type === 'days') {
-            const days = (val || config.default).split(',');
-            document.querySelectorAll('.day-checkbox').forEach(cb => {
-              cb.checked = days.includes(cb.value);
-            });
-          } else if (config.el) {
-            const el = document.getElementById(config.el);
-            if (el) el.value = val;
-          }
-        }
-
-        // Preview logo if exists
-        if (settings.logo_url) {
-          previewSettingsLogo(settings.logo_url);
-        }
-
-        // Keep legacy localStorage in sync
-        localStorage.setItem('gc_store_upi_id', window.storeSettings.upi_id);
-        localStorage.setItem('gc_store_merchant_name', window.storeSettings.merchant_name);
-
       } catch (err) {
-        console.warn('Failed to load store settings from Supabase:', err);
+        console.warn('Failed to load store settings from Supabase, checking local cache:', err);
       }
-      
+
+      if (!data || error) {
+        try {
+          data = await db.store_settings.toArray();
+        } catch (e) {
+          console.warn('Failed to load store settings from Dexie:', e);
+        }
+      }
+
+      const settings = {};
+      if (data && data.length > 0) {
+        data.forEach(row => { settings[row.key] = row.value; });
+        localStorage.setItem('gc_store_settings', JSON.stringify(settings));
+      } else {
+        try {
+          const cached = localStorage.getItem('gc_store_settings');
+          if (cached) {
+            Object.assign(settings, JSON.parse(cached));
+          }
+        } catch (e) {}
+      }
+
+      // Also sync legacy localStorage values if DB is empty
+      if (!settings.upi_id) {
+        settings.upi_id = localStorage.getItem('gc_store_upi_id') || SETTINGS_MAP.upi_id.default;
+      }
+      if (!settings.merchant_name) {
+        settings.merchant_name = localStorage.getItem('gc_store_merchant_name') || SETTINGS_MAP.merchant_name.default;
+      }
+
+      // Populate all form fields
+      for (const [key, config] of Object.entries(SETTINGS_MAP)) {
+        const val = settings[key] || config.default;
+        window.storeSettings[key] = val;
+
+        if (config.type === 'checkbox') {
+          const el = document.getElementById(config.el);
+          if (el) el.checked = val === 'true' || val === true;
+        } else if (config.type === 'color') {
+          const el = document.getElementById(config.el);
+          const hexEl = document.getElementById(config.el + '_hex');
+          if (el) el.value = val;
+          if (hexEl) hexEl.value = val;
+        } else if (config.type === 'days') {
+          const days = (val || config.default).split(',');
+          document.querySelectorAll('.day-checkbox').forEach(cb => {
+            cb.checked = days.includes(cb.value);
+          });
+        } else if (config.el) {
+          const el = document.getElementById(config.el);
+          if (el) el.value = val;
+        }
+      }
+
+      // Preview logo if exists
+      if (settings.logo_url) {
+        previewSettingsLogo(settings.logo_url);
+      }
+
+      // Keep legacy localStorage in sync
+      localStorage.setItem('gc_store_upi_id', window.storeSettings.upi_id);
+      localStorage.setItem('gc_store_merchant_name', window.storeSettings.merchant_name);
+
       loadLocationStats();
     }
 
@@ -696,10 +861,28 @@
       try {
         const { error } = await supabaseClient.from('store_settings').upsert(rows);
         if (error) throw error;
+
+        // Clear and update Dexie cache
+        await db.store_settings.clear();
+        await db.store_settings.bulkPut(rows);
+        const settings = {};
+        rows.forEach(row => { settings[row.key] = row.value; });
+        localStorage.setItem('gc_store_settings', JSON.stringify(settings));
+
         showToast('All settings saved successfully! ⚙️');
       } catch (err) {
-        console.error('Failed to save settings to Supabase:', err);
-        showToast('Failed to save settings online. Check console.');
+        console.error('Failed to save settings to Supabase, saving locally:', err);
+        try {
+          await db.store_settings.clear();
+          await db.store_settings.bulkPut(rows);
+          const settings = {};
+          rows.forEach(row => { settings[row.key] = row.value; });
+          localStorage.setItem('gc_store_settings', JSON.stringify(settings));
+          showToast('Settings saved locally! 💾');
+        } catch (localErr) {
+          console.error('Failed to save settings locally:', localErr);
+          showToast('Failed to save settings online. Check console.');
+        }
       }
     }
 
@@ -906,7 +1089,11 @@
           window.upiCurrentPhone = order.customer_phone;
           window.upiCurrentAmount = order.total_amount;
           
-          document.getElementById('upiQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+          const qr = new QRious({
+            value: upiUrl,
+            size: 200
+          });
+          document.getElementById('upiQrCodeImg').src = qr.toDataURL();
           document.getElementById('upiPayAmount').innerText = `₹${order.total_amount}`;
           document.getElementById('upiPayDetails').innerText = `To: ${storeUpi}`;
           
@@ -1166,7 +1353,30 @@
     }
 
     async function loadCategories() {
-      const { data } = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true }).order('name', { ascending: true });
+      let data = null;
+      try {
+        const res = await supabaseClient.from('categories').select('*').order('sort_order', { ascending: true }).order('name', { ascending: true });
+        data = res.data;
+        if (data && data.length > 0) {
+          await db.categories.clear();
+          await db.categories.bulkPut(data);
+        }
+      } catch (err) {
+        console.warn('Failed to load categories from Supabase, checking local cache:', err);
+      }
+
+      if (!data) {
+        try {
+          data = await db.categories.toArray();
+          data.sort((a, b) => {
+            if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0);
+            return a.name.localeCompare(b.name);
+          });
+        } catch (e) {
+          console.warn('Failed to load categories from Dexie:', e);
+        }
+      }
+
       if (!data) return;
       window.allCategories = data;
       renderCategories(data);
@@ -1504,8 +1714,32 @@
     }
 
     async function showQuickBill() {
-      const { data, error } = await supabaseClient.from('menu_items').select('*').eq('available', true).order('category', { ascending: true }).order('sort_order', { ascending: true }).order('name', { ascending: true });
-      if (data) {
+      let data = null;
+      try {
+        const res = await supabaseClient.from('menu_items').select('*').eq('available', true).order('category', { ascending: true }).order('sort_order', { ascending: true }).order('name', { ascending: true });
+        data = res.data;
+      } catch (err) {
+        console.warn('Failed to load menu items for POS from Supabase, checking local cache:', err);
+      }
+
+      if (!data) {
+        try {
+          data = await db.menu_items.toArray();
+          data = data.filter(i => i.available === true || i.available === 'true' || i.available === 1);
+          // Sort category -> sort_order -> name
+          data.sort((a, b) => {
+            const catA = a.category || '';
+            const catB = b.category || '';
+            if (catA !== catB) return catA.localeCompare(catB);
+            if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0);
+            return a.name.localeCompare(b.name);
+          });
+        } catch (e) {
+          console.warn('Failed to load menu items from Dexie cache:', e);
+        }
+      }
+
+      if (data && data.length > 0) {
         allMenuItems = data;
         selectedPosCategory = 'all';
         renderPosCategories();
@@ -1539,6 +1773,8 @@
             searchInput.select();
           }
         }, 100);
+      } else {
+        alert('No menu items available! Please load the admin page while online at least once to cache the menu.');
       }
     }
 
@@ -1771,7 +2007,11 @@
         window.upiCurrentPhone = phone;
         window.upiCurrentAmount = total;
 
-        document.getElementById('upiQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+        const qr = new QRious({
+          value: upiUrl,
+          size: 200
+        });
+        document.getElementById('upiQrCodeImg').src = qr.toDataURL();
         document.getElementById('upiPayAmount').innerText = `₹${total}`;
         document.getElementById('upiPayDetails').innerText = `To: ${storeUpi}`;
         
@@ -2608,47 +2848,55 @@
       }
     }
 
+    let isSyncing = false;
     async function syncBills() {
       if (!navigator.onLine) return;
-      const syncEl = document.getElementById('syncStatus');
-      const pending = await db.local_bills.where('sync_status').equals('pending').toArray();
-      
-      if (pending.length === 0) {
-        if (syncEl) syncEl.innerText = 'All Bills Synced ✅';
-        return;
-      }
+      if (isSyncing) return;
+      isSyncing = true;
 
-      if (syncEl) syncEl.innerText = `Syncing ${pending.length} bills...`;
-
-      for (const bill of pending) {
-        try {
-          const { error } = await supabaseClient.from('bills').upsert([{
-            id: bill.id,
-            customer_name: bill.customer_name,
-            customer_phone: bill.customer_phone || null,
-            total_amount: bill.total_amount,
-            items: bill.items,
-            payment_status: bill.payment_status,
-            payment_method: bill.payment_method || 'Cash',
-            order_type: bill.order_type || 'dine-in',
-            notes: bill.notes || '',
-            table_number: bill.table_number || '',
-            discount_amount: bill.discount_amount || 0,
-            created_at: bill.created_at
-          }]);
-          
-          if (!error) {
-            await db.local_bills.update(bill.id, { sync_status: 'synced' });
-          } else {
-            console.error('Supabase Sync Error:', error);
-            if (syncEl) syncEl.innerText = `Sync Error: ${error.message}`;
-          }
-        } catch (err) {
-          console.error('Sync failed for bill:', bill.id, err);
-          if (syncEl) syncEl.innerText = 'Sync Connection Failed ❌';
+      try {
+        const syncEl = document.getElementById('syncStatus');
+        const pending = await db.local_bills.where('sync_status').equals('pending').toArray();
+        
+        if (pending.length === 0) {
+          if (syncEl) syncEl.innerText = 'All Bills Synced ✅';
+          return;
         }
+
+        if (syncEl) syncEl.innerText = `Syncing ${pending.length} bills...`;
+
+        for (const bill of pending) {
+          try {
+            const { error } = await supabaseClient.from('bills').upsert([{
+              id: bill.id,
+              customer_name: bill.customer_name,
+              customer_phone: bill.customer_phone || null,
+              total_amount: bill.total_amount,
+              items: bill.items,
+              payment_status: bill.payment_status,
+              payment_method: bill.payment_method || 'Cash',
+              order_type: bill.order_type || 'dine-in',
+              notes: bill.notes || '',
+              table_number: bill.table_number || '',
+              discount_amount: bill.discount_amount || 0,
+              created_at: bill.created_at
+            }]);
+            
+            if (!error) {
+              await db.local_bills.update(bill.id, { sync_status: 'synced' });
+            } else {
+              console.error('Supabase Sync Error:', error);
+              if (syncEl) syncEl.innerText = `Sync Error: ${error.message}`;
+            }
+          } catch (err) {
+            console.error('Sync failed for bill:', bill.id, err);
+            if (syncEl) syncEl.innerText = 'Sync Connection Failed ❌';
+          }
+        }
+      } finally {
+        isSyncing = false;
+        loadBilling();
       }
-      loadBilling();
     }
 
     setInterval(syncBills, 30000);
@@ -2999,7 +3247,16 @@
         grouped[key].totalPrice += Number(item.price) * (item.quantity || 1);
       });
 
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(storeWebsite)}`;
+      let qrDataUrl = '';
+      try {
+        const qr = new QRious({
+          value: storeWebsite,
+          size: 150
+        });
+        qrDataUrl = qr.toDataURL();
+      } catch (qrErr) {
+        console.error('Failed to generate receipt QR code:', qrErr);
+      }
       
       const orderTypeMap = { 'dine-in': 'Dine-in', 'takeaway': 'Takeaway', 'delivery': 'Delivery' };
       const orderTypeStr = orderTypeMap[bill.order_type] || '';
@@ -3072,7 +3329,7 @@
           <div class="footer-thanks">${receiptFooter}</div>
           <div class="footer-url" style="margin-top:2px;font-weight:bold">${footerSubtext}</div>
           <div class="qr-container" style="position: relative; display: inline-block; margin: 4px auto;">
-            <img src="${qrUrl}" class="qr-code" alt="QR Code" onerror="this.style.display='none'" style="margin: 0 !important;">
+            ${qrDataUrl ? `<img src="${qrDataUrl}" class="qr-code" alt="QR Code" style="margin: 0 !important;">` : ''}
             ${(bill.customer_phone && bill.customer_phone !== 'N/A') ? `
               <button class="no-print whatsapp-qr-share-btn" onclick="sendWhatsAppReceipt('${encodeURIComponent(bill.customer_phone)}', window.lastGeneratedBill)" style="position: absolute; bottom: 0; right: 0; background: #25D366; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); color: white; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Share via WhatsApp">
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.455L0 24zm6.49-4.203a9.884 9.884 0 0 0 5.511 1.659h.005c5.561 0 10.086-4.523 10.09-10.086.002-2.695-1.047-5.227-2.951-7.133C17.296 2.33 14.77 1.28 12.01 1.28c-5.568 0-10.094 4.524-10.099 10.087-.001 1.905.499 3.766 1.448 5.421l-.955 3.486 3.57-.936zm12.39-5.147c-.345-.173-2.042-1.009-2.357-1.124-.315-.115-.545-.173-.775.173-.23.345-.889 1.124-1.09 1.354-.201.23-.402.26-.747.087a10.06 10.06 0 0 1-2.772-1.71 11.08 11.08 0 0 1-1.916-2.385c-.345-.575-.037-.887.251-1.173.259-.258.575-.672.863-.827.288-.175.384-.288.575-.69a.97.97 0 0 0-.048-.918c-.086-.173-.775-1.868-1.062-2.558-.28-.673-.56-.58-.775-.592-.2-.011-.429-.013-.659-.013-.23 0-.603.086-.918.429-.315.345-1.207 1.179-1.207 2.874 0 1.695 1.235 3.333 1.407 3.563.173.23 2.43 3.71 5.887 5.198.822.354 1.464.566 1.966.726.825.262 1.576.225 2.169.137.66-.098 2.043-.834 2.33-1.639.287-.805.287-1.495.2-.163z"/></svg>

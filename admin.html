@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="env.js"></script>
   <link rel="stylesheet" href="admin.css?v=6">
@@ -35,6 +36,9 @@
         <h2>G&C ADMIN</h2>
       </div>
       <div class="header-btns">
+        <div id="connectionBadges" style="display:flex; align-items:center; gap:8px; margin-right:5px;">
+          <span id="connectionStatusBadge" style="font-size:0.65rem; font-weight:800; padding:6px 10px; border-radius:8px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); color: var(--muted); display: inline-block; white-space: nowrap;">Checking...</span>
+        </div>
         <a href="index.html" class="icon-btn" title="Go to Store Menu">
           <i data-lucide="home"></i>
         </a>
