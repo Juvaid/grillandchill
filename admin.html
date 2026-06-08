@@ -36,13 +36,18 @@
         <h2>G&C ADMIN</h2>
       </div>
       <div class="header-btns">
-        <div id="connectionBadges" style="display:flex; align-items:center; gap:8px; margin-right:12px;">
-          <div id="connectionStatusBadge" class="connection-status">Checking...</div>
+        <div id="connectionBadges" style="display:flex; align-items:center; gap:8px;">
+          <div id="connectionStatusBadge" class="connection-status">
+            <span class="status-dot online"></span><span class="status-text">Checking...</span>
+          </div>
         </div>
         <a href="index.html" class="icon-btn" title="Go to Store Menu">
           <i data-lucide="home"></i>
         </a>
-        <button onclick="logout()" style="background:rgba(255,51,102,0.1); border:1px solid rgba(255,51,102,0.2); color:var(--danger); font-weight:800; font-size:0.7rem; padding:10px 15px; border-radius:12px; cursor:pointer">LOGOUT</button>
+        <button onclick="logout()" class="logout-btn" title="Logout">
+          <span class="btn-text">Logout</span>
+          <i data-lucide="log-out" class="btn-icon"></i>
+        </button>
       </div>
     </header>
 

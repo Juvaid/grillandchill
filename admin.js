@@ -151,13 +151,13 @@
       if (!badge) return;
 
       if (navigator.onLine) {
-        badge.innerHTML = '<span class="status-dot online"></span> Online';
+        badge.innerHTML = '<span class="status-dot online"></span><span class="status-text">Online</span>';
         
         // Auto-sync pending bills and KDS orders when online
         syncBills();
         syncOrders();
       } else {
-        badge.innerHTML = '<span class="status-dot offline"></span> Offline Mode';
+        badge.innerHTML = '<span class="status-dot offline"></span><span class="status-text">Offline</span>';
       }
     }
 
