@@ -1,4 +1,4 @@
-import { db, syncBills } from '../db.js';
+import { db, supabaseClient, syncBills } from '../db.js';
 import { generateUUID, padLine, showToast, closeModal, openModal } from '../utils.js';
 
 export let cachedPrinterDevice = null;
@@ -67,13 +67,19 @@ export async function showQuickBill() {
   let data = null;
   if (navigator.onLine) {
     try {
-      const { data: resData, error } = await db.supabaseClient.from('menu_items')
+      const fetchPromise = supabaseClient.from('menu_items')
         .select('*')
         .eq('available', true)
         .order('category', { ascending: true })
         .order('sort_order', { ascending: true })
         .order('name', { ascending: true });
-      if (!error) data = resData;
+        
+      const res = await Promise.race([
+        fetchPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase menu fetch timeout')), 1500))
+      ]);
+      
+      if (res && !res.error) data = res.data;
     } catch (err) {
       console.warn('Failed to load menu items for POS from Supabase, checking local cache:', err);
     }
@@ -81,7 +87,7 @@ export async function showQuickBill() {
 
   if (!data) {
     try {
-      data = await db.db.menu_items.toArray();
+      data = await db.menu_items.toArray();
       data = data.filter(i => i.available === true || i.available === 'true' || i.available === 1);
       data.sort((a, b) => {
         const catA = a.category || '';

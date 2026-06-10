@@ -261,11 +261,11 @@ if (loginBtn) loginBtn.onclick = login;
 
 const publicPosBtn = document.getElementById('publicPosBtn');
 if (publicPosBtn) {
-  publicPosBtn.onclick = async () => {
+  publicPosBtn.onclick = () => {
     window.isPublicPosMode = true;
     document.getElementById('authScreen').classList.add('hidden');
-    await loadSettings();
-    await showQuickBill();
+    loadSettings();
+    showQuickBill();
   };
 }
 
