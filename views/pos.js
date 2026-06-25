@@ -308,17 +308,16 @@ export function switchPosMobileTab(tab) {
     btn.classList.toggle('active', isActive);
   });
   
-  const menuCol = document.getElementById('posMenuCol');
-  const cartCol = document.getElementById('posCartCol');
-  if (tab === 'menu') {
-    if (menuCol) menuCol.style.display = 'flex';
-    if (cartCol) cartCol.style.display = 'none';
-  } else {
-    if (menuCol) menuCol.style.display = 'none';
-    if (cartCol) cartCol.style.display = 'flex';
+  // Visibility is driven by the `mobile-cart-active` class on the layout
+  // (see admin.css media query), not inline styles on per-column ids.
+  const layout = document.querySelector('.pos-main-layout');
+  if (layout) {
+    layout.classList.toggle('mobile-cart-active', tab === 'cart');
+  }
+  if (tab === 'cart') {
     renderBasket();
   }
-  
+
   updateMobilePillVisibility();
 }
 
@@ -326,11 +325,12 @@ export function updateMobilePillVisibility() {
   const pill = document.getElementById('posMobileCartFloatingPill');
   if (!pill) return;
   
-  const menuCol = document.getElementById('posMenuCol');
+  const layout = document.querySelector('.pos-main-layout');
   const itemCount = currentBillItems.reduce((sum, i) => sum + (i.qty || 1), 0);
-  
-  const isMenuVisible = menuCol && window.getComputedStyle(menuCol).display !== 'none';
-  const isMobileLayout = window.innerWidth <= 1024;
+
+  // On mobile the menu is visible whenever the cart tab is not active.
+  const isMenuVisible = layout && !layout.classList.contains('mobile-cart-active');
+  const isMobileLayout = window.innerWidth <= 900;
   
   if (isMobileLayout && isMenuVisible && itemCount > 0) {
     pill.style.display = 'flex';
