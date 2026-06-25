@@ -4,6 +4,10 @@ import { generateReceipt } from './pos.js';
 
 let ordersChannel = null;
 
+// Cap how many recent orders we pull/keep in memory so the KDS stays fast
+// as the orders table grows. Older orders remain queryable via reports.
+const ORDERS_PAGE_SIZE = 200;
+
 export function renderOrderSkeletons() {
   const body = document.getElementById('ordersBody');
   if (!body) return;
@@ -38,32 +42,66 @@ export function subscribeToOrders() {
     .channel('orders-live')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
       console.log('🔥 New Live Order:', payload);
-      
+
       if (typeof window.playNotificationSound === 'function') {
         window.playNotificationSound();
       }
-      
+
       if (window.Notification && Notification.permission === 'granted') {
         new Notification('New Order Received! 🍕', {
           body: `${payload.new.customer_name} ordered for ₹${payload.new.total_amount}`,
           icon: 'assets/logo-transparent.png'
         });
       }
-      
+
       showToast(`🔔 New Order from ${payload.new.customer_name} of ₹${payload.new.total_amount}!`);
-      alert(`🔔 NEW ORDER RECEIVED!\n\nCustomer: ${payload.new.customer_name}\nPhone: ${payload.new.customer_phone}\nAmount: ₹${payload.new.total_amount}`);
-      
-      loadOrders();
+      // Patch just the new order in instead of reloading the whole table.
+      upsertOrderRealtime(payload.new.id);
     })
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
       console.log('🔥 Live Order Update:', payload);
-      loadOrders();
+      upsertOrderRealtime(payload.new.id);
     })
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'orders' }, payload => {
-      loadOrders();
+      if (payload.old && payload.old.id != null) removeOrderRealtime(payload.old.id);
+      else loadOrders();
     });
 
   ordersChannel.subscribe();
+}
+
+// Fetch a single order (with its items) and merge it into the in-memory list,
+// avoiding a full-table refetch + skeleton flicker on every realtime event.
+async function upsertOrderRealtime(id) {
+  if (!navigator.onLine) return loadOrders();
+  try {
+    const { data: order, error } = await supabaseClient
+      .from('orders')
+      .select('*, order_items(*)')
+      .eq('id', id)
+      .single();
+    if (error || !order) throw error || new Error('Order not found');
+
+    const list = Array.isArray(window.allOrders) ? window.allOrders.slice() : [];
+    const idx = list.findIndex(o => o.id === order.id);
+    if (idx >= 0) list[idx] = order;
+    else list.unshift(order);
+    list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    window.allOrders = list;
+    renderOrders(list);
+    db.local_orders.put({ ...order, sync_status: 'synced' }).catch(() => {});
+  } catch (err) {
+    console.warn('Realtime order upsert failed, falling back to full reload:', err);
+    loadOrders();
+  }
+}
+
+function removeOrderRealtime(id) {
+  const list = (window.allOrders || []).filter(o => o.id !== id);
+  window.allOrders = list;
+  renderOrders(list);
+  db.local_orders.delete(id).catch(() => {});
 }
 
 export async function loadOrders() {
@@ -72,7 +110,7 @@ export async function loadOrders() {
   let localData = [];
   
   try {
-    localData = await db.local_orders.orderBy('created_at').reverse().toArray();
+    localData = await db.local_orders.orderBy('created_at').reverse().limit(ORDERS_PAGE_SIZE).toArray();
     if (localData && localData.length > 0) {
       window.allOrders = localData;
       renderOrders(localData);
@@ -90,7 +128,8 @@ export async function loadOrders() {
       const fetchPromise = supabaseClient
         .from('orders')
         .select('*, order_items(*)')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(ORDERS_PAGE_SIZE);
 
       const res = await Promise.race([
         fetchPromise,

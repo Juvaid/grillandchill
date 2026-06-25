@@ -7,8 +7,10 @@
 <meta name="description" content="Order fresh wood-fired pizza, burgers, wraps & more from Grill & Chill. Fast delivery to your door.">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Leaflet is only used for the checkout map (on demand) -> defer off the critical path -->
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- lucide is loaded once (pinned) near the end of <body>; no unpinned @latest duplicate -->
+
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap">
 
@@ -52,7 +54,7 @@
   background: 
     radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.9) 100%),
     linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-    url('assets/woody_bg.png') !important;
+    url('assets/woody_bg.webp') !important;
   background-size: cover !important;
   background-position: center !important;
   box-shadow: inset 0 -50px 50px -20px var(--bg);
@@ -1169,12 +1171,12 @@ function renderCategoryGrid() {
     const cardSize = catData?.layout_size || 'normal';
     if (cardSize === 'large') card.classList.add('large');
     else if (cardSize === 'wide') card.classList.add('wide');
-    const img = catData?.image_url || 'assets/woody_bg.png';
+    const img = catData?.image_url || 'assets/woody_bg.webp';
     const cleanName = cat.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
     const count = processed.length;
     
     card.innerHTML = `
-      <img src="${img}" alt="${cat}" loading="lazy" onerror="this.src='assets/woody_bg.png'">
+      <img src="${img}" alt="${cat}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='assets/woody_bg.webp'">
       <div class="category-card-count" style="background: ${catData?.color || 'var(--primary)'}; color: white;">${count} ITEMS</div>
       <div class="category-card-content">
         <div class="category-card-name">${cleanName}</div>

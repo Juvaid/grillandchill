@@ -248,9 +248,10 @@ export async function loadLocationStats() {
   try {
     const { data, error } = await supabaseClient
       .from('orders')
-      .select('*, order_items(*)')
-      .order('created_at', { ascending: false });
-      
+      .select('id, customer_name, customer_phone, delivery_lat, delivery_lng, delivery_address, total_amount, created_at, order_items(item_name, size, quantity)')
+      .order('created_at', { ascending: false })
+      .limit(1000);
+
     if (error) throw error;
     
     const locationOrders = data.filter(o => (o.delivery_lat && o.delivery_lng) || o.delivery_address);

@@ -52,7 +52,7 @@ export async function loadBilling() {
 
   if (navigator.onLine) {
     try {
-      const fetchPromise = supabaseClient.from('bills').select('*').order('created_at', { ascending: false });
+      const fetchPromise = supabaseClient.from('bills').select('*').order('created_at', { ascending: false }).limit(500);
       const res = await Promise.race([
         fetchPromise,
         new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase bills fetch timeout')), 4000))

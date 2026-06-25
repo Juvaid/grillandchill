@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gc-menu-v6'; // Version bump forces cache refresh
+const CACHE_NAME = 'gc-menu-v7'; // Version bump forces cache refresh
 const ASSETS = [
   './',
   './index.html',
@@ -17,14 +17,11 @@ const ASSETS = [
   './assets/logo.png',
   './assets/logo.svg',
   './assets/burger.png',
-  './assets/pizza.png',
-  './assets/shake.png',
-  './assets/woody_bg.png',
+  './assets/woody_bg.webp',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
   'https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.js',
   'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js',
   'https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js',
-  'https://unpkg.com/lucide@latest',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
 ];
