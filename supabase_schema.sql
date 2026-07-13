@@ -1,5 +1,10 @@
 -- Supabase Schema Backup for Grill & Chill
 -- Note: This is an inferred schema based on the application's current usage.
+--
+-- >> MULTI-TENANT: this file describes the ORIGINAL single-tenant schema.
+-- >> To convert to the multi-tenant SaaS model (tenants, RLS, khata/expenses),
+-- >> apply supabase/migrations/20260713_0001_multi_tenant_foundation.sql.
+-- >> See SUPABASE_SETUP.md for the step-by-step runbook.
 
 -- Enable UUID extension if not enabled
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

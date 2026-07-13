@@ -1,6 +1,6 @@
 import { db, supabaseClient, migrateOldBills, syncOrders, syncBills } from './db.js';
 import { escapeHTML, getBillItems, generateUUID, padLine, showToast, openModal, closeModal, playNotificationSound } from './utils.js';
-import { checkAuth, login, logout, currentUser } from './auth.js';
+import { checkAuth, login, logout, loginWithGoogle, createTenantAndOnboard, currentUser } from './auth.js';
 import { renderOrderSkeletons, subscribeToOrders, loadOrders, renderOrders, updateStats, updateStatus, selectPaymentMethodForOrder, billOrder } from './views/orders.js';
 import { renderBillingSkeletons, loadBilling, renderBilling, voidBill, toggleRevenueVisibility, showRevenueAnalytics, updateAnalyticsView, updateBillingStats, filterBills, exportBillsCSV, printDailyZReport } from './views/billing.js';
 import { renderPosItemSkeletons, showQuickBill, closeQuickBill, selectPosCategory, filterAndSearchPosItems, renderPosCategories, renderPosItems, addToBill, changeBasketQty, renderBasket, clearPosBasket, updatePosTotal, switchPosMobileTab, updateMobilePillVisibility, selectOrderType, setDiscountMode, saveBillWithPayment, saveBill, finalizeBill, writeInChunks, getBLEPrinter, disconnectBLEPrinter, handleReceipt, handleBluetoothPrint, handleShare, printDirectlyViaBluetooth, printBluetooth, shareReceipt, sendWhatsAppReceipt, logoToEscPos, generateEscPosBytes, generateReceipt, cachedPrinterChar, cachedPrinterDevice } from './views/pos.js';
@@ -138,6 +138,14 @@ async function showDashboard() {
 }
 window.showDashboard = showDashboard;
 
+// Signed in, but the user has no business yet — show the first-run setup.
+function showOnboarding() {
+  document.getElementById('authScreen').classList.add('hidden');
+  const onb = document.getElementById('onboardingScreen');
+  if (onb) onb.classList.remove('hidden');
+}
+window.showOnboarding = showOnboarding;
+
 async function setupPushNotifications() {
   if (location.protocol === 'file:') {
     console.warn('Push notifications and Service Workers cannot be registered when loading admin.html directly via file:// protocol. Please run a local web server.');
@@ -258,6 +266,15 @@ window.switchTab = switchTab;
 // --- SYSTEM INITIALIZERS ---
 const loginBtn = document.getElementById('loginBtn');
 if (loginBtn) loginBtn.onclick = login;
+
+const googleLoginBtn = document.getElementById('googleLoginBtn');
+if (googleLoginBtn) googleLoginBtn.onclick = loginWithGoogle;
+
+const onbCreateBtn = document.getElementById('onbCreateBtn');
+if (onbCreateBtn) onbCreateBtn.onclick = createTenantAndOnboard;
+
+const onbLogout = document.getElementById('onbLogout');
+if (onbLogout) onbLogout.onclick = (e) => { e.preventDefault(); logout(); };
 
 const publicPosBtn = document.getElementById('publicPosBtn');
 if (publicPosBtn) {
